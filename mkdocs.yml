@@ -1,15 +1,53 @@
 site_name: Pyrannic
 site_url: https://pyrannic.github.io/
-theme: material
+site_description: Pyrannic is an opinionated web application framework inspired in Laravel and built over the shoulders of FastAPI, Pydantic and SQLAlchemy.
+repo_name: Pyrannic Framework
+repo_url: https://github.com/pyrannic/framework
 
 markdown_extensions:
   - toc:
       permalink: "#"
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+theme:
+    name: material
+    palette:
+        # Palette toggle for light mode
+        - scheme: default
+          toggle:
+                icon: material/brightness-7 
+                name: Switch to dark mode
+
+        # Palette toggle for dark mode
+        - scheme: slate
+          toggle:
+                icon: material/brightness-5
+                name: Switch to light mode
+    features:
+        - navigation.sections
+        - content.code.copy
+        - content.code.select
 
 nav:
-    - Get Started: index.md
-    - Configuration: configuration.md
-    - Bootstrap: bootstrap.md
-    - Container: container.md
-    - Database ORM: database-orm.md
-    - API Resources: api-resources.md
+    - Getting Started:
+        - Installation: installation.md
+        - Configuration: configuration.md
+    - Architecture:
+        - Directory Structure: directory-structure.md
+        - Bootstrapping: bootstrapping.md
+        - IoC Container: ioc-container.md
+    - Database:
+        - Migrations: migrations.md
+    - ORM:
+        - Models: models.md
+        - Repositories: repositories.md
+    - REST:
+        - Resources: api-resources.md
+        - Collections: collections.md
+        - Pagination: pagination.md

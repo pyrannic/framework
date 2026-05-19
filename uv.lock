@@ -906,13 +906,12 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "alembic" },
-    { name = "mkdocs" },
     { name = "mkdocs-material" },
     { name = "pytest" },
     { name = "ruff" },
 ]
 docs = [
-    { name = "mkdocs" },
+    { name = "mkdocs-material" },
 ]
 
 [package.metadata]
@@ -925,12 +924,11 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "alembic", specifier = ">=1.18.4" },
-    { name = "mkdocs", specifier = ">=1.6.1" },
     { name = "mkdocs-material", specifier = ">=9.7.6" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "ruff", specifier = ">=0.15.12" },
 ]
-docs = [{ name = "mkdocs", specifier = ">=1.6.1" }]
+docs = [{ name = "mkdocs-material", specifier = ">=9.7.6" }]
 
 [[package]]
 name = "pytest"
