@@ -1,0 +1,15 @@
+site_name: Pyrannic
+site_url: https://pyrannic.github.io/
+theme: material
+
+markdown_extensions:
+  - toc:
+      permalink: "#"
+
+nav:
+    - Get Started: index.md
+    - Configuration: configuration.md
+    - Bootstrap: bootstrap.md
+    - Container: container.md
+    - Database ORM: database-orm.md
+    - API Resources: api-resources.md
