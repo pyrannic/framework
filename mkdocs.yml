@@ -5,15 +5,17 @@ repo_name: Pyrannic Framework
 repo_url: https://github.com/pyrannic/framework
 
 markdown_extensions:
-  - toc:
-      permalink: "#"
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.superfences
+    - admonition
+    - toc:
+        permalink: "#"
+    - pymdownx.highlight:
+        anchor_linenums: true
+        line_spans: __span
+        pygments_lang_class: true
+    - pymdownx.details
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
 
 theme:
     name: material
@@ -36,7 +38,7 @@ theme:
 
 nav:
     - Getting Started:
-        - Installation: installation.md
+        - Installation: index.md
         - Configuration: configuration.md
     - Architecture:
         - Directory Structure: directory-structure.md

@@ -900,6 +900,8 @@ source = { editable = "." }
 dependencies = [
     { name = "alembic" },
     { name = "fastapi", extra = ["standard-no-fastapi-cloud-cli"] },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
     { name = "sqlalchemy" },
 ]
 
@@ -918,6 +920,8 @@ docs = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.18.4" },
     { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = ">=0.136.1" },
+    { name = "pydantic", specifier = ">=2.13.4" },
+    { name = "pydantic-settings", specifier = ">=2.14.1" },
     { name = "sqlalchemy", specifier = ">=2.0.49" },
 ]
 
