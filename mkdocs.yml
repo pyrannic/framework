@@ -39,17 +39,18 @@ theme:
 nav:
     - Getting Started:
         - Installation: index.md
+        - Directory Structure: directory-structure.md
         - Configuration: configuration.md
     - Architecture:
-        - Directory Structure: directory-structure.md
-        - Bootstrapping: bootstrapping.md
-        - IoC Container: ioc-container.md
+        - Bootstrap: bootstrap.md
+        - Service Container: service-container.md
+        - Service Providers: service-providers.md
     - Database:
         - Migrations: migrations.md
     - ORM:
         - Models: models.md
         - Repositories: repositories.md
     - REST:
-        - Resources: api-resources.md
+        - Resources: resources.md
         - Collections: collections.md
         - Pagination: pagination.md

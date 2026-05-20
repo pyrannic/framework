@@ -95,10 +95,10 @@ def resolver(config_repository: Annotated[ConfigRepositoryInterface, Resolves()]
 ```
 
 Note how the dependency injection is done using the `Resolves` function from Pyrannic instead the `Depends` function from FastAPI.
-This is because the Pyrannic IoC Container supports abstract classes, while the FastAPI container doesn't.
+This is because the Pyrannic Service Container supports abstract classes, while the FastAPI container doesn't.
 
 !!! abstract "Know More"
-    You can check the documentation of the [IoC Container](ioc-container.md) to know more about it and the internal archtecture of Pyrannic.
+    You can check the documentation of the [Service Container](service-container.md) to know more about it and the internal archtecture of Pyrannic.
 
 ### Using the Facade
 
@@ -116,7 +116,7 @@ def my_function():
 It has the exact same methods as the repository and it has the benefit that it can be used from anywhere in your application,
 all this with less a verbose syntax because you don't need to inject it.
 
-Because behind the scenes the facade uses the repository resolving the dependency through the *IoC Container*,
+Because behind the scenes the facade uses the repository resolving the dependency through the *Service Container*,
 it is testable overrinding the repository dependency with mocks.
 
 #### When to Utilize the Facade
