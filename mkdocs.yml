@@ -42,9 +42,12 @@ nav:
         - Directory Structure: directory-structure.md
         - Configuration: configuration.md
     - Architecture:
+        - IoC Container: ioc-container.md
         - Bootstrap: bootstrap.md
-        - Service Container: service-container.md
-        - Service Providers: service-providers.md
+        - Providers: providers.md
+    - The Basics:
+        - Routers: routers.md
+        - Middlewares: middlewares.md
     - Database:
         - Migrations: migrations.md
     - ORM:

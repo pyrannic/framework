@@ -24,6 +24,13 @@ dependencies = [
 [tool.pdm]
 version = { source = "file", path = "pyrannic/__init__.py" }
 
+[project.urls]
+Homepage = "https://pyrannic.github.io/framework"
+Documentation = "https://pyrannic.github.io/framework"
+Repository = "https://github.com/pyrannic/framework"
+Issues = "https://github.com/pyrannic/framework/issues"
+Changelog = "https://pyrannic.github.io/framework/release-notes"
+
 [dependency-groups]
 dev = [
     { include-group = "docs" },

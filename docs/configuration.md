@@ -12,32 +12,13 @@ You can use standard Pydantic fields and read their values from your `.env` file
 Next, you can see the `app.py` config file:
 
 ```python title="config/app.py" hl_lines="7 11 15"
-from pydantic import Field
-
-from pyrannic import Configuration
-
-
-class AppConfig(Configuration):
-    name: str = Field(default="Pyrannic")
-    """This value is the name of your application, which will be used when the framework needs to place the
-    application's name in a notification or other UI elements where an application name needs to be displayed."""
-
-    env: str = Field(default="production")
-    """This value determines the 'environment' your application is currently running in.
-    This may determine how you prefer to configure various services the application utilizes. Set this in your '.env' file."""
-
-    debug: bool = Field(default=False)
-    """When your application is in debug mode, detailed error messages with
-    stack traces will be shown on every error that occurs within your
-    application. If disabled, a simple generic error page is shown."""
+--8<-- "docs_src/configuration/app_config_example.py"
 ```
 
 To override these configuration fields, you should use a `.env` file, as follows:
 
 ```shell
-APP_NAME="MyAwesomeApp"
-APP_ENV="development"
-APP_DEBUG=True
+--8<-- "docs_src/configuration/env_example"
 ```
 
 !!! info "Overrinding Environment Variables"
@@ -50,29 +31,8 @@ In this case, the default implementation for the configuration system requires t
 - They must be **prefixed** with the config *category*. By default, this prefix is the filename of the config file (like in *app.py*, who prefix is *APP_*), but this is overriden in other config files using the property `env_prefix`, like in *logging.py* or *database.py*.
 
 ```python title="config/logging.py" hl_lines="19 20 21"
-import logging
-
-from pydantic import Field
-
-from pyrannic import Configuration
-
-
-class LoggingConfig(Configuration):
-    level: int = Field(default=logging.DEBUG)
-    """The logging level to use for the application.
-    This can be set to any of the standard logging levels (e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL)."""
-
-    handlers: list[logging.Handler] = Field(
-        default_factory=lambda: [logging.StreamHandler()]
-    )
-    """A list of logging handlers to use for the application.
-    Handlers determine where the log messages are output, such as to the console, a file, or a remote logging server."""
-
-    @property
-    def env_prefix(self) -> str:
-        return "LOG_"
+--8<-- "docs_src/configuration/logging_config_example.py"
 ```
-
 
 ## Accessing Config Values
 
@@ -81,42 +41,30 @@ You may easily access your configuration values injecting the `ConfigRepositoryI
 ### Using the Repository
 
 The main way to access config values is the *Config Repository* through the `ConfigRepositoryInterface`
-using the IoC Container from Pyrannic.
+using the [IoC Container](ioc-container.md) from Pyrannic.
 
-```python title="Injecting the ConfigRepositoryInterface" hl_lines="5"
-from typing import Annotated
-from pyrannic import Resolves
-from pyrannic.contracts import ConfigRepositoryInterface
-
-def resolver(config_repository: Annotated[ConfigRepositoryInterface, Resolves()]):
-    value = config_repository.get("app.debug")
-    ...
-    ...
+```python title="Injecting the ConfigRepositoryInterface" hl_lines="6"
+--8<-- "docs_src/configuration/repo_example.py"
 ```
 
 Note how the dependency injection is done using the `Resolves` function from Pyrannic instead the `Depends` function from FastAPI.
-This is because the Pyrannic Service Container supports abstract classes, while the FastAPI container doesn't.
+This is because the Pyrannic IoC Container supports abstract classes, while the FastAPI container doesn't.
 
 !!! abstract "Know More"
-    You can check the documentation of the [Service Container](service-container.md) to know more about it and the internal archtecture of Pyrannic.
+    You can check the documentation of the [IoC Container](ioc-container.md) to know more about it and the internal architecture of Pyrannic.
 
 ### Using the Facade
 
 As an alternative to the repository injection, you can use a `Facade`, the `Config` Facade.
 
-```python title="Importing and Using the Config Facade" hl_lines="4"
-from pyrannic import Config
-
-def my_function():
-    value = Config.get("app.debug")
-    ...
-    ...
+```python title="Importing and Using the Config Facade" hl_lines="5"
+--8<-- "docs_src/configuration/facade_example.py"
 ```
 
 It has the exact same methods as the repository and it has the benefit that it can be used from anywhere in your application,
 all this with less a verbose syntax because you don't need to inject it.
 
-Because behind the scenes the facade uses the repository resolving the dependency through the *Service Container*,
+Because behind the scenes the facade uses the repository resolving the dependency through the *IoC Container*,
 it is testable overrinding the repository dependency with mocks.
 
 #### When to Utilize the Facade
@@ -140,32 +88,19 @@ The configuration values may be accessed using *dot* syntax, which includes the 
 A default value may also be specified and will be returned if the configuration option does not exist:
 
 ```python
-value = Config.get("app.debug")
-value = config_repository.get("app.debug")
-
-# Retrieve a default value if the configuration value does not exist.
-value = Config.get("app.debug", True)
-value = config_repository.get("app.debug", True)
+--8<-- "docs_src/configuration/retrieval_methods_example.py"
 ```
 
 To assist with static analysis, the `ConfigRepositoryInterface` and `Config` facade also provides typed configuration retrieval methods. If the retrieved configuration value does not match the expected type, the default value will be returned:
 
 ```python
-Config.string('config-key')
-Config.integer('config-key')
-Config.float('config-key')
-Config.boolean('config-key')
-Config.array('config-key')
+--8<-- "docs_src/configuration/retrieval_methods_2_example.py"
 ```
 
 Also, there are the *optional* counterparts of those methods, which allow you to use `None` values, both in the default parameter and in the return value:
 
 ```python
-Config.optional_string('config-key')
-Config.optional_integer('config-key')
-Config.optional_float('config-key')
-Config.optional_boolean('config-key')
-Config.optional_array('config-key')
+--8<-- "docs_src/configuration/retrieval_methods_3_example.py"
 ```
 
 ## Behind the Scenes
@@ -179,20 +114,7 @@ If you want or need it, you can use other configuration approach. For that, you 
 This interface requires the implementation of one property and one method. Below you can see an example of a custom configuration implementation of the `app.py` configuration file.
 
 ```python
-import os
-from pyranninc.contracts import ConfigurationInterface
-
-class AppConfig(ConfigurationInterface):
-    @property
-    def config_key(self) -> str:
-        return "app"
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "name": os.environ.get("app_name"),
-            "env": os.environ.get("app_env"),
-            "debug": True,
-        }
+--8<-- "docs_src/configuration/config_interface_example.py"
 ```
 
 ### ConfigRepositoryInterface
@@ -200,12 +122,7 @@ class AppConfig(ConfigurationInterface):
 The customization can be applied not only to the configuration files. If you need it, you can write your own `ConfigRepository` implementing the `ConfigRepositoryInterface`.
 
 ```python
-import os
-from pyranninc.contracts import ConfigRepositoryInterface
-
-class ConfigRepository(ConfigRepositoryInterface):
-    ...
-    ...
+--8<-- "docs_src/configuration/config_repo_interface_example.py"
 ```
 
 TODO

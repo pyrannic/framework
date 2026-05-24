@@ -1,0 +1,5 @@
+Config.optional_string("config-key")
+Config.optional_integer("config-key")
+Config.optional_float("config-key")
+Config.optional_boolean("config-key")
+Config.optional_array("config-key")

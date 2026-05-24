@@ -1,0 +1,5 @@
+Config.string("config-key")
+Config.integer("config-key")
+Config.float("config-key")
+Config.boolean("config-key")
+Config.array("config-key")
