@@ -78,9 +78,9 @@ Using dependency injection, this potential is mitigated by the visual feedback a
 that your class is growing too large. So, when using facades, pay special attention to the size of your class so that its scope of responsibility stays narrow.
 If your class is getting too large, consider splitting it into multiple smaller classes.
 
-!!! tip
-    Right now, Pyrannic only has a single one facade, the `Config` facade, but in the roadmap there are planned the addition of more.
-    This is the reason to have in mind the previous *disclaimer*.
+!!! abstract
+    Currently, *Pyrannic* features only the `Config` facade. However, the roadmap includes plans for several additional facades, which is why it is important to keep the earlier warning in mind.
+
 
 ### Retrieval Methods
 

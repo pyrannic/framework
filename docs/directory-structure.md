@@ -16,7 +16,7 @@ The `app` directory contains the core code of your application. We'll explore th
 
 ### The `bootstrap` Directory
 
-The `bootstrap` directory contains the `providers.py` file which configure the bootstrapping of the framework.
+The `bootstrap` directory contains the `providers.py`, `routers.py`, and `middlewares.py` files which configure the bootstrapping of the framework.
 
 ### The `config` Directory
 
@@ -38,7 +38,7 @@ The `models` directory contains all of your database model classes. The ORM incl
 
 ### The `providers` Directory
 
-The `providers` directory contains all of the [service providers](providers.md) for your application. Service providers bootstrap your application by binding services in the [IoC Container](ioc-container.md), registering events, or performing any other tasks to prepare your application for incoming requests.
+The `providers` directory contains all of the [service providers](service-providers.md) for your application. Service providers bootstrap your application by binding services in the [IoC Container](ioc-container.md), registering events, or performing any other tasks to prepare your application for incoming requests.
 
 In a fresh Pyrannic application, this directory will already contain the `AppServiceProvider`. You are free to add your own providers to this directory as needed.
 

@@ -44,7 +44,7 @@ nav:
     - Architecture:
         - IoC Container: ioc-container.md
         - Bootstrap: bootstrap.md
-        - Providers: providers.md
+        - Service Providers: service-providers.md
     - The Basics:
         - Routers: routers.md
         - Middlewares: middlewares.md
