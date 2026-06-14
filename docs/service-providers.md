@@ -19,7 +19,7 @@ All service providers extend the `ServiceProvider` class. Most service providers
 --8<-- "docs_src/service_providers/routers_service_providers.py"
 ```
 
-Within the `register` method, you can bind things into the [IoC container](ioc-container.md) as well as register routes, middlewares, exception handlers or any other piece of functionality that needs to be configured before the underlayered *FastAPI* app is initialized.
+Within the `register` method, you can bind things into the [IoC container](ioc-container.md) as well as register routes, middlewares, exception handlers or any other piece of functionality that needs to be configured before the underneath *FastAPI* app is initialized.
 
 ### The `register` Method
 
