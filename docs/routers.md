@@ -31,6 +31,6 @@ To use the default service provider from Pyrannic **is not mandatory**. You can 
 ```
 
 !!! abstract "The property app"
-    The `ServiceProvider` give you access to the underneath application throw the property `app`.
+    The `ServiceProvider` give you access to the underneath application through the `app` property.
     This property is an instance of an `ApplicationInterface` but, in the end, it is also an instance of a FastAPI application,
     and you can use all its methods. To know more about the service providers check [its documentation](service-providers.md).

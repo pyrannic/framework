@@ -48,11 +48,11 @@ nav:
     - The Basics:
         - Routers: routers.md
         - Middlewares: middlewares.md
-    - Database:
-        - Migrations: migrations.md
-    - ORM:
-        - Models: models.md
-        - Repositories: repositories.md
+    - Database & ORM:
+        - Getting Started: database/getting-started.md
+        - Migrations: database/migrations.md
+        - Models: orm/models.md
+        - Repositories: orm/repositories.md
     - REST:
         - Resources: resources.md
         - Collections: collections.md

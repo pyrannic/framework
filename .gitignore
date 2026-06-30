@@ -5,6 +5,7 @@
 __pycache__
 .pytest_cache
 htmlcov
+cov.xml
 dist
 site
 .coverage*
@@ -14,10 +15,10 @@ test.db
 log.txt
 Pipfile.lock
 env3.*
-env
+.env
+!/tests/**/.env
 docs_build
 site_build
-site
 venv
 .venv
 .pdm-build
