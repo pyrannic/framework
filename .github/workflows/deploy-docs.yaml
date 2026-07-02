@@ -60,7 +60,7 @@ jobs:
         # Upload the built site as an artifact:
         # Takes the ./site folder that MkDocs produced and packages it as a Pages artifact.
         # This artifact is what the next job (“deploy”) will publish to GitHub Pages.
-        uses: actions/upload-pages-artifact@v4 # package the built site for Pages
+        uses: actions/upload-pages-artifact@v5 # package the built site for Pages
         with:
           path: ./site # folder created by `mkdocs build`
 
@@ -78,4 +78,4 @@ jobs:
         # Uses the OIDC auth we enabled with `id-token: write`.
         # No extra inputs needed—the upload action already named the artifact correctly.
         id: deployment # lets us reference steps.deployment.outputs.page_url earlier to show the final URL in the UI
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
