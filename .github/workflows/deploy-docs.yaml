@@ -26,15 +26,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4 # pulls the repo code onto the VM so later steps can actually see the `docs/` folder and `mkdocs.yaml`
+        uses: actions/checkout@v5 # pulls the repo code onto the VM so later steps can actually see the `docs/` folder and `mkdocs.yaml`
 
       - name: Set up Python
-        uses: actions/setup-python@v5  # install Python into the VM
+        uses: actions/setup-python@v6  # install Python into the VM
         with:
           python-version: "3.x"  # grab the latest Python 3 version
 
       - name: Cache pip
-        uses: actions/cache@v4  # cache installed Python packages between workflow runs
+        uses: actions/cache@v5  # cache installed Python packages between workflow runs
         with:
           path: ~/.cache/pip  # where pip keeps downloaded packages
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}  # cache key: OS + hash of requirements.txt (so cache refreshes if deps change)
@@ -60,7 +60,7 @@ jobs:
         # Upload the built site as an artifact:
         # Takes the ./site folder that MkDocs produced and packages it as a Pages artifact.
         # This artifact is what the next job (“deploy”) will publish to GitHub Pages.
-        uses: actions/upload-pages-artifact@v3 # package the built site for Pages
+        uses: actions/upload-pages-artifact@v4 # package the built site for Pages
         with:
           path: ./site # folder created by `mkdocs build`
 
