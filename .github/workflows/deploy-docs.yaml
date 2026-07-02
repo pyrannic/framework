@@ -3,7 +3,7 @@ name: Build and Deploy the Documentation Site
 on:
   push:
     branches: [ main, docs ]  # only run this workflow when changes are pushed to the main or docs branches
-    # Specify paths so that docs deploy doesn’t run on app code changes, only docs changes
+    # Specify paths so that docs deploy doesn't run on app code changes, only docs changes
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
@@ -27,6 +27,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5 # pulls the repo code onto the VM so later steps can actually see the `docs/` folder and `mkdocs.yaml`
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5  # enables GitHub Pages and configures the deployment source to use GitHub Actions
 
       - name: Set up Python
         uses: actions/setup-python@v6  # install Python into the VM
@@ -59,7 +62,7 @@ jobs:
       - name: Upload artifact
         # Upload the built site as an artifact:
         # Takes the ./site folder that MkDocs produced and packages it as a Pages artifact.
-        # This artifact is what the next job (“deploy”) will publish to GitHub Pages.
+        # This artifact is what the next job ("deploy") will publish to GitHub Pages.
         uses: actions/upload-pages-artifact@v5 # package the built site for Pages
         with:
           path: ./site # folder created by `mkdocs build`
