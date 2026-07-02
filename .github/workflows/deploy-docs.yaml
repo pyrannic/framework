@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v5 # pulls the repo code onto the VM so later steps can actually see the `docs/` folder and `mkdocs.yaml`
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5  # enables GitHub Pages and configures the deployment source to use GitHub Actions
+        uses: actions/configure-pages@v6  # enables GitHub Pages and configures the deployment source to use GitHub Actions
 
       - name: Set up Python
         uses: actions/setup-python@v6  # install Python into the VM
