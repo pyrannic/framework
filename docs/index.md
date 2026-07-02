@@ -4,7 +4,7 @@ Pyrannic aims to be a comprehensive web framework that handles the complexities 
 
 To accelerate your development process, Pyrannic introduces abstraction layers over tools like FastAPI, Pydantic, and SQLAlchemy. Key features include:
 
-- Default SQLAlchemy implementations for [models](models.md) and [repositories](repositories.md) interfaces.
+- Default SQLAlchemy implementations for [models](orm/models.md) and [repositories](orm/repositories.md) interfaces.
 - REST [Resources](resources.md) and [collections](collections.md) built upon Pydantic by default.
 - Specialized [service providers](service-providers.md) for [routers](routers.md) and [middlewares](middlewares.md) that offer a structured approach to application design.
 
@@ -68,7 +68,7 @@ DB_PASSWORD=
 ```
 
 !!! abstract "Know More"
-    For more information about how the database migrations work in Pyrannic, check out the full [migrations documentation](migrations.md).
+    For more information about how the database migrations work in Pyrannic, check out the full [migrations documentation](database/migrations.md).
 
 ## Next Steps
 
