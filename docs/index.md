@@ -29,7 +29,7 @@ Now, you can scaffold the initial Pyrannic application with the next Pyrannic CL
 pyrannic new
 ```
 
-This will create the folder's structure of a Pyarannic application in your execution folder.
+This will create the folder's structure of a Pyrannic application in your execution folder.
 
 !!! abstract "Initial application"
     The initial application that you have created is based in the code that you can find in this repository: [https://github.com/pyrannic/application](https://github.com/pyrannic/application)

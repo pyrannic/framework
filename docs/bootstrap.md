@@ -14,7 +14,7 @@ In a little application, you can keep this logic in your `main.py` together to t
 
 To avoid having to create this bootstrapping layer in every application that you create, *Pyranninc* provides you this layer out-of-the-box. 
 
-In this layer, *Providers* are the core to bootstrapping a *Pyrannic* application. When *Pyarannic* creates the *FastAPI* application instance, it passes as `lifespan` parameter an *async context manager* from the `BootstrapManager`. This manager is the responsible to register, initialize and boot (in that order) the registered providers.
+In this layer, *Providers* are the core to bootstrapping a *Pyrannic* application. When *Pyrannic* creates the *FastAPI* application instance, it passes as `lifespan` parameter an *async context manager* from the `BootstrapManager`. This manager is the responsible to register, initialize and boot (in that order) the registered providers.
 
 Your application's user-defined providers are stored in the `app/providers` directory. By default, the AppServiceProvider is fairly empty. This provider is a great place to add your application's own bootstrapping and service container bindings.
 
