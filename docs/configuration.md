@@ -125,10 +125,14 @@ The customization can be applied not only to the configuration files. If you nee
 --8<-- "docs_src/configuration/config_repo_interface_example.py"
 ```
 
-TODO
+!!! danger "Work in Progress"
+    This section page is currently under development and will be completed very soon.
+
 
 ### Service Provider
 
 Once you have your repository implemented, you can register it using a service provider
 
-TODO
+!!! danger "Work in Progress"
+    This section page is currently under development and will be completed very soon.
+

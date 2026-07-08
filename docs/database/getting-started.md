@@ -19,16 +19,23 @@ Pyrannic streamlines these database interactions through its intuitive ORM query
 
 ### Configuration
 
-TODO
+!!! danger "Work in Progress"
+    This section page is currently under development and will be accessible very soon.
+
 
 #### SQLite Configuration
 
-TODO
+!!! danger "Work in Progress"
+    This section page is currently under development and will be accessible very soon.
+
 
 #### Configuration Using URLs
 
-TODO
+!!! danger "Work in Progress"
+    This section page is currently under development and will be accessible very soon.
+
 
 ## SQLAlchemy Service Provider
 
-TODO
+!!! danger "Work in Progress"
+    This section page is currently under development and will be accessible very soon.
