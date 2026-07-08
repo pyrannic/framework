@@ -1,0 +1,84 @@
+name: Build and Deploy the Documentation Site
+
+on:
+  push:
+    branches: [ main, docs ]  # only run this workflow when changes are pushed to the main or docs branches
+    # Specify paths so that docs deploy doesn't run on app code changes, only docs changes
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/deploy-docs.yaml'  # so edits to this file trigger too 
+  workflow_dispatch: # allows me to trigger a manual deploy from the Actions tab; no config needed so it looks empty
+
+permissions:
+  contents: read   # needed so the workflow can read the repo contents
+  pages: write     # needed so the workflow can publish to GitHub Pages
+  id-token: write  # required for GitHub's newer Pages system (uses OIDC tokens instead of pushing to a gh-pages branch)
+
+concurrency:
+  group: "pages"             # treat all Pages deploy runs as one queue
+  cancel-in-progress: true   # auto-cancel older runs if a newer one starts
+
+jobs:
+  # First job: build the MkDocs site
+  build:   
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5 # pulls the repo code onto the VM so later steps can actually see the `docs/` folder and `mkdocs.yaml`
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6  # enables GitHub Pages and configures the deployment source to use GitHub Actions
+
+      - name: Set up Python
+        uses: actions/setup-python@v6  # install Python into the VM
+        with:
+          python-version: "3.x"  # grab the latest Python 3 version
+
+      - name: Cache pip
+        uses: actions/cache@v5  # cache installed Python packages between workflow runs
+        with:
+          path: ~/.cache/pip  # where pip keeps downloaded packages
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}  # cache key: OS + hash of requirements.txt (so cache refreshes if deps change)
+          restore-keys: | # fallback: reuse latest cache for this OS  # allows multiple fallback keys (one per line)
+            ${{ runner.os }}-pip- 
+          # here we only use one fallback: "any pip cache for this OS"
+          # if we wanted more, we could add extra lines
+
+      - name: Install dependencies
+        # run these shell commands on the VM
+        # `pip install --upgrade pip` will upgrade pip itself
+        # `pip install mkdocs-material pymdown-extensions` installs MkDocs + theme + extensions
+        run: |
+          pip install --upgrade pip
+          pip install mkdocs-material pymdown-extensions
+
+      - name: Build site 
+        # runs `mkdocs build` to turn your `docs/` into a static site in the `site/` folder.
+        # --strict makes the build fail on config errors or bad links (useful to catch mistakes early)
+        run: mkdocs build --strict
+
+      - name: Upload artifact
+        # Upload the built site as an artifact:
+        # Takes the ./site folder that MkDocs produced and packages it as a Pages artifact.
+        # This artifact is what the next job ("deploy") will publish to GitHub Pages.
+        uses: actions/upload-pages-artifact@v5 # package the built site for Pages
+        with:
+          path: ./site # folder created by `mkdocs build`
+
+  # Second job: publish the built site to GitHub Pages
+  deploy:
+    needs: build # wait for the build job to succeed
+    runs-on: ubuntu-latest # run on a clean Ubuntu runner
+    environment: # Ties this job to the special github-pages environment
+      name: github-pages  # required for Pages deployments
+      url: ${{ steps.deployment.outputs.page_url }} # show the deployed URL in the UI
+
+    steps:
+      - name: Deploy to GitHub Pages
+        # Picks up the Pages artifact from the previous job and publishes it to GitHub Pages.
+        # Uses the OIDC auth we enabled with `id-token: write`.
+        # No extra inputs needed—the upload action already named the artifact correctly.
+        id: deployment # lets us reference steps.deployment.outputs.page_url earlier to show the final URL in the UI
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,6 @@
+from pyranninc.contracts import ConfigRepositoryInterface
+
+
+class ConfigRepository(ConfigRepositoryInterface):
+    ...
+    ...
