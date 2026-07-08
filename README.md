@@ -19,4 +19,4 @@ The Pyrannic framework is extensively detailed, offering a highly comprehensive 
 
 ## License
 
-The Pyrannic framework is open-sourced software licensed under the [MIT license](LICENSE.md).
+The Pyrannic framework is open-sourced software licensed under the [MIT license](https://github.com/pyrannic/framework/blob/main/LICENSE).
