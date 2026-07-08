@@ -7,12 +7,40 @@ dynamic = ["version"]
 name = "pyrannic"
 description = "An opinionated web application framework built over the shoulders of FastAPI, Pydantic and SQLAlchemy."
 authors = [
-    { name = "David Arias Vázquez", email = "dav.surf@gmail.com" }
+    { name = "David Arias Vázquez", email = "dav.surf@gmail.com" },
 ]
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development",
+    "Typing :: Typed",
+    "Environment :: Web Environment",
+    "Framework :: AsyncIO",
+    "Framework :: FastAPI",
+    "Framework :: Pydantic",
+    "Framework :: Pydantic :: 2",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Internet :: WWW/HTTP",
+]
 dependencies = [
     "alembic>=1.18.4",
     "fastapi[standard-no-fastapi-cloud-cli]>=0.136.1",
@@ -53,4 +81,3 @@ Homepage = "https://pyrannic.github.io/framework"
 Documentation = "https://pyrannic.github.io/framework"
 Repository = "https://github.com/pyrannic/framework"
 Issues = "https://github.com/pyrannic/framework/issues"
-Changelog = "https://pyrannic.github.io/framework/release-notes"
