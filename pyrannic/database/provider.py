@@ -14,6 +14,10 @@ class DatabaseServiceProvider(ServiceProvider):
         DatabaseManagerInterface: DatabaseManager,
     }
 
+    @property
+    def is_critical(self) -> bool:
+        return True
+
     async def boot(self, manager: Annotated[DatabaseManagerInterface, Resolves()]):
         await manager.migrate()
 

@@ -15,6 +15,10 @@ class MockDatabaseServiceProvider(DatabaseServiceProvider):
         self.mock = Mock(spec=self)
         self.mock.container = self.container
 
+    @property
+    def is_critical(self) -> bool:
+        return False
+
     def register(self) -> None:
         self.mock.register()
         self.container.instance(self.__class__.__name__, self.mock)
