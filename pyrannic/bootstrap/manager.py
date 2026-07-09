@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from logging import Logger
 import os
-from typing import AsyncGenerator, Self, Sequence, Type
+from typing import AsyncGenerator, Self, Type
 
 from dotenv import load_dotenv
 
@@ -44,6 +44,7 @@ class BootstrapManager:
         for provider_class in services:
             provider_class(app).register()
 
+        self._logger = app.container.instance(Logger)
         self._critical_services_started = True
 
         return self
@@ -58,7 +59,6 @@ class BootstrapManager:
 
         self._service_provider_classes = self._discover_service_providers(app)
         self._running = True
-        self._logger = app.container.instance(Logger)
         self._logger.info("🕒 Initializing application...")
 
         for ProviderClass in self._service_provider_classes:
