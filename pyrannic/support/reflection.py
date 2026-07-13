@@ -2,12 +2,33 @@ from abc import ABC
 from collections.abc import Callable
 import importlib
 from inspect import getmembers, isclass, isabstract, isfunction
-from types import ModuleType, get_original_bases
-from typing import Any, get_origin
+from types import ModuleType, UnionType, get_original_bases
+from typing import Any, Union, get_origin, get_type_hints
 
 from pydantic._internal._generics import get_args
 
 from pyrannic.support.string import to_pascal_case
+
+
+def is_optional(cls: type, property: str) -> bool:
+    """
+    Check if a property is optional in a class.
+    If the property is not defined, we consider it optional by default.
+    """
+
+    property_hints = get_type_hints(cls).get(property, None)
+
+    # If the property is not defined, we consider it optional by default.
+    if property_hints is None:
+        return True
+
+    origin = get_origin(property_hints)
+    is_optional = False
+
+    if origin is Union or origin is UnionType:
+        is_optional = type(None) in get_args(property_hints)
+
+    return is_optional
 
 
 def is_interface(cls: object) -> bool:
