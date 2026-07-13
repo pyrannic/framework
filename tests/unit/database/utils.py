@@ -17,7 +17,8 @@ class MockDatabaseServiceProvider(DatabaseServiceProvider):
 
     @property
     def is_critical(self) -> bool:
-        return False
+        self.mock.is_critical()
+        return not super().is_critical
 
     def register(self) -> None:
         self.mock.register()

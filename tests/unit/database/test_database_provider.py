@@ -48,6 +48,7 @@ async def test_boot_called():
 
     async with bootstrap_manager.lifespan(application):
         mock.initialize.assert_called_once()
+        mock.is_critical.assert_called()
         mock.boot.assert_called_once_with(manager)
         mock.failed.assert_not_called()
 

@@ -14,9 +14,11 @@ class LoggingServiceProvider(InstanceServiceProvider[Logger]):
         logger = logging.getLogger(Config.string("logging.name", "uvicorn.error"))
         logger.setLevel(Config.integer("logging.level", logging.DEBUG))
 
-        if not logger.hasHandlers():
-            handlers = Config.list("logging.handlers", [logging.StreamHandler()])
-            for handler in handlers:
-                logger.addHandler(handler)
+        handlers = Config.list(
+            "logging.handlers",
+            [logging.StreamHandler()] if not logger.hasHandlers() else [],
+        )
+        for handler in handlers:
+            logger.addHandler(handler)
 
         return logger
