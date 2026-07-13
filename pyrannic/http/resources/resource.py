@@ -1,4 +1,4 @@
-from typing import Any, Self
+from typing import Any, Self, cast
 
 from pydantic import PrivateAttr
 
@@ -16,6 +16,10 @@ class Resource(ResourceInterface):
         with_relationships: bool | list[str] = True,
     ) -> Self:
         cls._with_relationships = with_relationships
+
+        if isinstance(model, ResourceInterface):
+            return cast(Self, model)
+
         return cls.model_validate(cls.model_to_dict(model))
 
     @classmethod

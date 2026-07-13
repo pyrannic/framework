@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -34,6 +35,36 @@ def index(
         # bar.foo.get_app_name(),
     )
     return HeroesCollection(repository.where(HeroModel.name.like("%man%")).paginate())
+
+
+@router.get(
+    "/heroes_empty_collection",
+    summary="Heroes Empty Collection Endpoint",
+    description="Endpoint to retrieve an empty collection of heroes.",
+)
+def empty_collection() -> HeroesCollection:
+    return HeroesCollection([])
+
+
+@router.get(
+    "/heroes_static_collection",
+    summary="Heroes Static Collection Endpoint",
+    description="Endpoint to retrieve a static collection of heroes.",
+)
+def static_collection() -> HeroesCollection:
+    now = datetime.now()
+
+    return HeroesCollection(
+        [
+            Hero(
+                id="superman",
+                name="Superman",
+                description="The Man of Steel",
+                created_at=now,
+                updated_at=now,
+            )
+        ]
+    )
 
 
 @router.get(

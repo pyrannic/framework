@@ -8,6 +8,8 @@ from tests.unit.http.resources.utils import (
     FooCollection,
     FooResource,
     FooModel,
+    OptionalMetaCollection,
+    RequiredMetaCollection,
 )
 
 
@@ -101,3 +103,32 @@ def test_collection__init_with_paginator():
     assert isinstance(collection.data[0], FooResource)
     assert collection.__resource_cls__ is FooResource
     assert collection.__meta_cls__ is not None
+
+
+def test_collection__exception_required_meta():
+    with pytest.raises(RuntimeError) as exc_info:
+        RequiredMetaCollection([])
+
+    error = str(exc_info.value)
+    assert (
+        "The 'meta' attribute is defined as required in your ResourceCollection subclass"
+        in error
+    )
+
+
+def test_collection__serialize_empty_data():
+    collection = FooCollection([])
+    assert collection.model_dump() == {"data": []}
+
+
+def test_collection__serialize_optional_meta():
+    collection = OptionalMetaCollection([])
+    assert "meta" not in collection.model_dump()
+
+
+def test_collection__serialize_with_meta():
+    paginator = Paginator[FooModel]([])
+    collection = RequiredMetaCollection(paginator)
+
+    assert "data" in collection.model_dump()
+    assert "meta" in collection.model_dump()

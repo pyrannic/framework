@@ -82,6 +82,27 @@ def test_resource__from_model():
     }
 
 
+def test_resource__from_model_with_resource_instance():
+    created_at = datetime(2026, 1, 1)
+
+    resource_instance = FooResource(
+        id=1,
+        name="Test Resource",
+        created_at=created_at,
+        updated_at=created_at,
+    )
+
+    resource = FooResource.from_model(resource_instance)
+
+    assert resource.to_dict() == {
+        "id": 1,
+        "name": "Test Resource",
+        "created_at": created_at,
+        "updated_at": created_at,
+        "deleted_at": None,
+    }
+
+
 def test_resource__model_to_dict():
     created_at = datetime(2026, 1, 1)
 

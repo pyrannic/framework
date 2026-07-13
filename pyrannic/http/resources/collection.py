@@ -1,6 +1,6 @@
 from typing import Any, Generic, Sequence, TypeAlias, TypeVar, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_serializer
 
 from pyrannic.contracts.http.resources.collection import (
     ResourceCollectionInterface,
@@ -9,7 +9,7 @@ from pyrannic.contracts.http.resources.resource import ResourceInterface
 from pyrannic.contracts.pagination.paginator import PaginatorInterface
 from pyrannic.contracts.support.serializable import SerializableInterface
 from pyrannic.pagination.meta import PaginationMeta
-from pyrannic.support.reflection import get_generic_type
+from pyrannic.support.reflection import get_generic_type, is_optional
 
 ResourceType = TypeVar("ResourceType", covariant=True, bound=ResourceInterface)
 
@@ -49,14 +49,31 @@ class BaseCollection(BaseModel, _ResourceCollection[ResourceType]):
                 ],
                 meta=data.meta(self.__meta_cls__),
             )
-        elif len(data) == 0 or isinstance(data[0], dict):
-            super().__init__(data=data or [], **kwargs)
         else:
-            super().__init__(
-                data=[
+            if not is_optional(self.__class__, "meta"):
+                raise RuntimeError(
+                    "\n\n"
+                    "   The 'meta' attribute is defined as required in your ResourceCollection subclass.\n"
+                    "   To fix this exception you have three options:\n"
+                    "    1. Instead of providing your items collection as a list, use a PaginatorInterface to provide the items.\n"
+                    "    2. Make the 'meta' attribute optional in your ResourceCollection subclass. E.g.:\n"
+                    "       class MyResourceCollection(ResourceCollection[MyResource]):\n"
+                    "           meta: Optional[PaginationMeta] # or meta: PaginationMeta | None\n"
+                    "    3. Remove the 'meta' attribute from your ResourceCollection subclass if it's not needed.\n"
+                    "\n\n"
+                )
+
+            if len(data) == 0 or isinstance(data[0], dict):
+                items = data or []
+            else:
+                items = [
                     self.__resource_cls__.from_model(model, with_relationships)
                     for model in data
-                ],
+                ]
+
+            super().__init__(
+                data=items,
+                meta=None,
                 **kwargs,
             )
 
@@ -65,3 +82,8 @@ class ResourceCollection(BaseCollection[ResourceType]):
     def __init__(self, items: ItemsType[ResourceType], /, **kwargs: Any) -> None:
         kwargs["data"] = items
         super().__init__(**kwargs)
+
+    @model_serializer
+    def _serialize(self):
+        omit_if_none_fields = ["meta"]
+        return {k: v for k, v in self if k not in omit_if_none_fields or v is not None}

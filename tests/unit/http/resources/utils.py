@@ -6,6 +6,7 @@ from pyrannic.http.resources.collection import ItemsType, ResourceCollection
 from pyrannic.http.resources.mixins.has_timestamps import HasTimestamp, HasTimestamps
 from pyrannic.http.resources.mixins.soft_deletes import SoftDeletes
 from pyrannic.http.resources.resource import Resource
+from pyrannic.pagination.meta import PaginationMeta
 
 
 class HasTimestampResource(Resource, HasTimestamp):
@@ -80,5 +81,21 @@ class FooCollection(ResourceCollection[FooResource]):
 
 
 class BarCollection(ResourceCollection[FooResource]):
+    def __init__(self, items: ItemsType[FooResource], /, **kwargs: Any) -> None:
+        super().__init__(items, **kwargs)
+
+
+class RequiredMetaCollection(ResourceCollection[FooResource]):
+    __resource_cls__ = FooResource
+    meta: PaginationMeta
+
+    def __init__(self, items: ItemsType[FooResource], /, **kwargs: Any) -> None:
+        super().__init__(items, **kwargs)
+
+
+class OptionalMetaCollection(ResourceCollection[FooResource]):
+    __resource_cls__ = FooResource
+    meta: PaginationMeta | None
+
     def __init__(self, items: ItemsType[FooResource], /, **kwargs: Any) -> None:
         super().__init__(items, **kwargs)
