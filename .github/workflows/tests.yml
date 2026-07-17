@@ -39,7 +39,7 @@ jobs:
       run: python -m pip install --user pdm
 
     - name: Install Dependencies
-      run: pdm install
+      run: pdm install -G dev
 
     - name: Test with pytest
       run: pytest --cov=pyrannic --cov-config=pyproject.toml --cov-report=xml tests
