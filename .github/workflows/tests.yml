@@ -42,4 +42,4 @@ jobs:
       run: pdm install -G dev
 
     - name: Test with pytest
-      run: pytest --cov=pyrannic --cov-config=pyproject.toml --cov-report=xml tests
+      run: pdm run pytest --cov=pyrannic --cov-config=pyproject.toml --cov-report=xml tests
