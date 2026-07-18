@@ -1,9 +1,0 @@
-name: "CodeQL Config"
-
-paths:
-  - pyrannic
-  - tests
-
-paths-ignore:
-  - docs
-  - docs_src
