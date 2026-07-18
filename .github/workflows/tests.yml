@@ -62,14 +62,6 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests,python-${{ matrix.python-version }}
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v4
-      with:
-        config: |
-          paths:
-            - pyrannic
-            - tests
-
     - name: Upload coverage report to GitHub Code Quality
       if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
       uses: actions/upload-code-coverage@v1
