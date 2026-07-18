@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import asyncio
-from typing import Annotated, Generator
+from typing import Generator
 
-from fastapi import Depends, Query, Request
+from fastapi import Request
 import pytest
 
 from pyrannic.container.decorators import scoped, singleton

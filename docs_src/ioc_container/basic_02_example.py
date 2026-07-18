@@ -1,10 +1,8 @@
-from typing import Annotated
-
 from fastapi import APIRouter
 
 from pyrannic.ioc import Resolve
-from src.app.http.resources.hero import HeroesCollection
-from src.app.services.heroes import HeroesServiceInterface
+from app.http.resources.hero import HeroesCollection
+from app.services.heroes import HeroesServiceInterface
 
 router = APIRouter(tags=["Heroes"])
 
