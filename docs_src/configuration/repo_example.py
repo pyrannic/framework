@@ -4,6 +4,6 @@ from pyrannic.contracts import ConfigRepositoryInterface
 
 
 def resolver(config_repository: Annotated[ConfigRepositoryInterface, Resolves()]):
-    value = config_repository.get("app.debug")
+    unused_value = config_repository.get("app.debug")
     ...
     ...
