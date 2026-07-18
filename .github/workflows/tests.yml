@@ -43,14 +43,18 @@ jobs:
       run: pdm install -G dev
 
     - name: Test with pytest
-      run: pdm run pytest --cov=pyrannic --cov-config=pyproject.toml --cov-report=xml tests
+      run: pdm run pytest --cov=pyrannic --cov-config=pyproject.toml --cov-report=xml --junitxml=junit.xml -o junit_family=legacy tests
+
+    - name: Upload test results to Codecov
+      if: ${{ !cancelled() }}
+      uses: codecov/test-results-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload coverage report to Codecov
       uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: coverage.xml
-        flags: unittests
 
     - name: Upload coverage report to GitHub Quality
       if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
