@@ -1,6 +1,6 @@
 <div align="center">
 
-![Github Actions](https://github.com/pyrannic/framework/workflows/Tests/badge.svg)
+[![Github Actions](https://github.com/pyrannic/framework/workflows/Tests/badge.svg)](https://github.com/pyrannic/framework/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/github/pyrannic/framework/graph/badge.svg?token=VXO67B8LD0)](https://codecov.io/github/pyrannic/framework)
 [![PyPI](https://img.shields.io/pypi/v/pyrannic?logo=python&logoColor=%23cccccc)](https://pypi.org/project/pdm)
 [![License](https://img.shields.io/pypi/l/pyrannic)](https://github.com/pyrannic/framework/blob/main/LICENSE)
