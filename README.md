@@ -1,10 +1,10 @@
 <div align="center">
 
 [![Github Actions](https://github.com/pyrannic/framework/workflows/Tests/badge.svg)](https://github.com/pyrannic/framework/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/github/pyrannic/framework/graph/badge.svg?token=VXO67B8LD0)](https://codecov.io/github/pyrannic/framework)
-[![PyPI](https://img.shields.io/pypi/v/pyrannic?logo=python&logoColor=%234B8BBE)](https://pypi.org/project/pyrannic)
-[![License](https://img.shields.io/pypi/l/pyrannic)](https://github.com/pyrannic/framework/blob/main/LICENSE)
-[![Supported Python Versions](https://img.shields.io/pypi/pyversions/pyrannic.svg?color=%23306998)](https://pypi.org/project/pyrannic)
+[![Coverage](https://img.shields.io/codecov/c/github/pyrannic/framework?label=Coverage&logo=codecov)](https://codecov.io/github/pyrannic/framework)
+[![PyPI](https://img.shields.io/pypi/v/pyrannic?logo=python&logoColor=4B8BBE)](https://pypi.org/project/pyrannic)
+[![License](https://img.shields.io/pypi/l/pyrannic?label=License)](https://github.com/pyrannic/framework/blob/main/LICENSE)
+[![Supported Python Versions](https://img.shields.io/pypi/pyversions/pyrannic.svg?label=Python&color=3776AB)](https://pypi.org/project/pyrannic)
 
 </div>
 
