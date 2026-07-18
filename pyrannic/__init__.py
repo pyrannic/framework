@@ -1,4 +1,4 @@
-__version__ = "0.5.5"
+__version__ = "0.5.6"
 
 from .application import Application as Application
 from .bootstrap.service_provider import ServiceProvider as ServiceProvider
