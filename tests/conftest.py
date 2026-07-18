@@ -37,8 +37,10 @@ def _create_database():
     Create a temporary sqlite database for testing purposes.
     """
     try:
-        open("tests/application/database/database.sqlite", "x")
-    except Exception:
+        file = open("tests/application/database/database.sqlite", "x")
+        file.close()
+    except FileExistsError:
+        # If the file already exists, we don't need to create it again.
         pass
 
 
@@ -48,5 +50,6 @@ def _delete_database():
     """
     try:
         os.remove("tests/application/database/database.sqlite")
-    except Exception:
+    except FileNotFoundError:
+        # If the file does not exist, we don't need to delete it.
         pass
