@@ -43,3 +43,18 @@ jobs:
 
     - name: Test with pytest
       run: pdm run pytest --cov=pyrannic --cov-config=pyproject.toml --cov-report=xml tests
+
+    - name: Upload coverage report to Codecov
+      uses: codecov/codecov-action@v7
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: coverage.xml
+        flags: unittests
+
+    - name: Upload coverage report to GitHub Quality
+      if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+      uses: actions/upload-code-coverage@v1
+      with:
+        file: coverage.xml
+        language: Python
+        label: code-coverage/pytest
