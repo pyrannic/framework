@@ -1,3 +1,13 @@
+<div align="center">
+
+![Github Actions](https://github.com/pyrannic/framework/workflows/Tests/badge.svg)
+[![codecov](https://codecov.io/github/pyrannic/framework/graph/badge.svg?token=VXO67B8LD0)](https://codecov.io/github/pyrannic/framework)
+[![PyPI](https://img.shields.io/pypi/v/pyrannic?logo=python&logoColor=%23cccccc)](https://pypi.org/project/pdm)
+[![License](https://img.shields.io/pypi/l/pyrannic)](https://github.com/pyrannic/framework/blob/main/LICENSE)
+[![Supported Python Versions](https://img.shields.io/pypi/pyversions/pyrannic.svg?color=%23306998)](https://pypi.org/project/pyrannic)
+
+</div>
+
 ## About Pyrannic
 
 > **Note:** This repository contains the core code of the Pyrannic framework. If you want to build an application using Pyrannic, visit the [application repository](https://github.com/pyrannic/application).
