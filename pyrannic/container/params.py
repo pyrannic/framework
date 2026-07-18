@@ -25,7 +25,8 @@ class Resolves(Depends):
 
         super().__init__(dependency=dependency, use_cache=use_cache, scope=scope)
 
-    def wrap_dependency(self, abstract: str | type) -> Callable[..., Any]:
+    @classmethod
+    def wrap_dependency(cls, abstract: str | type) -> Callable[..., Any]:
         async def dependency(request: RequestInterface) -> Any:
             return cast(Any, await request.app.container.resolve(abstract, request))
 
@@ -41,7 +42,8 @@ class Singleton(Resolves):
     ):
         super().__init__(dependency=dependency, use_cache=use_cache, scope=scope)
 
-    def wrap_dependency(self, abstract: str | type) -> Callable[..., Any]:
+    @classmethod
+    def wrap_dependency(cls, abstract: str | type) -> Callable[..., Any]:
         if not isinstance(abstract, str):
             abstract = cast(type, singleton(abstract))
 
@@ -57,7 +59,8 @@ class Scoped(Resolves):
     ):
         super().__init__(dependency=dependency, use_cache=use_cache, scope=scope)
 
-    def wrap_dependency(self, abstract: str | type) -> Callable[..., Any]:
+    @classmethod
+    def wrap_dependency(cls, abstract: str | type) -> Callable[..., Any]:
         if not isinstance(abstract, str):
             abstract = cast(type, scoped(abstract))
 
