@@ -28,10 +28,6 @@ jobs:
       PYTHON: ${{ matrix.python-version }}
 
     steps:
-      - uses: github/codeql-action/init@v4
-        with:
-          config-file: .github/codeql/config.yml
-
       - uses: actions/checkout@v7
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
