@@ -95,10 +95,22 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
         return self
 
     @overload
-    def where(self, *where_clause: ColumnExpressionArgument[Any]) -> Self: ...
+    def where(self, *where_clause: ColumnExpressionArgument[Any]) -> Self:
+        """
+        Apply a WHERE clause to the query using SQLAlchemy expressions.
+
+        :param where_clause: SQLAlchemy expressions for filtering.
+        :return: The current instance of the query builder.
+        """
 
     @overload
-    def where(self, **kwargs: Any) -> Self: ...
+    def where(self, **kwargs: Any) -> Self:
+        """
+        Apply a WHERE clause to the query using keyword arguments.
+
+        :param kwargs: Column-value pairs for filtering.
+        :return: The current instance of the query builder.
+        """
 
     def where(
         self,
