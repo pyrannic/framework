@@ -20,45 +20,47 @@ class classproperty(object):
 
 class Inspectionable(DeclarativeBase):
     @classproperty
-    def properties(cls) -> list[str]:
-        return [item[0] for item in vars(cls).items() if isinstance(item[1], property)]
+    def properties(self) -> list[str]:
+        return [item[0] for item in vars(self).items() if isinstance(item[1], property)]
 
     @classproperty
-    def columns(cls) -> list[str]:
-        return inspect(cls).columns.keys()  # type: ignore
+    def columns(self) -> list[str]:
+        return inspect(self).columns.keys()  # type: ignore
 
     @classproperty
-    def primary_keys_full(cls) -> list[MapperProperty[Any]]:
+    def primary_keys_full(self) -> list[MapperProperty[Any]]:
         """Get primary key properties for a SQLAlchemy cls.
         Taken from marshmallow_sqlalchemy
         """
-        mapper = cls.__mapper__
+        mapper = self.__mapper__
         return [mapper.get_property_by_column(column) for column in mapper.primary_key]
 
     @classproperty
-    def primary_keys(cls):
-        return [pk.key for pk in cls.primary_keys_full]
+    def primary_keys(self):
+        return [pk.key for pk in self.primary_keys_full]
 
     @classproperty
-    def relations(cls):
+    def relations(self) -> list[str]:
         """Return a `list` of relationship names or the given model"""
         return [
-            c.key for c in cls.__mapper__.attrs if isinstance(c, RelationshipProperty)
+            c.key for c in self.__mapper__.attrs if isinstance(c, RelationshipProperty)
         ]
 
     @classproperty
-    def settable_relations(cls):
+    def settable_relations(self):
         """Return a `list` of relationship names or the given model"""
-        return [r for r in cls.relations if getattr(cls, r).property.viewonly is False]
+        return [
+            r for r in self.relations if getattr(self, r).property.viewonly is False
+        ]
 
     @classproperty
-    def hybrid_properties(cls):
-        items = inspect(cls).all_orm_descriptors  # type: ignore
+    def hybrid_properties(self):
+        items = inspect(self).all_orm_descriptors  # type: ignore
         return [item.__name__ for item in items if isinstance(item, hybrid_property)]  # type: ignore
 
     @classproperty
-    def hybrid_methods_full(cls):
-        items = inspect(cls).all_orm_descriptors  # type: ignore
+    def hybrid_methods_full(self):
+        items = inspect(self).all_orm_descriptors  # type: ignore
 
         return {
             item.func.__name__: item
@@ -67,5 +69,5 @@ class Inspectionable(DeclarativeBase):
         }
 
     @classproperty
-    def hybrid_methods(cls):
-        return list(cls.hybrid_methods_full.keys())
+    def hybrid_methods(self):
+        return list(self.hybrid_methods_full.keys())

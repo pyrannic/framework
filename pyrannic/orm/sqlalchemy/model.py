@@ -20,8 +20,8 @@ class Model(BaseModel, AbstractModel, Serializable):
         self.__post_init__(**kwargs)
 
     @declared_attr.directive
-    def __tablename__(cls) -> str:
-        return cls.tablename()
+    def __tablename__(self) -> str:
+        return self.tablename()
 
     @classmethod
     def primary_key_column(cls) -> ColumnExpressionArgument[Any]:
