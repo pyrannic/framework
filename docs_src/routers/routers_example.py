@@ -8,3 +8,5 @@ routers: list[APIRouter] = [
     villains_router,
     heroes_router,
 ]
+
+__all__ = ["routers"]

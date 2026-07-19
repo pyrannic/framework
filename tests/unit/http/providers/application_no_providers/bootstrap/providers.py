@@ -9,3 +9,5 @@ providers: list[type[ServiceProvider]] = [
     AppServiceProvider,
     DatabaseServiceProvider,
 ]
+
+__all__ = ["providers"]

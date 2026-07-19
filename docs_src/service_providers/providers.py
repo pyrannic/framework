@@ -17,3 +17,5 @@ providers: list[Type[ServiceProvider]] = [
     RoutersServiceProvider,
     MiddlewaresServiceProvider,
 ]
+
+__all__ = ["providers"]

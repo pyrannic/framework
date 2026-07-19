@@ -10,3 +10,5 @@ middlewares: list[object] = [
     B_Middleware,
     add_process_time_header,
 ]
+
+__all__ = ["middlewares"]

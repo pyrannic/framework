@@ -10,3 +10,5 @@ middlewares: list[object] = [
     C_Middleware,
     A_Middleware,
 ]
+
+__all__ = ["middlewares"]

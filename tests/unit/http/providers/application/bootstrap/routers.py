@@ -10,3 +10,5 @@ routers: list[APIRouter] = [
     container_router,
     heroes_router,
 ]
+
+__all__ = ["routers"]
