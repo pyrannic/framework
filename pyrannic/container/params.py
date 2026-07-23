@@ -4,8 +4,8 @@ from typing import Any, Literal, cast, get_origin
 
 from fastapi.params import Depends
 
-from pyrannic.container.decorators.singleton import singleton
 from pyrannic.container.decorators.scoped import scoped
+from pyrannic.container.decorators.singleton import singleton
 from pyrannic.contracts.http.request import RequestInterface
 
 
@@ -28,7 +28,9 @@ class Resolves(Depends):
     @classmethod
     def wrap_dependency(cls, abstract: str | type) -> Callable[..., Any]:
         async def dependency(request: RequestInterface) -> Any:
-            return cast(Any, await request.app.container.resolve(abstract, request))
+            return cast(
+                Any, await request.app.container.resolve(abstract, request=request)
+            )
 
         return dependency
 

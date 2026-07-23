@@ -1,11 +1,17 @@
+import inspect
 from collections.abc import Callable
 from contextlib import AsyncExitStack
-import inspect
 from types import FunctionType
 from typing import Any, Awaitable, TypeVar, cast, get_args, get_origin
 
 from fastapi import Request
 from fastapi.concurrency import run_in_threadpool
+from fastapi.dependencies.models import Dependant
+from fastapi.dependencies.utils import (
+    SolvedDependency,
+    get_dependant,
+    solve_dependencies,
+)
 from fastapi.exceptions import RequestValidationError
 from fastapi.types import DependencyCacheKey
 
@@ -16,13 +22,6 @@ from pyrannic.contracts.container.contextual_binding_builder import (
     ContextualBindingBuilderInterface,
 )
 from pyrannic.support.reflection import is_interface
-
-from fastapi.dependencies.utils import (
-    get_dependant,
-    solve_dependencies,
-    SolvedDependency,
-)
-from fastapi.dependencies.models import Dependant
 
 T = TypeVar("T")
 
@@ -200,10 +199,21 @@ class Container(ContainerInterface):
             or self.is_alias(abstract)
         )
 
+    async def make(
+        self,
+        abstract: str | type[T],
+        *args: Any,
+        request: Request | None = None,
+        **kwargs: Any,
+    ) -> T:
+        return await self.resolve(abstract, *args, request=request, **kwargs)
+
     async def resolve(
         self,
         abstract: str | type[T],
+        *args: Any,
         request: Request | None = None,
+        **kwargs: Any,
     ) -> T:
         binding_key = self.get_alias(abstract)
         concrete = self._get_contextual_concrete(binding_key)
@@ -218,7 +228,7 @@ class Container(ContainerInterface):
             if not concrete:
                 concrete = self._get_concrete(abstract)
 
-            instance = concrete(self._app, request)
+            instance = concrete(self._app, request, *args, **kwargs)
 
             if inspect.isawaitable(instance):
                 instance = await instance
@@ -291,8 +301,13 @@ class Container(ContainerInterface):
 
         return concrete
 
-    async def call(self, callback: type[T] | Callable[..., Any]) -> T:
-        return await self._resolve(callback, self._app)
+    async def call(
+        self,
+        callback: type[T] | Callable[..., Any],
+        *args: Any,
+        **kwargs: Any,
+    ) -> T:
+        return await self._resolve(callback, self._app, *args, **kwargs)
 
     def resolved(self, abstract: str | type[T]) -> bool:
         abstract = self.get_alias(abstract)
@@ -350,13 +365,25 @@ class Container(ContainerInterface):
         self,
         concrete: type[T],
     ) -> Callable[[ApplicationInterface, Request], Awaitable[T]]:
-        async def closure(app: ApplicationInterface, request: Request) -> T:
+        async def closure(
+            app: ApplicationInterface,
+            request: Request,
+            *args: Any,
+            **kwargs: Any,
+        ) -> T:
             origin = get_origin(concrete)
 
             if origin is not None and inspect.isclass(origin):
-                return await self._resolve_generic(concrete, origin, app, request)
+                return await self._resolve_generic(
+                    concrete,
+                    origin,
+                    app,
+                    request,
+                    *args,
+                    **kwargs,
+                )
 
-            return await self._resolve(concrete, app, request)
+            return await self._resolve(concrete, app, request, *args, **kwargs)
 
         return closure
 
@@ -380,12 +407,14 @@ class Container(ContainerInterface):
         origin: type[T],
         app: ApplicationInterface,
         request: Request | None = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> T:
         # Add the __orig_class__ attribute to the origin class so that we can retrieve the generic type later.
         # For example, if we have a generic class Repository[Model], we can retrieve the Model type later by accessing the __orig_class__ attribute.
         # This is necessary because FastAPI's dependency injection system does not support generic types out of the box.
         setattr(origin, "__orig_class__", generic)
-        instance = await self._resolve(origin, app, request)
+        instance = await self._resolve(origin, app, request, *args, **kwargs)
 
         try:
             setattr(instance, "__orig_class__", generic)
@@ -399,25 +428,31 @@ class Container(ContainerInterface):
         callback: type[T] | Callable[..., Any],
         app: ApplicationInterface,
         request: Request | None = None,
+        *args: Any,
         **kwargs: Any,
     ) -> T:
         dependant = get_dependant(path="/", call=callback, scope="function")
 
         if not request:
             async with AsyncExitStack() as context_manager:
-                dependencies = await self._solve_dependencies(
-                    self._fallback_request(app, context_manager),
-                    dependant,
-                )
+                request = self._fallback_request(app, context_manager)
+                dependencies = await self._solve_dependencies(request, dependant)
 
                 return await self._resolve_dependant(
                     dependant,
                     dependencies,
+                    *args,
                     **kwargs,
                 )
         else:
             dependencies = await self._solve_dependencies(request, dependant)
-            return await self._resolve_dependant(dependant, dependencies, **kwargs)
+
+            return await self._resolve_dependant(
+                dependant,
+                dependencies,
+                *args,
+                **kwargs,
+            )
 
     # https://stackoverflow.com/a/78279023
     # https://github.com/fastapi/fastapi/discussions/7720
@@ -425,37 +460,53 @@ class Container(ContainerInterface):
         self,
         dependant: Dependant,
         dependencies: SolvedDependency,
+        *args: Any,
         **kwargs: Any,
     ) -> Any:
         assert dependant.call  # For types
 
-        errors = self._validate_errors(dependencies.errors)
+        errors = self._validate_errors(dependencies.errors, *args, **kwargs)
 
         if bool(errors):
             raise RequestValidationError(errors)
 
         if inspect.iscoroutinefunction(dependant.call):
-            result = await dependant.call(**dependencies.values, **kwargs)
+            result = await dependant.call(*args, **dependencies.values, **kwargs)
         else:
             result = await run_in_threadpool(
                 dependant.call,
+                *args,
                 **dependencies.values,
                 **kwargs,
             )
 
         return result
 
-    def _validate_errors(self, errors: list[Any]) -> list[Any]:
+    def _validate_errors(
+        self,
+        errors: list[Any],
+        *args: Any,
+        **kwargs: Any,
+    ) -> list[Any]:
         if not bool(errors):
             return []
 
+        error_counter = 0
         valid_errors: list[Any] = []
+        length = len(args)
 
         for error in errors:
             loc = error.get("loc", [])
+            attr = loc[-1] if loc else None
 
-            if "kwargs" not in loc and "args" not in loc:
+            if (
+                attr != "kwargs"
+                and attr != "args"
+                and attr not in kwargs
+                and length <= error_counter
+            ):
                 valid_errors.append(error)
+                error_counter += 1
 
         return valid_errors
 
