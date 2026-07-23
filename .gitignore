@@ -23,6 +23,7 @@ venv
 .venv
 .pdm-build
 build
+typings
 
 # vim temporary files
 *~
