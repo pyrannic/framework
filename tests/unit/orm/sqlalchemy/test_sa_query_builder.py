@@ -1,18 +1,17 @@
 import pytest
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
-from pyrannic import Config
 from pyrannic.contracts.application import ApplicationInterface
 from pyrannic.contracts.database.connector import ConnectorInterface
 from pyrannic.contracts.database.manager import DatabaseManagerInterface
 from pyrannic.database.manager import DatabaseManager
+from pyrannic.facades import Config
 from pyrannic.orm.sqlalchemy import (
-    Repository,
     AsyncRepository,
+    Repository,
     SqlAlchemyAsyncConnector,
 )
-
 from tests.unit.orm.sqlalchemy.utils import BarModel
 
 
