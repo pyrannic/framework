@@ -1,10 +1,11 @@
-from abc import ABC, abstractmethod
 import asyncio
-from typing import Generator
+from abc import ABC, abstractmethod
+from typing import Generator, Generic
 
-from fastapi import Request
 import pytest
+from fastapi import Request
 
+from pyrannic.container.container import T
 from pyrannic.container.decorators import scoped, singleton
 from pyrannic.contracts.application import ApplicationInterface
 from pyrannic.contracts.container.container import ContainerInterface
@@ -37,6 +38,23 @@ class BazService:
         self.foo_service = foo_service
 
 
+class BazServiceWithParams:
+    def __init__(
+        self, value1: str, value2: str, foo_service: Resolve[FooImplementation]
+    ):
+        self.value1 = value1
+        self.value2 = value2
+        self.foo_service = foo_service
+
+
+class FooModel:
+    pass
+
+
+class FooGeneric(Generic[T]):
+    pass
+
+
 @scoped
 class ScopedClass(FooInterface):
     def foo_method(self) -> str:
@@ -64,10 +82,7 @@ async def async_callable_with_dependencies(foo: Resolve[FooImplementation]) -> N
     assert foo.foo_method() == "FooImplementation"
 
 
-async def resolve_foo_interface(
-    app: ApplicationInterface,
-    request: Request,
-) -> FooInterface:
+async def resolve_foo_interface(_: ApplicationInterface, __: Request) -> FooInterface:
     await asyncio.sleep(0.1)  # Simulate async work
     return FooImplementation()
 
