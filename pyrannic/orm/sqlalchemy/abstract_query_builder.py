@@ -1,16 +1,9 @@
-from abc import abstractmethod
 import math
+from abc import abstractmethod
 from datetime import datetime
 from logging import Logger
 from typing import Any, Self, overload
 
-from pyrannic.contracts.orm.mixins.soft_deletes import SoftDeletesInterface
-from pyrannic.contracts.orm.query_builder import QueryBuilderInterface
-from pyrannic.contracts.orm.repository import T
-from pyrannic.contracts.orm.scope import ScopeInterface
-from pyrannic.orm.sqlalchemy.scopes.soft_deleting_scope import SoftDeletingScope
-from pyrannic.support.datetime import get_current_utc_datetime
-from pyrannic.support.reflection import get_generic_type
 from sqlalchemy import (
     ColumnExpressionArgument,
     CompoundSelect,
@@ -23,6 +16,14 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.orm import InstrumentedAttribute
+
+from pyrannic.contracts.orm.mixins.soft_deletes import SoftDeletesInterface
+from pyrannic.contracts.orm.query_builder import QueryBuilderInterface
+from pyrannic.contracts.orm.repository import T
+from pyrannic.contracts.orm.scope import ScopeInterface
+from pyrannic.orm.sqlalchemy.scopes.soft_deleting_scope import SoftDeletingScope
+from pyrannic.support.datetime import get_current_utc_datetime
+from pyrannic.support.reflection import get_generic_type
 
 
 class AbstractQueryBuilder(QueryBuilderInterface[T]):
@@ -133,20 +134,34 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
     def where_not_none(self, column_name: str) -> Self:
         return self.where(column(column_name).isnot(None))
 
-    def filter(self, *filters: ColumnExpressionArgument[Any] | None) -> Self:
-        self._prepare_query()
+    @overload
+    def filter(self, *filters: ColumnExpressionArgument[Any]) -> Self:
+        """
+        Apply filtering conditions to the query using SQLAlchemy expressions.
 
-        if isinstance(self._query, (Select, Delete)):
-            filters = tuple(v for v in filters if v is not None)
-            self._query = self._query.where(*filters)
+        :param filters: SQLAlchemy expressions for filtering.
+        :return: The current instance of the query builder.
+        """
 
-        return self
-
-    def filter_by(self, **kwargs: Any) -> Self:
+    @overload
+    def filter(self, **kwargs: Any) -> Self:
         self._prepare_query()
 
         if isinstance(self._query, (Select, Delete)):
             self._query = self._query.filter_by(**kwargs)
+
+        return self
+
+    def filter(self, *filters: ColumnExpressionArgument[Any], **kwargs: Any) -> Self:
+        self._prepare_query()
+
+        if isinstance(self._query, (Select, Delete)):
+            if filters:
+                filters = tuple(v for v in filters if v is not None)
+                self._query = self._query.where(*filters)
+            elif kwargs:
+                kwargs = {k: v for k, v in kwargs.items() if v is not None}
+                self._query = self._query.filter_by(**kwargs)
 
         return self
 
