@@ -1,11 +1,11 @@
 from typing import Any, Tuple, cast
 
+from sqlalchemy.sql.selectable import TypedReturnsRows
+
 from pyrannic.contracts.orm.repository import RepositoryInterface, T
 from pyrannic.contracts.pagination.paginator import PaginatorInterface
 from pyrannic.orm.sqlalchemy.query_builder import QueryBuilder
 from pyrannic.pagination.paginator import Paginator
-
-from sqlalchemy.sql.selectable import TypedReturnsRows
 
 
 class Repository(QueryBuilder[T], RepositoryInterface[T]):
@@ -64,6 +64,7 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
         return model
 
     def all(self) -> list[T]:
+        self._prepare_query()
         return self.get()
 
     def get(self) -> list[T]:
