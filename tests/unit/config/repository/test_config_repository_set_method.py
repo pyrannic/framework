@@ -1,4 +1,4 @@
-from pyrannic.contracts.config.respository import ConfigRepositoryInterface
+from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 
 
 def test_set_a_new_key(repository: ConfigRepositoryInterface):

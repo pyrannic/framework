@@ -1,4 +1,4 @@
-from pyrannic.contracts.config.respository import ConfigRepositoryInterface
+from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from pyrannic.support.facades.facade import facade
 
 
