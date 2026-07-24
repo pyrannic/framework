@@ -50,12 +50,14 @@ class QueryBuilderInterface(ABC, Generic[T]):
     def where_not_none(self, column_name: str) -> Self:
         """Add a where condition to check if the column is not None."""
 
+    @overload
     @abstractmethod
-    def filter(self, *filters: Any | None) -> Self:
+    def filter(self, *filters: Any) -> Self:
         """Add filtering conditions to the current query."""
 
+    @overload
     @abstractmethod
-    def filter_by(self, **kwargs: Any) -> Self:
+    def filter(self, **kwargs: Any) -> Self:
         """Add filtering conditions to the current query."""
 
     @abstractmethod
