@@ -6,8 +6,8 @@ from pyrannic.pagination.paginator import Paginator
 from tests.unit.http.resources.utils import (
     BarCollection,
     FooCollection,
-    FooResource,
     FooModel,
+    FooResource,
     OptionalMetaCollection,
     RequiredMetaCollection,
 )
@@ -110,10 +110,19 @@ def test_collection__exception_required_meta():
         RequiredMetaCollection([])
 
     error = str(exc_info.value)
+
     assert (
-        "The 'meta' attribute is defined as required in your ResourceCollection subclass"
+        "The 'meta' attribute is defined as required in your RequiredMetaCollection class."
         in error
     )
+
+    assert "RequiredMetaCollection(your_repository.paginate())" in error
+    assert (
+        "Make the 'meta' attribute optional in your RequiredMetaCollection class."
+        in error
+    )
+
+    assert "Remove the 'meta' attribute from your RequiredMetaCollection class" in error
 
 
 def test_collection__serialize_empty_data():
