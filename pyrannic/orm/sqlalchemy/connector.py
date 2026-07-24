@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import Session, sessionmaker
 
 from pyrannic.container.params import Resolves
-from pyrannic.contracts.config.respository import ConfigRepositoryInterface
+from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from pyrannic.contracts.database.connector import ConnectorInterface
 from pyrannic.contracts.database.migration import MigrationInterface
 from pyrannic.orm.sqlalchemy.schema import Schema

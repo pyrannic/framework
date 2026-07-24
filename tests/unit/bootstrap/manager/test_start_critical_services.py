@@ -6,7 +6,7 @@ from pyrannic.application import Application
 from pyrannic.bootstrap.manager import BootstrapManager
 from pyrannic.bootstrap.service_provider import ServiceProvider
 from pyrannic.config.env import read_int
-from pyrannic.contracts.config.respository import ConfigRepositoryInterface
+from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from pyrannic.support.facades.facade import Facade
 
 

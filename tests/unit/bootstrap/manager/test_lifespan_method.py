@@ -5,13 +5,13 @@ import pytest
 from pyrannic.application import Application
 from pyrannic.bootstrap.manager import BootstrapManager
 from pyrannic.bootstrap.service_provider import ServiceProvider
-from pyrannic.contracts.config.respository import ConfigRepositoryInterface
+from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from tests.unit.bootstrap.manager.providers import (
     FooServiceProvider,
     UnbootableCriticalServiceProvider,
     UnbootableServiceProvider,
-    UninitializableServiceProvider,
     UninitializableCriticalServiceProvider,
+    UninitializableServiceProvider,
 )
 
 

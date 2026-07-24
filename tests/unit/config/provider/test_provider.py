@@ -2,7 +2,7 @@ import pytest
 
 from pyrannic.config.provider import ConfigRepositoryProvider
 from pyrannic.contracts.application import ApplicationInterface
-from pyrannic.contracts.config.respository import ConfigRepositoryInterface
+from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 
 
 @pytest.mark.asyncio

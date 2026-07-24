@@ -18,7 +18,7 @@ class Schema(SchemaInterface):
 
     async def create(self, blueprint: DeclarativeBase) -> None:
         """
-        Creates the conversation table in the database if it does not exist.
+        Creates the blueprint in the database if it does not exist.
         """
         await self._run(
             blueprint.__table__,
@@ -29,7 +29,7 @@ class Schema(SchemaInterface):
 
     async def drop(self, blueprint: DeclarativeBase) -> None:
         """
-        Drops the conversation table from the database if it exists.
+        Drops the blueprint from the database if it exists.
         """
         await self._run(
             blueprint.__table__,

@@ -5,7 +5,7 @@ from unittest.mock import Mock
 from pyrannic.bootstrap.service_provider import ServiceProvider
 from pyrannic.container.param_functions import Resolves
 from pyrannic.contracts.application import ApplicationInterface
-from pyrannic.contracts.config.respository import ConfigRepositoryInterface
+from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from pyrannic.support.string import to_snake_case
 
 

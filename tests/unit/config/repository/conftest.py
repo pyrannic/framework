@@ -1,7 +1,7 @@
 import pytest
 
 from pyrannic.config.repository import ConfigRepository
-from pyrannic.contracts.config.respository import ConfigRepositoryInterface
+from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 
 
 @pytest.fixture()

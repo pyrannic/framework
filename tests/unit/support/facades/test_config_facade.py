@@ -1,5 +1,5 @@
 from pyrannic.contracts.application import ApplicationInterface
-from pyrannic.contracts.config.respository import ConfigRepositoryInterface
+from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from pyrannic.facades import Config
 
 
