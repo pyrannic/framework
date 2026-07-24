@@ -51,15 +51,25 @@ class BaseCollection(BaseModel, _ResourceCollection[ResourceType]):
             )
         else:
             if not is_optional(self.__class__, "meta"):
+                class_name = self.__class__.__name__
+
                 raise RuntimeError(
                     "\n\n"
-                    "   The 'meta' attribute is defined as required in your ResourceCollection subclass.\n"
-                    "   To fix this exception you have three options:\n"
+                    f"The 'meta' attribute is defined as required in your {class_name} class.\n"
+                    "To fix this exception you have three options:\n"
+                    "\n"
                     "    1. Instead of providing your items collection as a list, use a PaginatorInterface to provide the items.\n"
-                    "    2. Make the 'meta' attribute optional in your ResourceCollection subclass. E.g.:\n"
-                    "       class MyResourceCollection(ResourceCollection[MyResource]):\n"
-                    "           meta: Optional[PaginationMeta] # or meta: PaginationMeta | None\n"
-                    "    3. Remove the 'meta' attribute from your ResourceCollection subclass if it's not needed.\n"
+                    "       If you are using a repository to fetch your items, you can use the 'paginate' method of your repository\n"
+                    f"       to get a paginator and pass it to your {class_name} directly:\n"
+                    "\n"
+                    f"          {class_name}(your_repository.paginate())\n"
+                    "\n"
+                    f"    2. Make the 'meta' attribute optional in your {class_name} class. E.g.:\n"
+                    "\n"
+                    f"       class {class_name}(ResourceCollection[MyResource]):\n"
+                    f"           meta: Optional[PaginationMeta] # or meta: PaginationMeta | None\n"
+                    "\n"
+                    f"    3. Remove the 'meta' attribute from your {class_name} class if it's not needed.\n"
                     "\n\n"
                 )
 
