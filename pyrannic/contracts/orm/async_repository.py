@@ -5,7 +5,7 @@ from pyrannic.contracts.orm.query_builder import T
 from pyrannic.contracts.pagination.paginator import PaginatorInterface
 
 
-class RepositoryInterface(ABC, Generic[T]):
+class AsyncRepositoryInterface(ABC, Generic[T]):
     @abstractmethod
     async def create(self, model: T) -> T:
         """Insert a new record into the database."""

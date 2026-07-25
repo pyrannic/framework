@@ -27,9 +27,7 @@ SessionType = TypeVar(
 )
 
 
-class AbstractSqlAlchemyConnector(
-    ConnectorInterface, ABC, Generic[EngineType, SessionType]
-):
+class AbstractConnector(ConnectorInterface, ABC, Generic[EngineType, SessionType]):
     """
     Handles interactions with an SQL Database using SQLAlchemy.
     """
@@ -62,7 +60,9 @@ class AbstractSqlAlchemyConnector(
     @property
     @abstractmethod
     def engine(self) -> EngineType:
-        pass
+        """
+        Returns the SQLAlchemy engine instance.
+        """
 
     async def migrate(
         self,
@@ -121,7 +121,8 @@ class AbstractSqlAlchemyConnector(
         return alembic_cfg
 
     async def _run_migrations(
-        self, migrations: list[type[MigrationInterface]] | None = None
+        self,
+        migrations: list[type[MigrationInterface]] | None = None,
     ) -> None:
         if migrations is not None:
             schema = Schema(self.engine, self._logger)
@@ -142,7 +143,7 @@ class AbstractSqlAlchemyConnector(
         self._logger.info("|- ✅ Applied Alembic migrations")
 
 
-class SqlAlchemyConnector(AbstractSqlAlchemyConnector[Engine, sessionmaker[Session]]):
+class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
     """
     Handles synchronous interactions with an SQL Database using SQLAlchemy.
     """
@@ -167,14 +168,14 @@ class SqlAlchemyConnector(AbstractSqlAlchemyConnector[Engine, sessionmaker[Sessi
         Returns the SQLAlchemy engine instance.
         """
 
-        # TODO: Use config.services.sqlalchemy settings for pool size, echo, etc.
+        # TODO: Use config.services.sqlalchemy settings for pool size, echo, max_overflow, etc.
 
         if not self._engine:
             self._engine = create_engine(
                 self.url,
                 echo=False,
-                pool_size=5,
-                max_overflow=5,
+                # TODO pool_size=5,
+                # TODO max_overflow=5,
                 pool_pre_ping=True,
                 future=True,  # lazy connections
             )
@@ -182,9 +183,7 @@ class SqlAlchemyConnector(AbstractSqlAlchemyConnector[Engine, sessionmaker[Sessi
         return self._engine
 
 
-class SqlAlchemyAsyncConnector(
-    AbstractSqlAlchemyConnector[AsyncEngine, async_sessionmaker[AsyncSession]]
-):
+class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSession]]):
     """
     Handles asynchronous interactions with an SQL Database using SQLAlchemy.
     """
@@ -215,8 +214,8 @@ class SqlAlchemyAsyncConnector(
             self._engine = create_async_engine(
                 self.url,
                 echo=False,
-                pool_size=5,
-                max_overflow=5,
+                # TODO pool_size=5,
+                # TODO max_overflow=5,
                 pool_pre_ping=True,
                 future=True,  # lazy connections
             )

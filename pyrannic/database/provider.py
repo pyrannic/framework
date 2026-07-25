@@ -5,12 +5,12 @@ from pyrannic.container.params import Resolves
 from pyrannic.contracts.database.connector import ConnectorInterface
 from pyrannic.contracts.database.manager import DatabaseManagerInterface
 from pyrannic.database.manager import DatabaseManager
-from pyrannic.orm.sqlalchemy.connector import SqlAlchemyConnector
+from pyrannic.orm.sqlalchemy.connector import Connector
 
 
 class DatabaseServiceProvider(ServiceProvider):
     __singletons__ = {
-        ConnectorInterface: SqlAlchemyConnector,
+        ConnectorInterface: Connector,
         DatabaseManagerInterface: DatabaseManager,
     }
 

@@ -3,7 +3,7 @@ import os
 import pytest
 
 from pyrannic.application import Application
-from pyrannic.contracts.application import ApplicationInterface
+from pyrannic.contracts import ApplicationInterface
 
 
 @pytest.fixture(scope="module")

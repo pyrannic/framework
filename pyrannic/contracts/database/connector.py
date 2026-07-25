@@ -11,14 +11,12 @@ class ConnectorInterface(ABC):
         """
         Establishes and returns a connection to the database.
         """
-        pass
 
     @abstractmethod
     async def disconnect(self) -> None:
         """
         Closes the connection to the database.
         """
-        pass
 
     @abstractmethod
     async def migrate(
@@ -28,4 +26,3 @@ class ConnectorInterface(ABC):
         """
         Runs the provided migrations against the database.
         """
-        pass
