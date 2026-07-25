@@ -1,6 +1,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from logging import Logger
+from os import path
 from typing import Annotated, Any, Generic, TypeVar
 
 from sqlalchemy import URL, Engine, create_engine
@@ -13,6 +14,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import Session, sessionmaker
 
 from pyrannic.container.params import Resolves
+from pyrannic.contracts.application import ApplicationInterface
 from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from pyrannic.contracts.database.connector import ConnectorInterface
 from pyrannic.contracts.database.migration import MigrationInterface
@@ -32,6 +34,7 @@ class AbstractSqlAlchemyConnector(
     Handles interactions with an SQL Database using SQLAlchemy.
     """
 
+    _application: ApplicationInterface
     _logger: Logger
     _config: ConfigRepositoryInterface
     _engine: EngineType | None
@@ -39,9 +42,11 @@ class AbstractSqlAlchemyConnector(
 
     def __init__(
         self,
+        application: Annotated[ApplicationInterface, Resolves()],
         logger: Annotated[Logger, Resolves()],
         config: Annotated[ConfigRepositoryInterface, Resolves()],
     ):
+        self._application = application
         self._logger = logger
         self._config = config
 
@@ -102,7 +107,7 @@ class AbstractSqlAlchemyConnector(
         alembic_cfg = Config()
         alembic_cfg.set_main_option(
             "script_location",
-            "%(here)s/database/migrations",
+            path.join("%(here)s", self._application.base_path, "database/migrations"),
         )
         alembic_cfg.set_main_option(
             "sqlalchemy.url", self.url.render_as_string(hide_password=False)
