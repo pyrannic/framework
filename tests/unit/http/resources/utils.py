@@ -35,9 +35,6 @@ class FooResourceWithRelationships(Resource, HasTimestamps, SoftDeletes):
 
     @classmethod
     def _relationships(cls, model: SerializableInterface) -> dict[str, Any]:
-
-        print("_relationships called with model:", getattr(model, "children", []))
-
         return {
             "children": [
                 FooResourceWithRelationships.from_model(child)
