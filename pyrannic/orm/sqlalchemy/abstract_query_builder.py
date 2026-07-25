@@ -145,12 +145,12 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
 
     @overload
     def filter(self, **kwargs: Any) -> Self:
-        self._prepare_query()
+        """
+        Apply filtering conditions to the query using keyword arguments.
 
-        if isinstance(self._query, (Select, Delete)):
-            self._query = self._query.filter_by(**kwargs)
-
-        return self
+        :param kwargs: Column-value pairs for filtering.
+        :return: The current instance of the query builder.
+        """
 
     def filter(self, *filters: ColumnExpressionArgument[Any], **kwargs: Any) -> Self:
         self._prepare_query()
