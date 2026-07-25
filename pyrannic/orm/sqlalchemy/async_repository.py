@@ -2,13 +2,13 @@ from typing import Any, Tuple, cast
 
 from sqlalchemy.sql.selectable import TypedReturnsRows
 
-from pyrannic.contracts.orm.async_repository import RepositoryInterface, T
+from pyrannic.contracts.orm.async_repository import AsyncRepositoryInterface, T
 from pyrannic.contracts.pagination.paginator import PaginatorInterface
 from pyrannic.orm.sqlalchemy.async_query_builder import AsyncQueryBuilder
 from pyrannic.pagination.paginator import Paginator
 
 
-class AsyncRepository(AsyncQueryBuilder[T], RepositoryInterface[T]):
+class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
     async def create(self, model: T) -> T:
         try:
             self.session.add(model)

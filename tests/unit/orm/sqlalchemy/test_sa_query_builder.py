@@ -8,9 +8,9 @@ from pyrannic.contracts.database.manager import DatabaseManagerInterface
 from pyrannic.database.manager import DatabaseManager
 from pyrannic.facades import Config
 from pyrannic.orm.sqlalchemy import (
+    AsyncConnector,
     AsyncRepository,
     Repository,
-    SqlAlchemyAsyncConnector,
 )
 from tests.unit.orm.sqlalchemy.utils import BarModel
 
@@ -26,7 +26,7 @@ async def test_query_builder(application: ApplicationInterface):
 async def test_async_query_builder(application: ApplicationInterface):
     Config.set("database.connections.sqlite.driver", "sqlite+aiosqlite")
 
-    application.container.singleton(ConnectorInterface, SqlAlchemyAsyncConnector)
+    application.container.singleton(ConnectorInterface, AsyncConnector)
     application.container.singleton(DatabaseManagerInterface, DatabaseManager)
 
     repository = await application.container.resolve(AsyncRepository[BarModel])

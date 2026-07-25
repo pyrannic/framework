@@ -8,7 +8,7 @@ from pyrannic.contracts.database.connector import ConnectorInterface
 from pyrannic.contracts.database.manager import DatabaseManagerInterface
 from pyrannic.database.manager import DatabaseManager
 from pyrannic.database.provider import DatabaseServiceProvider
-from pyrannic.orm.sqlalchemy.connector import SqlAlchemyConnector
+from pyrannic.orm.sqlalchemy.connector import Connector
 from tests.unit.database.utils import MockDatabaseServiceProvider
 
 
@@ -23,7 +23,7 @@ async def test_register_singletons():
     connector_1 = await application.container.resolve(ConnectorInterface)
     manager_1 = await application.container.resolve(DatabaseManagerInterface)
 
-    assert isinstance(connector_1, SqlAlchemyConnector)
+    assert isinstance(connector_1, Connector)
     assert isinstance(manager_1, DatabaseManager)
 
     connector_2 = await application.container.resolve(ConnectorInterface)

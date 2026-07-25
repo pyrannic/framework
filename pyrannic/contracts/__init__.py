@@ -8,4 +8,6 @@ from .http.resources.collection import (
     ResourceCollectionInterface as ResourceCollectionInterface,
 )
 from .http.resources.resource import ResourceInterface as ResourceInterface
+from .orm.async_repository import AsyncRepositoryInterface as AsyncRepositoryInterface
+from .orm.repository import RepositoryInterface as RepositoryInterface
 from .pagination.paginator import PaginatorInterface as PaginatorInterface

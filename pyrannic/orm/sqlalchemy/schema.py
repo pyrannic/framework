@@ -16,7 +16,7 @@ class Schema(SchemaInterface):
         self._engine = engine
         self._logger = logger
 
-    async def create(self, blueprint: DeclarativeBase) -> None:
+    async def create(self, blueprint: type[DeclarativeBase]) -> None:
         """
         Creates the blueprint in the database if it does not exist.
         """
@@ -27,7 +27,7 @@ class Schema(SchemaInterface):
             "Failed to create {} table: {}",
         )
 
-    async def drop(self, blueprint: DeclarativeBase) -> None:
+    async def drop(self, blueprint: type[DeclarativeBase]) -> None:
         """
         Drops the blueprint from the database if it exists.
         """
