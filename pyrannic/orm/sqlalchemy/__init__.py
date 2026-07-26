@@ -2,6 +2,7 @@ from .async_query_builder import AsyncQueryBuilder as AsyncQueryBuilder
 from .async_repository import AsyncRepository as AsyncRepository
 from .connector import AsyncConnector as AsyncConnector
 from .connector import Connector as Connector
+from .mixins.has_timestamps import HasTimestamp as HasTimestamp
 from .mixins.has_timestamps import HasTimestamps as HasTimestamps
 from .mixins.soft_deletes import SoftDeletes as SoftDeletes
 from .model import Model as Model

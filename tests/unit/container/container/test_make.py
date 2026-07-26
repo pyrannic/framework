@@ -71,7 +71,6 @@ async def test_make_with_interface_not_bound(container: ContainerInterface):
         await container.make(FooInterface)
 
     error = str(exc_info.value)
-    print(error)
     assert "No binding found for interface FooInterface" in error
 
 
@@ -81,5 +80,4 @@ async def test_make_with_key_not_bound(container: ContainerInterface):
         await container.make("FooInterface")
 
     error = str(exc_info.value)
-    print(error)
     assert "No binding found for key FooInterface" in error

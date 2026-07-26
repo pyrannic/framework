@@ -27,13 +27,6 @@ def index(
     repository: HeroesRepository = Depends(),
     # repository: Scoped[Repository[HeroModel]],
 ) -> HeroesCollection:
-    print(
-        "Container in index endpoint",
-        repository,
-        # repository2,
-        # foo.get_app_name(),
-        # bar.foo.get_app_name(),
-    )
     return HeroesCollection(repository.where(HeroModel.name.like("%man%")).paginate())
 
 

@@ -103,7 +103,12 @@ class ContainerInterface(ABC):
         """Resolve the given type from the container."""
 
     @abstractmethod
-    async def call(self, callback: type[T] | Callable[..., Any]) -> T:
+    async def call(
+        self,
+        callback: type[T] | Callable[..., Any],
+        *args: Any,
+        **kwargs: Any,
+    ) -> T:
         """Call the given callback (Closure, class@method...) and inject its dependencies."""
 
     @abstractmethod

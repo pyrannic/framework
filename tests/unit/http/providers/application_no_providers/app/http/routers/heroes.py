@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from pyrannic import ResourceNotFoundException
-from pyrannic.ioc import App, Container, Resolve
 from pyrannic.contracts import ContainerInterface
+from pyrannic.ioc import App, Container, Resolve
 from tests.application.app.http.resources.hero import Hero, HeroesCollection
 from tests.application.app.models.hero import Hero as HeroModel
 from tests.application.app.repositories.heroes import HeroesRepository
@@ -28,11 +28,6 @@ def index(
     bar: Resolve[BarService],
     repository2: HeroesRepository = Depends(),
 ) -> HeroesCollection:
-    print(
-        "Container in index endpoint",
-        foo.get_app_name(),
-        bar.foo.get_app_name(),
-    )
     return HeroesCollection(
         repository2.where(HeroModel.name.like("%batman%")).paginate()
     )
