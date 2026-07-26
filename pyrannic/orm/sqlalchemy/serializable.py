@@ -24,7 +24,7 @@ class Serializable(Inspectionable, SerializableInterface):
         :return: dict
         """
         result = dict[str, Any]()
-        columns: list[str] = self.columns + self.properties  # pyright: ignore[reportUnknownMemberType]
+        columns: list[str] = self.columns + self.properties
 
         if exclude is None:
             view_cols = columns
@@ -32,10 +32,7 @@ class Serializable(Inspectionable, SerializableInterface):
             view_cols = filter(lambda e: e not in exclude, columns)
 
         for key in view_cols:
-            try:
-                result[key] = getattr(self, key)
-            except Exception as e:
-                print(key, e)
+            result[key] = getattr(self, key)
 
         if hybrid_attributes:
             for key in self.hybrid_properties:
