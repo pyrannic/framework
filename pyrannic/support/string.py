@@ -1,6 +1,18 @@
 import re
 
 
+def to_kebab_case(value: str) -> str:
+    """Convert a string to kebab case."""
+
+    value = (
+        re.sub(r"(?<=[a-z])(?=[A-Z])|[^a-zA-Z0-9]", " ", value)
+        .strip()
+        .replace(" ", "-")
+    )
+
+    return "".join(value.lower())
+
+
 def to_snake_case(value: str) -> str:
     """Convert a string to snake case."""
 
