@@ -11,15 +11,11 @@ class BarModel(Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
     parent_id: Mapped[int] = mapped_column(ForeignKey("bars.id"), nullable=True)
-    parent: Mapped["BarModel"] = relationship(
-        remote_side=[parent_id],
+    parent: Mapped["BarModel | None"] = relationship(
+        remote_side=[id],
         back_populates="children",
     )
-    children: Mapped[list["BarModel"]] = relationship(
-        remote_side=[id],
-        back_populates="parent",
-        uselist=True,
-    )
+    children: Mapped[list["BarModel"]] = relationship(back_populates="parent")
 
     @hybrid_property
     def slug(self) -> str:
