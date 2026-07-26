@@ -125,8 +125,11 @@ async def test_async_drop(application: ApplicationInterface):
 
 @pytest.mark.asyncio
 async def test_log_on_exception(
-    caplog: pytest.LogCaptureFixture, application: ApplicationInterface
+    caplog: pytest.LogCaptureFixture,
+    application: ApplicationInterface,
 ):
+    # Use a driver that will raise an exception when trying to create/drop the table
+    Config.set("database.connections.sqlite.driver", "sqlite+aiosqlite")
     Config.set("database.connections.sqlite.database", ":memory:")
 
     application.container.singleton(ConnectorInterface, Connector)
