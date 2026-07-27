@@ -26,6 +26,10 @@ class ConfigRepositoryInterface(ABC):
         """Get the specified configuration value as a string."""
 
     @abstractmethod
+    def optional_str(self, name: str, default: str | None = None) -> str | None:
+        """Get the specified configuration value as a string."""
+
+    @abstractmethod
     def optional_integer(self, name: str, default: int | None = None) -> int | None:
         """Get the specified configuration value as an integer."""
 
@@ -51,6 +55,10 @@ class ConfigRepositoryInterface(ABC):
 
     @abstractmethod
     def string(self, name: str, default: str = "") -> str:
+        """Get the specified configuration value as a string."""
+
+    @abstractmethod
+    def str(self, name: str, default: str = "") -> str:
         """Get the specified configuration value as a string."""
 
     @abstractmethod
