@@ -115,7 +115,7 @@ class AbstractConnector(ConnectorInterface, ABC, Generic[EngineType, SessionType
 
         alembic_cfg.set_main_option(
             "pyranninc.asyncio",
-            str(self._config.boolean("services.sqlalchemy.asyncio")),
+            str(self._config.boolean("orm.drivers.sqlalchemy.asyncio")),
         )
 
         return alembic_cfg
@@ -168,7 +168,7 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
         Returns the SQLAlchemy engine instance.
         """
 
-        # TODO: Use config.services.sqlalchemy settings for pool size, echo, max_overflow, etc.
+        # TODO: Use config.orm.sqlalchemy settings for pool size, echo, max_overflow, etc.
 
         if not self._engine:
             self._engine = create_engine(
@@ -208,7 +208,7 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
         Returns the SQLAlchemy async engine instance.
         """
 
-        # TODO: Use config.services.sqlalchemy settings for pool size, echo, etc.
+        # TODO: Use config.orm.sqlalchemy settings for pool size, echo, etc.
 
         if not self._engine:
             self._engine = create_async_engine(
