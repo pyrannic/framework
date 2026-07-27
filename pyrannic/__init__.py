@@ -5,7 +5,6 @@ from .bootstrap.service_provider import ServiceProvider as ServiceProvider
 from .config.configuration import Configuration as Configuration
 from .container.param_functions import Resolves as Resolves
 from .database.migration import Migration as Migration
-from .database.provider import DatabaseServiceProvider as DatabaseServiceProvider
 from .http.exceptions.resource_not_found import (
     ResourceNotFoundException as ResourceNotFoundException,
 )

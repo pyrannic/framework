@@ -7,9 +7,8 @@ from pyrannic.bootstrap.manager import BootstrapManager
 from pyrannic.contracts.database.connector import ConnectorInterface
 from pyrannic.contracts.database.manager import DatabaseManagerInterface
 from pyrannic.database.manager import DatabaseManager
-from pyrannic.database.provider import DatabaseServiceProvider
-from pyrannic.orm.sqlalchemy.connector import Connector
-from tests.unit.database.utils import MockDatabaseServiceProvider
+from pyrannic.orm.sqlalchemy import Connector, DatabaseServiceProvider
+from tests.unit.orm.sqlalchemy.utils import MockDatabaseServiceProvider
 
 
 @pytest.mark.asyncio

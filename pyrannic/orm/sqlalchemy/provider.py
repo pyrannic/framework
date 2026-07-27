@@ -5,18 +5,27 @@ from pyrannic.container.params import Resolves
 from pyrannic.contracts.database.connector import ConnectorInterface
 from pyrannic.contracts.database.manager import DatabaseManagerInterface
 from pyrannic.database.manager import DatabaseManager
-from pyrannic.orm.sqlalchemy.connector import Connector
+from pyrannic.facades import Config
+
+from .connector import AsyncConnector, Connector
 
 
 class DatabaseServiceProvider(ServiceProvider):
     __singletons__ = {
-        ConnectorInterface: Connector,
         DatabaseManagerInterface: DatabaseManager,
     }
 
     @property
     def is_critical(self) -> bool:
         return True
+
+    @property
+    def connector(self) -> type[ConnectorInterface]:
+        is_asyncio = Config.bool("services.sqlalchemy.asyncio")
+        return AsyncConnector if is_asyncio else Connector
+
+    def register(self):
+        self.container.singleton(ConnectorInterface, self.connector)
 
     async def boot(self, manager: Annotated[DatabaseManagerInterface, Resolves()]):
         await manager.migrate()

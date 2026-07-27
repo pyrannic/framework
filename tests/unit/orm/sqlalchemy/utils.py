@@ -1,10 +1,55 @@
+from logging import Logger
+from typing import Annotated
+from unittest.mock import Mock
+
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 import pyrannic.support.string as string
+from pyrannic.container.param_functions import Resolves
+from pyrannic.contracts import ApplicationInterface, DatabaseManagerInterface
 from pyrannic.database.migration import Migration
-from pyrannic.orm.sqlalchemy import HasTimestamp, HasTimestamps, Model, SoftDeletes
+from pyrannic.orm.sqlalchemy import (
+    DatabaseServiceProvider,
+    HasTimestamp,
+    HasTimestamps,
+    Model,
+    SoftDeletes,
+)
+
+
+class MockDatabaseServiceProvider(DatabaseServiceProvider):
+    def __init__(self, app: ApplicationInterface, logger: Logger | None = None):
+        super().__init__(app, logger)
+        self.mock = Mock(spec=self)
+        self.mock.container = self.container
+
+    @property
+    def is_critical(self) -> bool:
+        self.mock.is_critical()
+        return not super().is_critical
+
+    def register(self) -> None:
+        self.mock.register()
+        self.container.instance(self.__class__.__name__, self.mock)
+        super().register()
+
+    async def initialize(self) -> None:
+        await self.mock.initialize()
+        await super().initialize()
+
+    async def boot(
+        self, manager: Annotated[DatabaseManagerInterface, Resolves()]
+    ) -> None:
+        await self.mock.boot(manager)
+        await super().boot(manager)
+
+    async def shutdown(
+        self, manager: Annotated[DatabaseManagerInterface, Resolves()]
+    ) -> None:
+        await self.mock.shutdown(manager)
+        await super().shutdown(manager)
 
 
 class BarModel(Model):
