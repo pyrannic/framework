@@ -40,6 +40,9 @@ class ConfigRepository(ConfigRepositoryInterface):
         value = self.get(name, default)
         return str(value) if value is not None else default
 
+    def optional_str(self, name: str, default: str | None = None) -> str | None:
+        return self.optional_string(name, default)
+
     def optional_integer(self, name: str, default: int | None = None) -> int | None:
         value = self.get(name, default)
 
@@ -80,6 +83,9 @@ class ConfigRepository(ConfigRepositoryInterface):
         return list(value) if value is not None else default
 
     def string(self, name: str, default: str = "") -> str:
+        return self.optional_string(name, default) or default
+
+    def str(self, name: str, default: str = "") -> str:
         return self.optional_string(name, default) or default
 
     def integer(self, name: str, default: int = 0) -> int:
