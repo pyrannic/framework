@@ -1,12 +1,11 @@
-from tests.application.app.providers.app import AppServiceProvider
-
 from pyrannic import (
-    DatabaseServiceProvider,
+    ExceptionHandlersServiceProvider,
     MiddlewaresServiceProvider,
     RoutersServiceProvider,
-    ExceptionHandlersServiceProvider,
     ServiceProvider,
 )
+from pyrannic.orm.sqlalchemy import DatabaseServiceProvider
+from tests.application.app.providers.app import AppServiceProvider
 
 providers: list[type[ServiceProvider]] = [
     ExceptionHandlersServiceProvider,

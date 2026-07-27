@@ -6,6 +6,7 @@ from .mixins.has_timestamps import HasTimestamp as HasTimestamp
 from .mixins.has_timestamps import HasTimestamps as HasTimestamps
 from .mixins.soft_deletes import SoftDeletes as SoftDeletes
 from .model import Model as Model
+from .provider import DatabaseServiceProvider as DatabaseServiceProvider
 from .query_builder import QueryBuilder as QueryBuilder
 from .repository import Repository as Repository
 from .schema import Schema as Schema
