@@ -34,6 +34,10 @@ class ConfigRepositoryInterface(ABC):
         """Get the specified configuration value as an integer."""
 
     @abstractmethod
+    def optional_int(self, name: str, default: int | None = None) -> int | None:
+        """Get the specified configuration value as an integer."""
+
+    @abstractmethod
     def optional_float(self, name: str, default: float | None = None) -> float | None:
         """Get the specified configuration value as a float."""
 
@@ -63,6 +67,10 @@ class ConfigRepositoryInterface(ABC):
 
     @abstractmethod
     def integer(self, name: str, default: int = 0) -> int:
+        """Get the specified configuration value as an integer."""
+
+    @abstractmethod
+    def int(self, name: str, default: int = 0) -> int:
         """Get the specified configuration value as an integer."""
 
     @abstractmethod
