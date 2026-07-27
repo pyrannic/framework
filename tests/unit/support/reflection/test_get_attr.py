@@ -1,3 +1,5 @@
+import pytest
+
 import tests.unit.support.reflection.conftest as conftest
 from pyrannic.support.reflection import get_attr
 
@@ -7,9 +9,17 @@ def test_get_attr__attr_not_found():
     assert attr is None
 
 
-def test_get_attr__module_not_found():
-    attr = get_attr("non_existent_module", "non_existent_attr")
-    assert attr is None
+def test_get_attr__module_not_found_raise_exception():
+    with pytest.raises(Exception) as exc_info:
+        get_attr("non_existent_module", "non_existent_attr")
+
+    error = str(exc_info.value)
+    assert "No module named 'non_existent_module'" in error
+
+
+def test_get_attr__module_not_found_with_default_value():
+    attr = get_attr("non_existent_module", "non_existent_attr", default="default_value")
+    assert attr == "default_value"
 
 
 def test_get_attr():

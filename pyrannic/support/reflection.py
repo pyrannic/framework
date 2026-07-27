@@ -1,7 +1,7 @@
+import importlib
 from abc import ABC
 from collections.abc import Callable
-import importlib
-from inspect import getmembers, isclass, isabstract, isfunction
+from inspect import getmembers, isabstract, isclass, isfunction
 from types import ModuleType, UnionType, get_original_bases
 from typing import Any, Union, get_origin, get_type_hints
 
@@ -130,8 +130,9 @@ def get_attr(
     try:
         module = _import_module_if_needed(module)
         return getattr(module, attr_name, default)
-    except Exception:
-        pass
+    except Exception as e:
+        if default is None:
+            raise e
 
     return default
 
