@@ -51,6 +51,9 @@ class ConfigRepository(ConfigRepositoryInterface):
         except (ValueError, TypeError):
             return default
 
+    def optional_int(self, name: str, default: int | None = None) -> int | None:
+        return self.optional_integer(name, default)
+
     def optional_float(self, name: str, default: float | None = None) -> float | None:
         value = self.get(name, default)
 
@@ -89,6 +92,9 @@ class ConfigRepository(ConfigRepositoryInterface):
         return self.optional_string(name, default) or default
 
     def integer(self, name: str, default: int = 0) -> int:
+        return self.optional_integer(name, default) or default
+
+    def int(self, name: str, default: int = 0) -> int:
         return self.optional_integer(name, default) or default
 
     def float(self, name: str, default: float = 0.0) -> float:
