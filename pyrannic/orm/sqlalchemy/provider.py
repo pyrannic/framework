@@ -21,7 +21,9 @@ class DatabaseServiceProvider(ServiceProvider):
 
     @property
     def connector(self) -> type[ConnectorInterface]:
-        is_asyncio = Config.bool("services.sqlalchemy.asyncio")
+        default_driver = Config.str("orm.default")
+        is_asyncio = Config.bool(f"orm.drivers.{default_driver}.asyncio")
+
         return AsyncConnector if is_asyncio else Connector
 
     def register(self):
