@@ -1,5 +1,5 @@
-from inspect import isfunction
 import os
+from inspect import isfunction
 
 from fastapi import APIRouter
 
