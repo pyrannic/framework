@@ -68,6 +68,9 @@ class ConfigRepository(ConfigRepositoryInterface):
 
         return default
 
+    def optional_bool(self, name: str, default: bool | None = None) -> bool | None:
+        return self.optional_boolean(name, default)
+
     def optional_list(
         self,
         name: str,
@@ -86,6 +89,9 @@ class ConfigRepository(ConfigRepositoryInterface):
         return self.optional_float(name, default) or default
 
     def boolean(self, name: str, default: bool = False) -> bool:
+        return self.optional_boolean(name, default) or default
+
+    def bool(self, name: str, default: bool = False) -> bool:
         return self.optional_boolean(name, default) or default
 
     def list(self, name: str, default: list[T] = []) -> list[T]:
