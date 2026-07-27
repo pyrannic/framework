@@ -38,6 +38,10 @@ class ConfigRepositoryInterface(ABC):
         """Get the specified configuration value as a boolean."""
 
     @abstractmethod
+    def optional_bool(self, name: str, default: bool | None = None) -> bool | None:
+        """Get the specified configuration value as a boolean."""
+
+    @abstractmethod
     def optional_list(
         self,
         name: str,
@@ -59,6 +63,10 @@ class ConfigRepositoryInterface(ABC):
 
     @abstractmethod
     def boolean(self, name: str, default: bool = False) -> bool:
+        """Get the specified configuration value as a boolean."""
+
+    @abstractmethod
+    def bool(self, name: str, default: bool = False) -> bool:
         """Get the specified configuration value as a boolean."""
 
     @abstractmethod
