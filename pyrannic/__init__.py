@@ -19,3 +19,5 @@ from .http.resources.resource import Resource as Resource
 from .ioc import Resolve as Resolve
 from .pagination.meta import PaginationMeta as PaginationMeta
 from .pagination.paginator import Paginator as Paginator
+from .support.facades.facade import Facade as Facade
+from .support.facades.facade import facade as facade
