@@ -1,4 +1,5 @@
 from .application import ApplicationInterface as ApplicationInterface
+from .auth.access.gate import GateInterface as GateInterface
 from .config.configuration import ConfigurationInterface as ConfigurationInterface
 from .config.repository import ConfigRepositoryInterface as ConfigRepositoryInterface
 from .container.container import ContainerInterface as ContainerInterface
