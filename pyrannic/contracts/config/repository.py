@@ -10,7 +10,7 @@ class ConfigRepositoryInterface(ABC):
         """Determine if the given configuration value exists."""
 
     @abstractmethod
-    def get(self, name: str, default: Any | None = None) -> object | None:
+    def get(self, name: str, default: Any | None = None) -> Any | None:
         """Get the specified configuration value."""
 
     @abstractmethod
