@@ -1,9 +1,6 @@
+from pyrannic import ServiceProvider
+from pyrannic.orm.sqlalchemy.provider import DatabaseServiceProvider
 from tests.application.app.providers.app import AppServiceProvider
-
-from pyrannic import (
-    DatabaseServiceProvider,
-    ServiceProvider,
-)
 
 providers: list[type[ServiceProvider]] = [
     AppServiceProvider,
