@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 
 from pyrannic import ResourceNotFoundException
 from pyrannic.contracts import ContainerInterface
-from pyrannic.ioc import App, Container, Resolve
+from pyrannic.ioc import App, Container, Resolves
 from tests.application.app.http.resources.hero import Hero, HeroesCollection
 from tests.application.app.models.hero import Hero as HeroModel
 from tests.application.app.repositories.heroes import HeroesRepository
@@ -19,13 +19,13 @@ router = APIRouter(tags=["Heroes"])
     description="Endpoint to retrieve the list of heroes.",
 )
 def index(
-    container: Resolve[ContainerInterface],
+    container: Resolves[ContainerInterface],
     container2: Container,
     app: App,
-    repository3: Resolve[HeroesRepository],
-    repository4: Resolve[HeroesRepository],
-    foo: Resolve[FooServiceInterface],
-    bar: Resolve[BarService],
+    repository3: Resolves[HeroesRepository],
+    repository4: Resolves[HeroesRepository],
+    foo: Resolves[FooServiceInterface],
+    bar: Resolves[BarService],
     repository2: HeroesRepository = Depends(),
 ) -> HeroesCollection:
     return HeroesCollection(

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from pyrannic.ioc import Scoped, Singleton, Resolve
+from pyrannic.ioc import Resolves, Scoped, Singleton
 from tests.application.app.repositories.heroes import (
     HeroesRepository,
     HeroesRepository2,
@@ -16,8 +16,8 @@ router = APIRouter(tags=["Params Routes"])
     description="Endpoint to retrieve the memory address of the resolved object.",
 )
 def get_resolve_memory_address(
-    repository: Resolve[HeroesRepository],
-    repository2: Resolve[HeroesRepository],
+    repository: Resolves[HeroesRepository],
+    repository2: Resolves[HeroesRepository],
 ) -> tuple[str, str]:
     return (hex(id(repository)), hex(id(repository2)))
 

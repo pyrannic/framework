@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from pyrannic.bootstrap.instance_service_provider import (
     InstanceServiceProvider as BaseInstanceServiceProvider,
 )
-from pyrannic.ioc import Resolve
+from pyrannic.ioc import Resolves
 
 
 class InstanceServiceProvider(BaseInstanceServiceProvider[Mock]):
@@ -17,7 +17,7 @@ class InstanceServiceProvider(BaseInstanceServiceProvider[Mock]):
 
 
 class InstanceServiceProviderWithDependencies(BaseInstanceServiceProvider[Mock]):
-    def _create(self, logger: Resolve[Logger]) -> Mock:
+    def _create(self, logger: Resolves[Logger]) -> Mock:
         mock = Mock()
         mock.create(logger)
 
