@@ -21,7 +21,7 @@ from pyrannic.contracts.container.container import ContainerInterface
 from pyrannic.contracts.container.contextual_binding_builder import (
     ContextualBindingBuilderInterface,
 )
-from pyrannic.support.reflection import is_interface
+from pyrannic.support.reflection import is_async_callable, is_interface
 
 T = TypeVar("T")
 
@@ -233,10 +233,13 @@ class Container(ContainerInterface):
             if inspect.isawaitable(instance):
                 instance = await instance
 
+            if callable(instance):
+                await self._resolve(instance, self._app, request)
+
             if self.is_shared(abstract):
                 self._instances[binding_key] = instance
 
-            return instance
+            return cast(T, instance)
         finally:
             if not needs_contextual_build:
                 self._resolved[binding_key] = True
@@ -470,7 +473,7 @@ class Container(ContainerInterface):
         if bool(errors):
             raise RequestValidationError(errors)
 
-        if inspect.iscoroutinefunction(dependant.call):
+        if is_async_callable(dependant.call):
             result = await dependant.call(*args, **dependencies.values, **kwargs)
         else:
             result = await run_in_threadpool(

@@ -18,7 +18,7 @@ from pyrannic.support.reflection import get_attr, get_attrs, get_class, get_func
 
 
 class RoutersServiceProvider(ServiceProvider):
-    def register(self):
+    def boot(self):
         routers = get_attr(
             os.path.join(self.app.base_path, "bootstrap/routers"),
             "routers",

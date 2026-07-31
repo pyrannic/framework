@@ -3,18 +3,23 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from pyrannic import ResourceNotFoundException
+from pyrannic import ResourceNotFoundException, Safeguard
+from pyrannic.contracts import GuardInterface
+from pyrannic.ioc import Resolves
 from tests.application.app.http.resources.hero import Hero, HeroesCollection
 from tests.application.app.models.hero import Hero as HeroModel
 from tests.application.app.repositories.heroes import HeroesRepository
 
-router = APIRouter(tags=["Heroes"])
+router = APIRouter(
+    tags=["Heroes"],
+)
 
 
 @router.get(
     "/heroes",
     summary="Heroes Endpoint",
     description="Endpoint to retrieve the list of heroes.",
+    dependencies=[Depends(Safeguard())],
 )
 def index(
     # container: Resolve[ContainerInterface],
@@ -24,10 +29,14 @@ def index(
     # repository4: Resolve[HeroesRepository],
     # foo: Resolve[FooServiceInterface],
     # bar: Resolve[BarService],
+    guard: Resolves[GuardInterface],
     repository: HeroesRepository = Depends(),
     # repository: Scoped[Repository[HeroModel]],
 ) -> HeroesCollection:
-    return HeroesCollection(repository.where(HeroModel.name.like("%man%")).paginate())
+    print(guard.check)
+    print(guard.user)
+    return HeroesCollection(repository.paginate())
+    # return HeroesCollection(repository.where(HeroModel.name.like("%man%")).paginate())
 
 
 @router.get(

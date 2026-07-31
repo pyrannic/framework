@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from pyrannic import Configuration
+from pyrannic.config.configuration import Configuration
 
 
 class SQLAlchemyUserProviderConfig(Configuration):

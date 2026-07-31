@@ -1,10 +1,11 @@
+from collections.abc import Callable
 from typing import Any, Literal
 
 from pyrannic.container import params
 
 
 def Resolves(
-    abstract: str | type | None = None,
+    abstract: str | type | Callable[..., Any] | None = None,
     use_cache: bool = True,
     scope: Literal["function", "request"] | None = None,
 ) -> Any:

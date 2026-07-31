@@ -1,6 +1,6 @@
+import os
 from contextlib import asynccontextmanager
 from logging import Logger
-import os
 from typing import AsyncGenerator, Self, Type
 
 from dotenv import load_dotenv
@@ -121,11 +121,13 @@ class BootstrapManager:
     ):
         name = provider.__class__.__name__
 
-        if self._running and provider.is_critical:
+        if self._running and (
+            provider.is_critical or isinstance(exception, RuntimeError)
+        ):
             self._logger.critical(
                 f"❌  {name} failed to {method_name}, cannot start app"
             )
-            raise provider.exception(f"{name} failed to {method_name}") from exception
+            raise exception
         else:
             self._logger.warning(
                 f"⚠️  {name} failed to {method_name} properly: {exception}"

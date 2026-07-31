@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Self
+
+from .authorizable import AuthorizableInterface
 
 
 class GateInterface(ABC):
@@ -65,7 +67,7 @@ class GateInterface(ABC):
         """
 
     @abstractmethod
-    def forUser(self, user: Any) -> "GateInterface":
+    def for_user(self, user: AuthorizableInterface) -> Self:
         """
         Get a guard instance for the given user.
 

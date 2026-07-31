@@ -4,6 +4,7 @@ from pyrannic import (
     RoutersServiceProvider,
     ServiceProvider,
 )
+from pyrannic.auth.service_provider import AuthServiceProvider
 from pyrannic.orm.sqlalchemy import DatabaseServiceProvider
 from tests.application.app.providers.app import AppServiceProvider
 
@@ -13,6 +14,7 @@ providers: list[type[ServiceProvider]] = [
     DatabaseServiceProvider,
     RoutersServiceProvider,
     MiddlewaresServiceProvider,
+    AuthServiceProvider,
 ]
 
 __all__ = ["providers"]
