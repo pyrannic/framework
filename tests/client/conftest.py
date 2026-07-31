@@ -1,5 +1,7 @@
-from starlette.testclient import TestClient
+from typing import Any, Generator
+
 import pytest
+from starlette.testclient import TestClient
 
 from pyrannic.application import Application
 from pyrannic.contracts.application import ApplicationInterface
@@ -11,5 +13,8 @@ def application() -> ApplicationInterface:
 
 
 @pytest.fixture(scope="module")
-def http_client(application: ApplicationInterface) -> TestClient:
-    return TestClient(application)
+def http_client(
+    application: ApplicationInterface,
+) -> Generator[TestClient, Any, Any]:
+    with TestClient(application) as client:
+        yield client

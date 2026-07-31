@@ -5,6 +5,8 @@ from pyrannic.http.providers import RoutersServiceProvider
 def test_register_using_provider(application: ApplicationInterface):
     provider = RoutersServiceProvider(application)
     provider.register()
+    provider.initialize()
+    provider.boot()
 
     assert application.router.url_path_for("get_object_memory_address")
     assert application.router.url_path_for("get_scoped_memory_address")
@@ -14,6 +16,8 @@ def test_register_using_provider(application: ApplicationInterface):
 def test_register_without_providers(app_no_providers: ApplicationInterface):
     provider = RoutersServiceProvider(app_no_providers)
     provider.register()
+    provider.initialize()
+    provider.boot()
 
     assert app_no_providers.router.url_path_for("get_object_memory_address")
     assert app_no_providers.router.url_path_for("get_scoped_memory_address")
