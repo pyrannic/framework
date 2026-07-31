@@ -4,6 +4,8 @@ from fastapi.exceptions import RequestValidationError
 from pyrannic.contracts.container.container import ContainerInterface
 from pyrannic.support.reflection import get_generic_type
 from tests.unit.container.conftest import (
+    BarServiceWithAsyncCall,
+    BarServiceWithCall,
     BazServiceWithParams,
     FooGeneric,
     FooImplementation,
@@ -63,6 +65,24 @@ async def test_resolve_with_mixed_parameters(container: ContainerInterface):
     assert instance.value1 == "value1"
     assert instance.value2 == "value2"
     assert isinstance(instance.foo_service, FooImplementation)
+
+
+@pytest.mark.asyncio
+async def test_resolve_with_callable_instance(container: ContainerInterface):
+    instance = await container.resolve(BarServiceWithCall)
+
+    assert not container.is_bound(BarServiceWithCall)
+    assert isinstance(instance, BarServiceWithCall)
+    assert instance.called
+
+
+@pytest.mark.asyncio
+async def test_resolve_with_async_callable_instance(container: ContainerInterface):
+    instance = await container.resolve(BarServiceWithAsyncCall)
+
+    assert not container.is_bound(BarServiceWithAsyncCall)
+    assert isinstance(instance, BarServiceWithAsyncCall)
+    assert instance.called
 
 
 @pytest.mark.asyncio
