@@ -36,14 +36,6 @@ class Resolves(Depends):
 
 
 class Singleton(Resolves):
-    def __init__(
-        self,
-        dependency: str | type | Callable[..., Any] | None = None,
-        use_cache: bool = True,
-        scope: Literal["function", "request"] | None = None,
-    ):
-        super().__init__(dependency=dependency, use_cache=use_cache, scope=scope)
-
     @classmethod
     def wrap_dependency(cls, abstract: str | type) -> Callable[..., Any]:
         if not isinstance(abstract, str):
@@ -53,14 +45,6 @@ class Singleton(Resolves):
 
 
 class Scoped(Resolves):
-    def __init__(
-        self,
-        dependency: str | type | Callable[..., Any] | None = None,
-        use_cache: bool = True,
-        scope: Literal["function", "request"] | None = None,
-    ):
-        super().__init__(dependency=dependency, use_cache=use_cache, scope=scope)
-
     @classmethod
     def wrap_dependency(cls, abstract: str | type) -> Callable[..., Any]:
         if not isinstance(abstract, str):
