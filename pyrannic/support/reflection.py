@@ -1,4 +1,6 @@
+import functools
 import importlib
+import inspect
 from abc import ABC
 from collections.abc import Callable
 from inspect import getmembers, isabstract, isclass, isfunction
@@ -8,6 +10,17 @@ from typing import Any, Union, get_origin, get_type_hints
 from pydantic._internal._generics import get_args
 
 from pyrannic.support.string import to_pascal_case
+
+
+def is_async_callable(obj: Any) -> bool:
+    while isinstance(obj, functools.partial):
+        obj = obj.func
+
+    return inspect.iscoroutinefunction(obj) or (
+        callable(obj)
+        and inspect.iscoroutinefunction(obj.__call__)
+        and not inspect.isclass(obj)
+    )
 
 
 def is_optional(cls: type, property: str) -> bool:
