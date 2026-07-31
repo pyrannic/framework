@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from pyrannic.ioc import Resolve
+from pyrannic.ioc import Resolves
 
 
 class FooServiceInterface(ABC):
@@ -26,5 +26,5 @@ class FooService2(FooServiceInterface):
 
 
 class BarService:
-    def __init__(self, foo: Resolve[FooServiceInterface]):
+    def __init__(self, foo: Resolves[FooServiceInterface]):
         self.foo = foo

@@ -17,13 +17,13 @@ router = APIRouter(tags=["Heroes"])
     description="Endpoint to retrieve the list of heroes.",
 )
 def index(
-    # container: Resolve[ContainerInterface],
+    # container: Resolves[ContainerInterface],
     # container2: Container,
     # app: App,
-    # repository3: Resolve[HeroesRepository],
-    # repository4: Resolve[HeroesRepository],
-    # foo: Resolve[FooServiceInterface],
-    # bar: Resolve[BarService],
+    # repository3: Resolves[HeroesRepository],
+    # repository4: Resolves[HeroesRepository],
+    # foo: Resolves[FooServiceInterface],
+    # bar: Resolves[BarService],
     repository: HeroesRepository = Depends(),
     # repository: Scoped[Repository[HeroModel]],
 ) -> HeroesCollection:

@@ -1,13 +1,11 @@
 from fastapi import APIRouter
 
-from pyrannic.ioc import Resolve
-
+from pyrannic.ioc import Resolves
 from tests.application.app.repositories.heroes import (
     HeroesRepository,
     HeroesScopedRepository,
     HeroesSingletonRepository,
 )
-
 
 router = APIRouter(tags=["Container Routes"])
 
@@ -17,7 +15,7 @@ router = APIRouter(tags=["Container Routes"])
     summary="Object Memory Address Endpoint",
     description="Endpoint to retrieve the memory address of the object.",
 )
-def get_object_memory_address(repository: Resolve[HeroesRepository]) -> str:
+def get_object_memory_address(repository: Resolves[HeroesRepository]) -> str:
     return hex(id(repository))
 
 
@@ -26,7 +24,7 @@ def get_object_memory_address(repository: Resolve[HeroesRepository]) -> str:
     summary="Scoped Memory Address Endpoint",
     description="Endpoint to retrieve the memory address of the scoped object.",
 )
-def get_scoped_memory_address(repository: Resolve[HeroesScopedRepository]) -> str:
+def get_scoped_memory_address(repository: Resolves[HeroesScopedRepository]) -> str:
     return hex(id(repository))
 
 
@@ -35,5 +33,7 @@ def get_scoped_memory_address(repository: Resolve[HeroesScopedRepository]) -> st
     summary="Singleton Memory Address Endpoint",
     description="Endpoint to retrieve the memory address of the singleton object.",
 )
-def get_singleton_memory_address(repository: Resolve[HeroesSingletonRepository]) -> str:
+def get_singleton_memory_address(
+    repository: Resolves[HeroesSingletonRepository],
+) -> str:
     return hex(id(repository))

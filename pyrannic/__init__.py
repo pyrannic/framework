@@ -15,7 +15,6 @@ from .http.providers import MiddlewaresServiceProvider as MiddlewaresServiceProv
 from .http.providers import RoutersServiceProvider as RoutersServiceProvider
 from .http.resources.collection import ResourceCollection as ResourceCollection
 from .http.resources.resource import Resource as Resource
-from .ioc import Resolve as Resolve
 from .pagination.meta import PaginationMeta as PaginationMeta
 from .pagination.paginator import Paginator as Paginator
 from .support.facades.facade import Facade as Facade
