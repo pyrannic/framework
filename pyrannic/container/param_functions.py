@@ -17,7 +17,7 @@ def Resolves(
 
 
 def Singleton(
-    abstract: str | type | None = None,
+    abstract: str | type | Callable[..., Any] | None = None,
     use_cache: bool = True,
     scope: Literal["function", "request"] | None = None,
 ) -> Any:
@@ -29,7 +29,7 @@ def Singleton(
 
 
 def Scoped(
-    abstract: str | type | None = None,
+    abstract: str | type | Callable[..., Any] | None = None,
     use_cache: bool = True,
     scope: Literal["function", "request"] | None = None,
 ) -> Any:
