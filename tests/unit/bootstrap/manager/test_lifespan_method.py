@@ -8,6 +8,8 @@ from pyrannic.bootstrap.service_provider import ServiceProvider
 from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from tests.unit.bootstrap.manager.providers import (
     FooServiceProvider,
+    ServiceProviderRaiseRuntimeErrorOnBoot,
+    ServiceProviderRaiseRuntimeErrorOnInitialize,
     UnbootableCriticalServiceProvider,
     UnbootableServiceProvider,
     UninitializableCriticalServiceProvider,
@@ -61,6 +63,7 @@ async def test_lifespan__non_critical_provider_fails_while_initializing(
 async def test_lifespan__critical_provider_fails_while_initializing(
     application: Application,
     critical_services: list[type[ServiceProvider]],
+    caplog: pytest.LogCaptureFixture,
 ):
     manager = BootstrapManager([UninitializableCriticalServiceProvider])
     manager.start_critical_services(application, critical_services)
@@ -79,7 +82,42 @@ async def test_lifespan__critical_provider_fails_while_initializing(
     mock.shutdown.assert_not_called()
 
     error = str(exc_info.value)
-    assert "UninitializableCriticalServiceProvider failed to initialize" in error
+    assert "UninitializableCriticalServiceProvider initialize method called" in error
+    assert "UninitializableCriticalServiceProvider failed to initialize" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_lifespan__critical_provider_fails_when_raise_runtime_error(
+    application: Application,
+    critical_services: list[type[ServiceProvider]],
+    caplog: pytest.LogCaptureFixture,
+):
+    manager = BootstrapManager([ServiceProviderRaiseRuntimeErrorOnInitialize])
+    manager.start_critical_services(application, critical_services)
+    manager.run(application)
+
+    mock: Mock = application.container.instance(
+        "service_provider_raise_runtime_error_on_initialize"
+    )
+    config: ConfigRepositoryInterface = application.container.instance("config")
+
+    with pytest.raises(Exception) as exc_info:
+        async with manager.lifespan(application):
+            pass
+
+    mock.initialize.assert_called_once_with(config)
+    mock.failed.assert_not_called()
+    mock.boot.assert_not_called()
+    mock.shutdown.assert_not_called()
+
+    error = str(exc_info.value)
+    assert (
+        "ServiceProviderRaiseRuntimeErrorOnInitialize initialize method called" in error
+    )
+    assert (
+        "ServiceProviderRaiseRuntimeErrorOnInitialize failed to initialize"
+        in caplog.text
+    )
 
 
 @pytest.mark.asyncio
@@ -106,6 +144,7 @@ async def test_lifespan__non_critical_provider_fails_while_booting(
 async def test_lifespan__critical_provider_fails_while_booting(
     application: Application,
     critical_services: list[type[ServiceProvider]],
+    caplog: pytest.LogCaptureFixture,
 ):
     manager = BootstrapManager([UnbootableCriticalServiceProvider])
     manager.start_critical_services(application, critical_services)
@@ -124,4 +163,36 @@ async def test_lifespan__critical_provider_fails_while_booting(
     mock.shutdown.assert_not_called()
 
     error = str(exc_info.value)
-    assert "UnbootableCriticalServiceProvider failed to boot" in error
+    assert "UnbootableCriticalServiceProvider boot method called" in error
+    assert "UnbootableCriticalServiceProvider failed to boot" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_lifespan__non_critical_provider_fails_when_raise_runtime_error(
+    application: Application,
+    critical_services: list[type[ServiceProvider]],
+    caplog: pytest.LogCaptureFixture,
+):
+    manager = BootstrapManager([ServiceProviderRaiseRuntimeErrorOnBoot])
+    manager.start_critical_services(application, critical_services)
+    manager.run(application)
+
+    mock: Mock = application.container.instance(
+        "service_provider_raise_runtime_error_on_boot"
+    )
+    config: ConfigRepositoryInterface = application.container.instance("config")
+
+    with pytest.raises(Exception) as exc_info:
+        async with manager.lifespan(application):
+            mock.initialize.assert_called_once_with(config)
+            mock.boot.assert_called_once_with(config)
+            mock.failed.assert_called_once_with("boot")
+
+    mock.initialize.assert_called_once_with(config)
+    mock.boot.assert_called_once_with(config)
+    mock.failed.assert_not_called()
+    mock.shutdown.assert_not_called()
+
+    error = str(exc_info.value)
+    assert "ServiceProviderRaiseRuntimeErrorOnBoot boot method called" in error
+    assert "ServiceProviderRaiseRuntimeErrorOnBoot failed to boot" in caplog.text

@@ -49,7 +49,7 @@ class FooServiceProvider(MockServiceProvider):
 class BarServiceProvider(MockServiceProvider):
     def register(self) -> None:
         super().register()
-        raise RuntimeError("BarServiceProvider register method called")
+        raise SystemError("BarServiceProvider register method called")
 
 
 class BazServiceProvider(MockServiceProvider):
@@ -59,7 +59,35 @@ class BazServiceProvider(MockServiceProvider):
 
     def register(self) -> None:
         super().register()
-        raise RuntimeError("BazServiceProvider register method called")
+        raise SystemError("BazServiceProvider register method called")
+
+
+class ServiceProviderRaiseRuntimeErrorOnRegister(MockServiceProvider):
+    def register(self) -> None:
+        super().register()
+        raise RuntimeError(
+            "ServiceProviderRaiseRuntimeErrorOnRegister register method called"
+        )
+
+
+class ServiceProviderRaiseRuntimeErrorOnInitialize(MockServiceProvider):
+    async def initialize(
+        self,
+        config: Annotated[ConfigRepositoryInterface, Resolves("config")],
+    ) -> None:
+        await super().initialize(config)
+        raise RuntimeError(
+            "ServiceProviderRaiseRuntimeErrorOnInitialize initialize method called"
+        )
+
+
+class ServiceProviderRaiseRuntimeErrorOnBoot(MockServiceProvider):
+    async def boot(
+        self,
+        config: Annotated[ConfigRepositoryInterface, Resolves("config")],
+    ) -> None:
+        await super().boot(config)
+        raise RuntimeError("ServiceProviderRaiseRuntimeErrorOnBoot boot method called")
 
 
 class UninitializableServiceProvider(MockServiceProvider):
@@ -68,7 +96,7 @@ class UninitializableServiceProvider(MockServiceProvider):
         config: Annotated[ConfigRepositoryInterface, Resolves("config")],
     ) -> None:
         await super().initialize(config)
-        raise RuntimeError("UninitializableServiceProvider initialize method called")
+        raise SystemError("UninitializableServiceProvider initialize method called")
 
 
 class UninitializableCriticalServiceProvider(MockServiceProvider):
@@ -81,7 +109,9 @@ class UninitializableCriticalServiceProvider(MockServiceProvider):
         config: Annotated[ConfigRepositoryInterface, Resolves("config")],
     ) -> None:
         await super().initialize(config)
-        raise RuntimeError("UninitializableServiceProvider initialize method called")
+        raise SystemError(
+            "UninitializableCriticalServiceProvider initialize method called"
+        )
 
 
 class UnbootableServiceProvider(MockServiceProvider):
@@ -90,7 +120,7 @@ class UnbootableServiceProvider(MockServiceProvider):
         config: Annotated[ConfigRepositoryInterface, Resolves("config")],
     ) -> None:
         await super().boot(config)
-        raise RuntimeError("UnbootableServiceProvider boot method called")
+        raise SystemError("UnbootableServiceProvider boot method called")
 
 
 class UnbootableCriticalServiceProvider(MockServiceProvider):
@@ -103,7 +133,7 @@ class UnbootableCriticalServiceProvider(MockServiceProvider):
         config: Annotated[ConfigRepositoryInterface, Resolves("config")],
     ) -> None:
         await super().boot(config)
-        raise RuntimeError("UnbootableCriticalServiceProvider boot method called")
+        raise SystemError("UnbootableCriticalServiceProvider boot method called")
 
 
 class ServiceProviderWithSingletons(MockServiceProvider):

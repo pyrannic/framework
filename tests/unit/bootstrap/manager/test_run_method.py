@@ -9,6 +9,7 @@ from tests.unit.bootstrap.manager.providers import (
     BarServiceProvider,
     BazServiceProvider,
     FooServiceProvider,
+    ServiceProviderRaiseRuntimeErrorOnRegister,
     ServiceProviderWithBindings,
     ServiceProviderWithSingletons,
 )
@@ -54,6 +55,7 @@ def test_run__non_critical_provider_fails_while_registering(
 def test_run__critical_provider_fails_while_registering(
     application: Application,
     critical_services: list[type[ServiceProvider]],
+    caplog: pytest.LogCaptureFixture,
 ):
     manager = BootstrapManager(
         [FooServiceProvider, BarServiceProvider, BazServiceProvider]
@@ -72,7 +74,38 @@ def test_run__critical_provider_fails_while_registering(
     mock.shutdown.assert_not_called()
 
     error = str(exc_info.value)
-    assert "BazServiceProvider failed to register" in error
+    assert "BazServiceProvider register method called" in error
+    assert "BazServiceProvider failed to register" in caplog.text
+
+
+def test_run__non_critical_provider_fails_when_raise_runtime_error(
+    application: Application,
+    critical_services: list[type[ServiceProvider]],
+    caplog: pytest.LogCaptureFixture,
+):
+    manager = BootstrapManager(
+        [FooServiceProvider, ServiceProviderRaiseRuntimeErrorOnRegister]
+    )
+    manager.start_critical_services(application, critical_services)
+
+    with pytest.raises(Exception) as exc_info:
+        manager.run(application)
+
+    mock: Mock = application.container.instance(
+        "service_provider_raise_runtime_error_on_register"
+    )
+
+    mock.register.assert_called_once()
+    mock.initialize.assert_not_called()
+    mock.boot.assert_not_called()
+    mock.failed.assert_not_called()
+    mock.shutdown.assert_not_called()
+
+    error = str(exc_info.value)
+    assert "ServiceProviderRaiseRuntimeErrorOnRegister register method called" in error
+    assert (
+        "ServiceProviderRaiseRuntimeErrorOnRegister failed to register" in caplog.text
+    )
 
 
 def test_run__provider_register_using_bindings_property(
