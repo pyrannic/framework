@@ -33,6 +33,22 @@ class BarService:
         self.foo_service = foo_service
 
 
+class BarServiceWithCall:
+    def __init__(self):
+        self.called = False
+
+    def __call__(self):
+        self.called = True
+
+
+class BarServiceWithAsyncCall:
+    def __init__(self):
+        self.called = False
+
+    async def __call__(self):
+        self.called = True
+
+
 class BazService:
     def __init__(self, foo_service: Resolve[FooInterface]):
         self.foo_service = foo_service
