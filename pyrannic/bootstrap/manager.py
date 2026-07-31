@@ -127,7 +127,7 @@ class BootstrapManager:
             self._logger.critical(
                 f"❌  {name} failed to {method_name}, cannot start app"
             )
-            raise exception
+            raise provider.exception(exception)
         else:
             self._logger.warning(
                 f"⚠️  {name} failed to {method_name} properly: {exception}"
