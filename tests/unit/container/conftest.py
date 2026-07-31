@@ -9,7 +9,7 @@ from pyrannic.container.container import T
 from pyrannic.container.decorators import scoped, singleton
 from pyrannic.contracts.application import ApplicationInterface
 from pyrannic.contracts.container.container import ContainerInterface
-from pyrannic.ioc import Resolve
+from pyrannic.ioc import Resolves
 
 
 class FooInterface(ABC):
@@ -29,7 +29,7 @@ class FooSecondaryImplementation(FooInterface):
 
 
 class BarService:
-    def __init__(self, foo_service: Resolve[FooInterface]):
+    def __init__(self, foo_service: Resolves[FooInterface]):
         self.foo_service = foo_service
 
 
@@ -50,13 +50,13 @@ class BarServiceWithAsyncCall:
 
 
 class BazService:
-    def __init__(self, foo_service: Resolve[FooInterface]):
+    def __init__(self, foo_service: Resolves[FooInterface]):
         self.foo_service = foo_service
 
 
 class BazServiceWithParams:
     def __init__(
-        self, value1: str, value2: str, foo_service: Resolve[FooImplementation]
+        self, value1: str, value2: str, foo_service: Resolves[FooImplementation]
     ):
         self.value1 = value1
         self.value2 = value2
@@ -83,7 +83,7 @@ class SingletonClass(FooInterface):
         return "SingletonClass"
 
 
-def callable_with_dependencies(foo: Resolve[FooImplementation]) -> None:
+def callable_with_dependencies(foo: Resolves[FooImplementation]) -> None:
     assert isinstance(foo, FooImplementation)
     assert foo.foo_method() == "FooImplementation"
 
@@ -92,7 +92,7 @@ def callable_with_dependencies_error(page: int) -> None:
     assert isinstance(page, int)
 
 
-async def async_callable_with_dependencies(foo: Resolve[FooImplementation]) -> None:
+async def async_callable_with_dependencies(foo: Resolves[FooImplementation]) -> None:
     await asyncio.sleep(0.1)  # Simulate async work
     assert isinstance(foo, FooImplementation)
     assert foo.foo_method() == "FooImplementation"
