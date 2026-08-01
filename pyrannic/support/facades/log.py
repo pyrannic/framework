@@ -1,5 +1,5 @@
-from pyrannic import facade
 from pyrannic.contracts import LoggerInterface
+from pyrannic.support.facades.facade import facade
 
 
 @facade
