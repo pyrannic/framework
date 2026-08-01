@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 
-class AuthenticatableInterface(ABC):
+class AuthenticatableInterface:
     """
     Interface for authenticatable users.
     """
@@ -36,28 +36,4 @@ class AuthenticatableInterface(ABC):
         Get the password for the user.
 
         :return: The password.
-        """
-
-    @abstractmethod
-    def get_remember_token(self) -> str:
-        """
-        Get the token value for the "remember me" session.
-
-        :return: The token value.
-        """
-
-    @abstractmethod
-    def set_remember_token(self, value: str) -> None:
-        """
-        Set the token value for the "remember me" session.
-
-        :param value: The token value.
-        """
-
-    @abstractmethod
-    def get_remember_token_name(self) -> str:
-        """
-        Get the column name for the "remember me" token.
-
-        :return: The column name.
         """

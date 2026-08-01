@@ -2,6 +2,7 @@ __version__ = "0.5.7"
 
 from .application import Application as Application
 from .auth.access.gate import Gate as Gate
+from .auth.auth_manager import AuthManager as AuthManager
 from .auth.forbidden_exception import ForbiddenException as ForbiddenException
 from .auth.guards_config import GuardsConfig as GuardsConfig
 from .auth.safeguard import Safeguard as Safeguard

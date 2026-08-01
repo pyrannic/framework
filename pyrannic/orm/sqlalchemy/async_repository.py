@@ -55,6 +55,7 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
         return await self._count(reset_query=False)
 
     async def first(self) -> T | None:
+        self._prepare_query()
         self._before_query()
         model = (
             await self.session.scalars(cast(TypedReturnsRows[Tuple[T]], self._query))

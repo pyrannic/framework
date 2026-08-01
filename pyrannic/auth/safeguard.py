@@ -1,4 +1,5 @@
-from typing import Any
+from collections.abc import Callable
+from typing import Any, cast
 
 from fastapi import Request
 from fastapi.security.base import SecurityBase
@@ -38,4 +39,5 @@ class Safeguard(SecurityBase):
         return cls._security_model
 
     async def __call__(self, request: Request) -> Any:
-        return await self._security_model(request) if self._security_model else None  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
+        callable = cast(Callable[..., Any], self._security_model)
+        return await callable(request) if self._security_model else None

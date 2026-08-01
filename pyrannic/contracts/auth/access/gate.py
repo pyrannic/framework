@@ -1,21 +1,27 @@
 from abc import ABC, abstractmethod
-from typing import Any, Self
+from collections.abc import Callable
+from typing import Any, Self, Sequence
 
 from .authorizable import AuthorizableInterface
 
 
 class GateInterface(ABC):
     @abstractmethod
-    def has(self, ability: str | Any) -> bool:
+    def has(self, *abilities: str) -> bool:
         """
         Determine if a given ability has been defined.
 
-        :param ability: The ability to check.
-        :return: True if the ability is defined, False otherwise.
+        :param abilities: The ability/abilities to check.
+        :return: True if the ability is / abilities are defined, False otherwise.
         """
 
     @abstractmethod
-    def allows(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
+    async def allows(
+        self,
+        abilities: str | Sequence[str],
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
         """
         Determine if all of the given abilities should be granted for the current user.
 
@@ -25,7 +31,12 @@ class GateInterface(ABC):
         """
 
     @abstractmethod
-    def check(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
+    async def check(
+        self,
+        abilities: str | Sequence[str],
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
         """
         Determine if all of the given abilities should be granted for the current user.
 
@@ -35,7 +46,12 @@ class GateInterface(ABC):
         """
 
     @abstractmethod
-    def denies(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
+    async def denies(
+        self,
+        abilities: str | Sequence[str],
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
         """
         Determine if any of the given abilities should be denied for the current user.
 
@@ -45,7 +61,12 @@ class GateInterface(ABC):
         """
 
     @abstractmethod
-    def any(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
+    async def any(
+        self,
+        abilities: str | Sequence[str],
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
         """
         Determine if any one of the given abilities should be granted for the current user.
 
@@ -55,14 +76,19 @@ class GateInterface(ABC):
         """
 
     @abstractmethod
-    def authorize(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
+    def authorize(
+        self,
+        ability: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
         """
         Determine if the given ability should be granted for the current user.
 
-        :param abilities: The abilities to check.
+        :param ability: The ability to check.
         :param args: Additional positional arguments.
         :param kwargs: Additional keyword arguments.
-        :return: True if the ability is granted, False otherwise.
+
         :raises AuthorizationException: If the user is not authorized.
         """
 
@@ -73,4 +99,31 @@ class GateInterface(ABC):
 
         :param user: The user to get the gate instance for.
         :return: A new gate instance for the specified user.
+        """
+
+    @property
+    @abstractmethod
+    def user(self) -> AuthorizableInterface:
+        """
+        Get the currently authenticated user.
+
+        :return: The currently authenticated user.
+        """
+
+    @abstractmethod
+    def define(self, ability: str, callback: Callable[..., bool]) -> Self:
+        """
+        Define a new ability.
+
+        :param ability: The name of the ability.
+        :param callback: A callback that determines if the ability is granted.
+        """
+
+    @abstractmethod
+    def policy(self, model: type[Any], policy: type[Any]) -> Self:
+        """
+        Register a policy for a given model.
+
+        :param model: The model class to register the policy for.
+        :param policy: The policy class to register.
         """

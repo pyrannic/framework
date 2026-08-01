@@ -10,14 +10,20 @@ from .base_guard import BaseGuard
 
 
 class BearerGuard(BaseGuard):
-    def __init__(
-        self,
-        user_provider: Resolves[UserProviderInterface],
-        credentials: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
-    ):
-        self._token = credentials.credentials
+    def __init__(self, user_provider: Resolves[UserProviderInterface]):
         self.set_provider(user_provider)
 
-    async def __call__(self) -> None:
-        # TODO await self.provider.retrieve_by_token(self.id, self._token)
-        pass
+    async def __ioc_call__(
+        self,
+        credentials: Annotated[
+            HTTPAuthorizationCredentials | None,
+            Depends(HTTPBearer(auto_error=False), use_cache=False),
+        ],
+    ) -> None:
+        token = credentials.credentials if credentials else None
+
+        if token:
+            user = await self.provider.retrieve_by_credentials(token=token)
+
+            if user:
+                self.set_user(user)

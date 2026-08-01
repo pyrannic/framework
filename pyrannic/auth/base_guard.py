@@ -43,5 +43,8 @@ class BaseGuard(GuardInterface):
         return self
 
     @property
-    def provider(self) -> UserProviderInterface | None:
+    def provider(self) -> UserProviderInterface:
+        if self._provider is None:
+            raise ValueError("Provider has not been set")
+
         return self._provider

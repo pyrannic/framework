@@ -1,14 +1,14 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any
 
 
-class AuthorizableInterface(ABC):
+class AuthorizableInterface:
     """
     Interface for authorizable entities.
     """
 
     @abstractmethod
-    def can(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
+    async def can(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
         """
         Determine if the entity has the given abilities.
 
@@ -19,7 +19,12 @@ class AuthorizableInterface(ABC):
         """
 
     @abstractmethod
-    def can_any(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
+    async def can_any(
+        self,
+        abilities: str | list[str],
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
         """
         Determine if the entity has any of the given abilities.
 
@@ -30,7 +35,7 @@ class AuthorizableInterface(ABC):
         """
 
     @abstractmethod
-    def cant(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
+    async def cant(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
         """
         Determine if the entity does not have the given abilities.
 
@@ -41,7 +46,12 @@ class AuthorizableInterface(ABC):
         """
 
     @abstractmethod
-    def cannot(self, abilities: str | list[str], *args: Any, **kwargs: Any) -> bool:
+    async def cannot(
+        self,
+        abilities: str | list[str],
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
         """
         Determine if the entity does not have the given abilities.
 

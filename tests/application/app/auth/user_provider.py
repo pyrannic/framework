@@ -2,28 +2,28 @@ from typing import Any
 
 from pyrannic.contracts import (
     AuthenticatableInterface,
-    RepositoryInterface,
     UserProviderInterface,
 )
+from pyrannic.ioc import Resolves
+from tests.application.app.repositories.users import UsersRepository
 
 
 class SQLAlchemyUserProvider(UserProviderInterface):
-    def __init__(self, repository: RepositoryInterface[Any]):
+    def __init__(self, repository: Resolves[UsersRepository]):
         self._repository = repository
 
-    async def retrieve_by_id(self, identifier: Any) -> AuthenticatableInterface | None:
-        return None
+    async def retrieve_by_id(self, identifier: str) -> AuthenticatableInterface | None:
+        return self._repository.find(identifier)
 
-    async def retrieve_by_token(
+    async def retrieve_by_credentials(
         self,
-        identifier: Any,
         token: str,
     ) -> AuthenticatableInterface | None:
-        return None
+        return self._repository.first()  # TODO
 
-    async def update_remember_token(
+    def validate_credentials(
         self,
         user: AuthenticatableInterface,
-        token: str,
-    ) -> None:
-        pass
+        credentials: dict[str, Any],
+    ) -> bool:
+        return False

@@ -223,27 +223,49 @@ class Container(ContainerInterface):
 
         try:
             if not concrete and binding_key in self._instances:
-                return self._instances[binding_key]
+                instance = self._instances[binding_key]
+            else:
+                if not concrete:
+                    concrete = self._get_concrete(abstract)
 
-            if not concrete:
-                concrete = self._get_concrete(abstract)
+                instance = concrete(self._app, request, *args, **kwargs)
 
-            instance = concrete(self._app, request, *args, **kwargs)
+                if inspect.isawaitable(instance):
+                    instance = await instance
 
-            if inspect.isawaitable(instance):
-                instance = await instance
+                if self.is_shared(abstract):
+                    self._instances[binding_key] = instance
 
-            if callable(instance):
-                await self._resolve(instance, self._app, request)
+                # If the instance has a __ioc_resolved__ method, execute it with the container
+                await self._resolve_instance_method(
+                    instance, "__ioc_resolved__", request
+                )
 
-            if self.is_shared(abstract):
-                self._instances[binding_key] = instance
+            # If the instance has a __ioc_call__ method, execute it with the container
+            await self._resolve_instance_method(instance, "__ioc_call__", request)
 
             return cast(T, instance)
         finally:
             if not needs_contextual_build:
                 self._resolved[binding_key] = True
             self._build_stack.pop()
+
+    async def _resolve_instance_method(
+        self,
+        instance: T,
+        method_name: str | None,
+        request: Request | None = None,
+    ) -> T:
+        if not method_name:
+            if callable(instance):
+                print(f"_resolve_instance_method called with instance: {instance}")
+                await self._resolve(instance, self._app, request)
+        else:
+            method = getattr(instance, method_name, None)
+            if method and callable(method):
+                await self._resolve(method, self._app, request)
+
+        return instance
 
     def is_shared(self, abstract: str | type[T]) -> bool:
         """Determine if a given type is shared."""
