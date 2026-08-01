@@ -136,7 +136,7 @@ class Gate(GateInterface):
     ) -> bool:
         callback = await self._resolve_auth_callback(ability, *args)
 
-        if len(args) > 0:
+        if len(args) > 0 and isinstance(args[0], type):
             args = args[1:]
 
         return callback(user, *args, **kwargs)

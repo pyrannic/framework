@@ -39,7 +39,7 @@ async def index(
     if await gate.user.can("create", HeroModel):
         print("User can create heroes!!!")
 
-    if await gate.user.can("view_heroes", HeroModel):
+    if await gate.user.can("view", HeroModel()):
         print("User can view heroes!!!")
 
     return HeroesCollection(repository.paginate())
