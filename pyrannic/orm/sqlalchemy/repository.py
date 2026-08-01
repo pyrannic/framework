@@ -55,6 +55,7 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
         return self._count(reset_query=False)
 
     def first(self) -> T | None:
+        self._prepare_query()
         self._before_query()
         model = (
             self.session.scalars(cast(TypedReturnsRows[Tuple[T]], self._query))
