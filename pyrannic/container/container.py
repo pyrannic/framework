@@ -175,7 +175,7 @@ class Container(ContainerInterface):
         self,
         concrete: type,
         abstract: str | type,
-        implementation: type | Callable[..., Any],
+        implementation: type[T] | Callable[..., Any],
     ) -> None:
         abstract_key = self._abstract_to_str(abstract)
         concrete_key = self._abstract_to_str(concrete)
@@ -253,17 +253,13 @@ class Container(ContainerInterface):
     async def _resolve_instance_method(
         self,
         instance: T,
-        method_name: str | None,
+        method_name: str,
         request: Request | None = None,
     ) -> T:
-        if not method_name:
-            if callable(instance):
-                print(f"_resolve_instance_method called with instance: {instance}")
-                await self._resolve(instance, self._app, request)
-        else:
-            method = getattr(instance, method_name, None)
-            if method and callable(method):
-                await self._resolve(method, self._app, request)
+        method = getattr(instance, method_name, None)
+
+        if method and callable(method):
+            await self._resolve(method, self._app, request)
 
         return instance
 
@@ -399,13 +395,16 @@ class Container(ContainerInterface):
             origin = get_origin(concrete)
 
             if origin is not None and inspect.isclass(origin):
-                return await self._resolve_generic(
-                    concrete,
-                    origin,
-                    app,
-                    request,
-                    *args,
-                    **kwargs,
+                return cast(
+                    T,
+                    await self._resolve_generic(
+                        concrete,
+                        origin,
+                        app,
+                        request,
+                        *args,
+                        **kwargs,
+                    ),
                 )
 
             return await self._resolve(concrete, app, request, *args, **kwargs)

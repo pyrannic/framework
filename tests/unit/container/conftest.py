@@ -37,7 +37,7 @@ class BarServiceWithCall:
     def __init__(self):
         self.called = False
 
-    def __call__(self):
+    def __ioc_call__(self):
         self.called = True
 
 
@@ -45,7 +45,7 @@ class BarServiceWithAsyncCall:
     def __init__(self):
         self.called = False
 
-    async def __call__(self):
+    async def __ioc_call__(self):
         self.called = True
 
 
