@@ -211,11 +211,13 @@ class Container(ContainerInterface):
         return ContextualBindingBuilder(self, concrete)
 
     def is_bound(self, abstract: str | type) -> bool:
-        abstract = self._abstract_to_str(abstract)
+        binding_key = self._abstract_to_str(abstract)
+        binding = self._get_binding(abstract)
+
         return (
-            abstract in self._bindings
-            or abstract in self._instances
-            or self.is_alias(abstract)
+            binding is not None
+            or binding_key in self._instances
+            or self.is_alias(binding_key)
         )
 
     async def make(
@@ -327,29 +329,40 @@ class Container(ContainerInterface):
         return None
 
     def _get_concrete(self, abstract: str | type[T]) -> Callable[..., Any]:
-        concrete: Callable[..., Any]
-        binding_key = self._abstract_to_str(abstract)
+        binding = self._get_binding(abstract)
+        concrete = None
 
-        if binding_key not in self._bindings:
+        if not binding:
             if isinstance(abstract, str):
-                raise RequestValidationError([f"No binding found for key {abstract}"])
+                raise RuntimeError([f"No binding found for key {abstract}"])
             elif is_interface(abstract):
-                raise RequestValidationError(
+                raise RuntimeError(
                     [f"No binding found for interface {abstract.__name__}"]
                 )
             elif is_generic_interface(abstract):
-                concrete = self._try_get_closure_for_generic_interface(abstract)
-            else:
-                concrete = self._get_closure(abstract)
+                raise RuntimeError(
+                    f"No binding found for generic interface {abstract.__name__}"
+                )
+
+            concrete = self._get_closure(abstract)
         else:
-            concrete = self._bindings[binding_key].concrete
+            concrete = binding.concrete
 
         return concrete
 
-    def _try_get_closure_for_generic_interface(
-        self,
-        abstract: type[T],
-    ) -> Callable[..., Any]:
+    def _get_binding(self, abstract: str | type[T]) -> Binding | None:
+        binding_key = self._abstract_to_str(abstract)
+        binding = None
+
+        if binding_key not in self._bindings:
+            if is_generic_interface(abstract):
+                binding = self._get_binding_for_generic_interface(abstract)  # pyright: ignore[reportArgumentType]
+        else:
+            binding = self._bindings[binding_key]
+
+        return binding
+
+    def _get_binding_for_generic_interface(self, abstract: type[T]) -> Binding | None:
         origin_abstract = cast(type, get_origin(abstract))
         generic_types = get_args(abstract)
 
@@ -362,11 +375,7 @@ class Container(ContainerInterface):
                 if orig_generic_type is not None:
                     for generic_type in generic_types:
                         if issubclass(generic_type, orig_generic_type):
-                            return binding.concrete
-
-        raise RuntimeError(
-            f"No binding found for generic interface {abstract.__name__}"
-        )
+                            return binding
 
     async def call(
         self,

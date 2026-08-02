@@ -87,8 +87,6 @@ def get_generic_type(instance_or_class: object | type[Any]) -> type | None:
                 generic_type = get_generic_type(cls)
                 return generic_type
 
-    print(f"Generic type found: {instance_or_class}")
-
     args = get_args(instance_or_class)
     size = len(args)
 
