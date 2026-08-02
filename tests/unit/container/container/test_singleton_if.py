@@ -1,5 +1,5 @@
-from fastapi.exceptions import RequestValidationError
 import pytest
+from fastapi.exceptions import RequestValidationError
 
 from pyrannic.contracts.container.container import ContainerInterface
 from tests.unit.container.conftest import (
@@ -40,7 +40,7 @@ def test_singleton_if_invalid_concrete(container: ContainerInterface):
 
     error = str(exc_info.value)
     assert "validation error" in error
-    assert "Concrete must be a class or a callable" in error
+    assert "Concrete hi! must be a class or a callable" in error
 
 
 @pytest.mark.asyncio

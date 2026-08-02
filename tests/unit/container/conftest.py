@@ -67,7 +67,23 @@ class FooModel:
     pass
 
 
+class SubFooModel(FooModel):
+    pass
+
+
 class FooGeneric(Generic[T]):
+    pass
+
+
+class FooGenericInterface(ABC, Generic[T]):
+    pass
+
+
+class FooGenericImplementation(FooGenericInterface[FooModel]):
+    pass
+
+
+class SubFooGenericImplementation(FooGenericInterface[SubFooModel]):
     pass
 
 
