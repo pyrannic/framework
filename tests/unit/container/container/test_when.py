@@ -30,3 +30,15 @@ async def test_contextual_binding(container: Container):
 
     assert isinstance(instance.foo_service, FooSecondaryImplementation)
     assert instance.foo_service.foo_method() == "FooSecondaryImplementation"
+
+
+@pytest.mark.asyncio
+async def test_contextual_binding_with_function(container: Container):
+    container.when(BarService).needs(FooInterface).give(
+        lambda *_: FooSecondaryImplementation()
+    )
+
+    instance = await container.resolve(BarService)
+
+    assert isinstance(instance.foo_service, FooSecondaryImplementation)
+    assert instance.foo_service.foo_method() == "FooSecondaryImplementation"
