@@ -1,4 +1,4 @@
-from typing import Any, Generic, Sequence, TypeAlias, TypeVar, Union
+from typing import Any, Generic, Sequence, TypeAlias, TypeVar, Union, cast
 
 from pydantic import BaseModel, model_serializer
 
@@ -34,12 +34,7 @@ class BaseCollection(BaseModel, _ResourceCollection[ResourceType]):
         with_relationships: bool | list[str] = True,
         **kwargs: Any,
     ):
-        if not hasattr(self, "__resource_cls__"):
-            self.__resource_cls__ = get_generic_type(self)
-
-        assert self.__resource_cls__ is not None, (
-            "Resource class must be set before initializing ResourceCollection"
-        )
+        self._infer_resource_cls_if_needed()
 
         if isinstance(data, PaginatorInterface):
             super().__init__(
@@ -86,6 +81,21 @@ class BaseCollection(BaseModel, _ResourceCollection[ResourceType]):
                 meta=None,
                 **kwargs,
             )
+
+    def _infer_resource_cls_if_needed(self) -> None:
+        """Infer the resource class if it is not set yet."""
+        resource_cls = None
+
+        if not hasattr(self, "__resource_cls__"):
+            resource_cls = get_generic_type(self)
+        else:
+            resource_cls = self.__resource_cls__
+
+        assert resource_cls is not None, (
+            "Resource class must be set before initializing ResourceCollection"
+        )
+
+        self.__resource_cls__ = cast(type[ResourceType], resource_cls)
 
 
 class ResourceCollection(BaseCollection[ResourceType]):
