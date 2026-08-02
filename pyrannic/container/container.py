@@ -21,7 +21,12 @@ from pyrannic.contracts.container.container import ContainerInterface
 from pyrannic.contracts.container.contextual_binding_builder import (
     ContextualBindingBuilderInterface,
 )
-from pyrannic.support.reflection import is_async_callable, is_interface
+from pyrannic.support.reflection import (
+    get_generic_type,
+    is_async_callable,
+    is_generic_interface,
+    is_interface,
+)
 
 T = TypeVar("T")
 
@@ -29,10 +34,14 @@ T = TypeVar("T")
 class Binding:
     def __init__(
         self,
+        abstract: str | type,
         concrete: Callable[..., Any],
+        orig_concrete: type[Any] | Callable[..., Any],
         shared: bool = False,
     ) -> None:
+        self.abstract = abstract
         self.concrete = concrete
+        self.orig_concrete = orig_concrete
         self.shared = shared
 
 
@@ -104,18 +113,20 @@ class Container(ContainerInterface):
         concrete: type[Any] | Callable[..., Any],
         shared: bool = False,
     ) -> None:
-        abstract = self._abstract_to_str(abstract)
-        self._drop_stale_instances(abstract)
+        binding_key = self._abstract_to_str(abstract)
+        self._drop_stale_instances(binding_key)
 
         if inspect.isclass(concrete):
-            concrete = self._get_closure(concrete)
+            closure = self._get_closure(concrete)
+        else:
+            closure = concrete
 
-        if not isinstance(concrete, FunctionType):
+        if not isinstance(closure, FunctionType):
             raise RequestValidationError(
                 [f"Concrete {concrete} must be a class or a callable"]
             )
 
-        self._bindings[abstract] = Binding(concrete, shared)
+        self._bindings[binding_key] = Binding(abstract, closure, concrete, shared)
 
     def bind_if(
         self,
@@ -186,9 +197,15 @@ class Container(ContainerInterface):
             self._contextual[concrete_key] = {}
 
         if inspect.isclass(implementation):
-            implementation = self._get_closure(implementation)
+            closure = self._get_closure(implementation)
+        else:
+            closure = implementation
 
-        self._contextual[concrete_key][abstract_key] = Binding(implementation)
+        self._contextual[concrete_key][abstract_key] = Binding(
+            abstract,
+            closure,
+            concrete,
+        )
 
     def when(self, concrete: type | list[type]) -> ContextualBindingBuilderInterface:
         return ContextualBindingBuilder(self, concrete)
@@ -247,6 +264,9 @@ class Container(ContainerInterface):
             await self._resolve_instance_method(instance, "__ioc_call__", request)
 
             return cast(T, instance)
+        except Exception as e:
+            print(f"Error resolving {abstract}")
+            raise e
         finally:
             if not needs_contextual_build:
                 self._resolved[binding_key] = True
@@ -317,12 +337,36 @@ class Container(ContainerInterface):
                 raise RequestValidationError(
                     [f"No binding found for interface {abstract.__name__}"]
                 )
+            elif is_generic_interface(abstract):
+                concrete = self._try_get_closure_for_generic_interface(abstract)
             else:
                 concrete = self._get_closure(abstract)
         else:
             concrete = self._bindings[binding_key].concrete
 
         return concrete
+
+    def _try_get_closure_for_generic_interface(
+        self,
+        abstract: type[T],
+    ) -> Callable[..., Any]:
+        origin_abstract = cast(type, get_origin(abstract))
+        generic_types = get_args(abstract)
+
+        for _, binding in self._bindings.items():
+            if inspect.isclass(binding.orig_concrete) and issubclass(
+                binding.orig_concrete, origin_abstract
+            ):
+                orig_generic_type = get_generic_type(binding.orig_concrete)
+
+                if orig_generic_type is not None:
+                    for generic_type in generic_types:
+                        if issubclass(generic_type, orig_generic_type):
+                            return binding.concrete
+
+        raise RuntimeError(
+            f"No binding found for generic interface {abstract.__name__}"
+        )
 
     async def call(
         self,

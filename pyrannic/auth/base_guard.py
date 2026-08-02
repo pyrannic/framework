@@ -7,7 +7,7 @@ from pyrannic.contracts import (
 )
 
 
-class BaseGuard(GuardInterface):
+class BaseGuard(GuardInterface[AuthenticatableInterface]):
     _user: AuthenticatableInterface | None = None
     _provider: UserProviderInterface | None = None
 
@@ -20,11 +20,22 @@ class BaseGuard(GuardInterface):
         return self._user is None
 
     @property
-    def user(self) -> AuthenticatableInterface | None:
+    def user(self) -> AuthenticatableInterface:
+        if self._user is None:
+            raise ValueError("No user is currently authenticated")
+
         return self._user
 
     @property
-    def id(self) -> str | None:
+    def maybe_user(self) -> AuthenticatableInterface | None:
+        return self._user
+
+    @property
+    def id(self) -> str:
+        return self.user.get_auth_identifier()
+
+    @property
+    def maybe_id(self) -> str | None:
         return self._user.get_auth_identifier() if self._user else None
 
     def validate(self, credentials: dict[str, Any]) -> bool:

@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import TypeVar
 
 
 class AuthenticatableInterface:
@@ -37,3 +38,6 @@ class AuthenticatableInterface:
 
         :return: The password.
         """
+
+
+AuthenticatableType = TypeVar("AuthenticatableType", bound=AuthenticatableInterface)

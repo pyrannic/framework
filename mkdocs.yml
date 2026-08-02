@@ -48,6 +48,9 @@ nav:
     - The Basics:
         - Routers: routers.md
         - Middlewares: middlewares.md
+    - Security:
+        - Authentication: security/authentication.md
+        - Authorization: security/authorization.md
     - Database & ORM:
         - Getting Started: database/getting-started.md
         - Migrations: database/migrations.md

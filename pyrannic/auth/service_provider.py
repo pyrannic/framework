@@ -2,12 +2,17 @@ from pyrannic.auth.access.gate import Gate
 from pyrannic.auth.bearer_guard import BearerGuard
 from pyrannic.auth.safeguard import Safeguard
 from pyrannic.bootstrap.service_provider import ServiceProvider
-from pyrannic.contracts import ConfigRepositoryInterface, GateInterface, GuardInterface
+from pyrannic.contracts import (
+    AuthenticatableInterface,
+    ConfigRepositoryInterface,
+    GateInterface,
+    GuardInterface,
+)
 
 
 class AuthServiceProvider(ServiceProvider):
     __bindings__ = {
-        GuardInterface: BearerGuard,
+        GuardInterface[AuthenticatableInterface]: BearerGuard,
         GateInterface: Gate,
     }
 

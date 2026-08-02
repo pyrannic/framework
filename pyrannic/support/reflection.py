@@ -5,7 +5,7 @@ from abc import ABC
 from collections.abc import Callable
 from inspect import getmembers, isabstract, isclass, isfunction
 from types import ModuleType, UnionType, get_original_bases
-from typing import Any, Union, get_origin, get_type_hints
+from typing import Any, Union, cast, get_origin, get_type_hints
 
 from pydantic._internal._generics import get_args
 
@@ -52,7 +52,13 @@ def is_interface(cls: object) -> bool:
     return isabstract(cls)
 
 
-def get_generic_type(instance_or_class: object | type, generic_index: int = 0) -> type:
+def is_generic_interface(cls: object) -> bool:
+    """Check if a class is a generic interface."""
+    origin = get_origin(cls)
+    return origin is not None and is_interface(origin)
+
+
+def get_generic_type(instance_or_class: object | type[Any]) -> type | None:
     """Get the generic type of a class or instance."""
 
     # Check if instance_or_class has the __orig_class__ attribute, which it is the generic type that we are searching.
@@ -61,20 +67,32 @@ def get_generic_type(instance_or_class: object | type, generic_index: int = 0) -
         instance_or_class = getattr(instance_or_class, "__orig_class__")
     else:
         if not isclass(instance_or_class):
-            instance_or_class = type(instance_or_class)
+            instance_or_class = cast(type[Any], type(instance_or_class))
 
         classes = get_original_bases(instance_or_class)
-        instance_or_class = classes[generic_index]
+        generic_found = False
+
+        if not classes:
+            return None
+
+        for cls in classes:
+            if len(get_args(cls)) > 0 or get_origin(cls) is not None:
+                instance_or_class = cls
+                generic_found = True
+                break
+
+        if not generic_found:
+            # Search in the parent classes for a generic type.
+            for cls in classes:
+                generic_type = get_generic_type(cls)
+                return generic_type
+
+    print(f"Generic type found: {instance_or_class}")
 
     args = get_args(instance_or_class)
     size = len(args)
 
-    if size == 0:
-        raise ValueError(
-            f"Generic type not found for {instance_or_class.__class__.__name__} at index {generic_index}"  # pyright: ignore[reportUnknownMemberType]
-        )
-
-    return args[0]
+    return args[0] if size > 0 else None
 
 
 def get_functions(

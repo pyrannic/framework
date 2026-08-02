@@ -5,6 +5,7 @@ import pyrannic.support.string as string
 from pyrannic.auth import UnauthorizedException
 from pyrannic.auth.access.response import Response
 from pyrannic.contracts import (
+    AuthenticatableInterface,
     AuthorizableInterface,
     ContainerInterface,
     GateInterface,
@@ -21,7 +22,7 @@ class Gate(GateInterface):
     _abilities: dict[str, Any] = {}
     _policies: dict[str, Any] = {}
     _container: ContainerInterface
-    _guard: GuardInterface | None = None
+    _guard: GuardInterface[AuthenticatableInterface] | None = None
 
     def __init__(
         self,
@@ -243,7 +244,9 @@ class Gate(GateInterface):
             f"app.auth.policies.{model_name}",
         ]
 
-    async def __ioc_call__(self, guard: Resolves[GuardInterface]) -> None:
+    async def __ioc_call__(
+        self, guard: Resolves[GuardInterface[AuthenticatableInterface]]
+    ) -> None:
         self._guard = guard
-        self._user = cast(AuthorizableInterface, guard.user)
+        self._user = cast(AuthorizableInterface, guard.maybe_user)
         self._container.instance(GateInterface, self)

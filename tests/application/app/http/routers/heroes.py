@@ -8,6 +8,7 @@ from pyrannic.contracts import GateInterface, GuardInterface
 from pyrannic.ioc import Resolves
 from tests.application.app.http.resources.hero import Hero, HeroesCollection
 from tests.application.app.models.hero import Hero as HeroModel
+from tests.application.app.models.user import User
 from tests.application.app.repositories.heroes import HeroesRepository
 
 router = APIRouter(
@@ -29,12 +30,12 @@ async def index(
     # repository4: Resolves[HeroesRepository],
     # foo: Resolves[FooServiceInterface],
     # bar: Resolves[BarService],
-    guard: Resolves[GuardInterface],
+    guard: Resolves[GuardInterface[User]],
     gate: Resolves[GateInterface],
     repository: HeroesRepository = Depends(),
     # repository: Scoped[Repository[HeroModel]],
 ) -> HeroesCollection:
-    print(f"Guard: {gate.has('view_heroes')}")
+    print(f"Guard: {guard.user.email}")
 
     if await gate.user.can("create", HeroModel):
         print("User can create heroes!!!")
