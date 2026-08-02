@@ -111,7 +111,9 @@ class Container(ContainerInterface):
             concrete = self._get_closure(concrete)
 
         if not isinstance(concrete, FunctionType):
-            raise RequestValidationError(["Concrete must be a class or a callable"])
+            raise RequestValidationError(
+                [f"Concrete {concrete} must be a class or a callable"]
+            )
 
         self._bindings[abstract] = Binding(concrete, shared)
 
