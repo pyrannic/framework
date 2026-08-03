@@ -29,12 +29,14 @@ class Gate(GateInterface):
         container: Resolves[ContainerInterface],
         abilities: dict[str, Any] = {},
         policies: dict[str, Any] = {},
+        user: AuthorizableInterface | None = None,
     ) -> None:
         self._abilities = abilities
         self._policies = policies
         self._container = container
+        self._user = user
 
-    def has(self, *abilities: str) -> bool:
+    def has(self, *abilities: str | Sequence[str]) -> bool:
         for ability in abilities:
             if ability not in self._abilities:
                 return False
@@ -87,6 +89,14 @@ class Gate(GateInterface):
 
         return False
 
+    async def none(
+        self,
+        abilities: str | Sequence[str],
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
+        return not await self.any(abilities, *args, **kwargs)
+
     async def authorize(
         self,
         ability: str,
@@ -96,8 +106,12 @@ class Gate(GateInterface):
         return (await self._inspect(ability, *args, **kwargs)).authorize()
 
     def for_user(self, user: AuthorizableInterface) -> Self:
-        self._user = user
-        return self
+        return self.__class__(
+            self._container,
+            self._abilities,
+            self._policies,
+            user,
+        )
 
     @property
     def user(self) -> AuthorizableInterface:
@@ -106,11 +120,11 @@ class Gate(GateInterface):
 
         return self._user
 
-    def define(self, ability: str, callback: Callable[..., bool]) -> Self:
+    def define_ability(self, ability: str, callback: Callable[..., bool]) -> Self:
         self._abilities[ability] = callback
         return self
 
-    def policy(self, model: type[Any], policy: type[Any]) -> Self:
+    def define_policy(self, model: type[Any], policy: type[Any]) -> Self:
         self._policies[model.__name__] = policy
         return self
 
@@ -188,18 +202,19 @@ class Gate(GateInterface):
     ) -> Callable[..., bool] | None:
         """Resolve the callback for a policy check."""
 
-        method_name = self.format_ability_to_method(ability)
+        method_name = self._format_ability_to_method(ability)
+
+        print(
+            f"Resolving policy callback for ability '{ability}' with method name '{method_name}'"
+        )
 
         if callable(getattr(policy, method_name, None)):
             return getattr(policy, method_name)
 
         return None
 
-    def format_ability_to_method(self, ability: str) -> str:
-        if "-" in ability or "_" in ability:
-            ability = string.to_camel_case(ability)
-
-        return ability
+    def _format_ability_to_method(self, ability: str) -> str:
+        return string.to_snake_case(ability)
 
     async def _get_policy_for(self, model: type | object | str) -> Any | None:
         if isinstance(model, str):

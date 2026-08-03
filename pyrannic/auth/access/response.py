@@ -36,6 +36,26 @@ class Response:
         """Determine if the response was denied."""
         return not self._allowed
 
+    @property
+    def message(self) -> str | None:
+        """Get the response message."""
+        return self._message
+
+    @property
+    def code(self) -> Any:
+        """Get the response code."""
+        return self._code
+
+    @property
+    def status(self) -> int | None:
+        """Get the HTTP response status code."""
+        return self._status
+
+    def with_status(self, status: int) -> Self:
+        """Set the HTTP response status code."""
+        self._status = status
+        return self
+
     @classmethod
     def allow(cls, message: str | None = None, code: Any = None) -> Self:
         """Create a new "allow" Response."""
@@ -49,6 +69,6 @@ class Response:
     def authorize(self) -> Self:
         """Authorize the response, raising an exception if denied."""
         if self.denied:
-            raise ForbiddenException()
+            raise ForbiddenException(message=self.message)
 
         return self

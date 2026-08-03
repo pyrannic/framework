@@ -1,8 +1,8 @@
 from pydantic import Field
 
 from pyrannic import Configuration
-from pyrannic.auth.guards_config import GuardsConfig
-from pyrannic.auth.user_providers_config import UserProvidersConfig
+from pyrannic.auth.config.guards_config import GuardsConfig
+from pyrannic.auth.config.user_providers_config import UserProvidersConfig
 
 
 class AuthConfig(Configuration):

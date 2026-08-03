@@ -7,7 +7,7 @@ from .authorizable import AuthorizableInterface
 
 class GateInterface(ABC):
     @abstractmethod
-    def has(self, *abilities: str) -> bool:
+    def has(self, *abilities: str | Sequence[str]) -> bool:
         """
         Determine if a given ability has been defined.
 
@@ -76,6 +76,21 @@ class GateInterface(ABC):
         """
 
     @abstractmethod
+    async def none(
+        self,
+        abilities: str | Sequence[str],
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
+        """
+        Determine if none of the given abilities should be granted for the current user.
+
+        :param abilities: The abilities to check.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional keyword arguments.
+        """
+
+    @abstractmethod
     def authorize(
         self,
         ability: str,
@@ -111,7 +126,7 @@ class GateInterface(ABC):
         """
 
     @abstractmethod
-    def define(self, ability: str, callback: Callable[..., bool]) -> Self:
+    def define_ability(self, ability: str, callback: Callable[..., bool]) -> Self:
         """
         Define a new ability.
 
@@ -120,7 +135,7 @@ class GateInterface(ABC):
         """
 
     @abstractmethod
-    def policy(self, model: type[Any], policy: type[Any]) -> Self:
+    def define_policy(self, model: type[Any], policy: type[Any]) -> Self:
         """
         Register a policy for a given model.
 
