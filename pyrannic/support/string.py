@@ -41,3 +41,13 @@ def to_studly_case(value: str) -> str:
     """Convert a string to studly case. Alias for Pascal case function: to_pascal_case"""
 
     return to_pascal_case(value)
+
+
+def parse_module_class(module: str) -> tuple[str, str]:
+    """Parse a module string into its module name and class name components."""
+
+    parts = module.split(".")
+    module_name = ".".join(parts[:-1])
+    class_name = parts[-1]
+
+    return module_name, class_name
