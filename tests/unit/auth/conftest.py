@@ -81,6 +81,8 @@ class MemoryUserProvider(UserProviderInterface):
             if user.password == token:
                 return user
 
+        return None
+
     def validate_credentials(
         self,
         user: AuthenticatableInterface,

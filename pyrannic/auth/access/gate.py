@@ -26,17 +26,17 @@ class Gate(GateInterface):
     def __init__(
         self,
         container: Resolves[ContainerInterface],
-        abilities: dict[str, Any] = {},
-        policies: dict[str, Any] = {},
+        abilities: dict[str, Any] | None = None,
+        policies: dict[str, Any] | None = None,
         # NOTE: We need to use Any as type-hint here because if we use AuthorizableInterface, it will cause an error in the dependency injection system from FastAPI.
         user: Optional[Any] = None,
     ) -> None:
-        self._abilities = abilities
-        self._policies = policies
+        self._abilities = abilities or {}
+        self._policies = policies or {}
         self._container = container
         self._user = user
 
-    def has(self, *abilities: str | Sequence[str]) -> bool:
+    def has(self, *abilities: str) -> bool:
         for ability in abilities:
             if ability not in self._abilities:
                 return False
@@ -171,7 +171,8 @@ class Gate(GateInterface):
 
         return callback
 
-    def _default_callback(self, _: Any) -> bool: ...
+    def _default_callback(self, _: Any) -> bool:
+        return False
 
     async def _resolve_policy_callback_if_possible(
         self,
@@ -192,8 +193,7 @@ class Gate(GateInterface):
         self,
         ability: str,
     ) -> Callable[..., bool] | None:
-        if ability in self._abilities:
-            return self._abilities[ability]
+        return self._abilities[ability] if ability in self._abilities else None
 
     def _resolve_policy_callback(
         self,
