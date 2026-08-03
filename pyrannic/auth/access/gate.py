@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Any, Self, Sequence, cast
+from typing import Any, Optional, Self, Sequence, cast
 
 import pyrannic.support.string as string
 from pyrannic.auth import UnauthorizedException
@@ -22,14 +22,14 @@ class Gate(GateInterface):
     _abilities: dict[str, Any] = {}
     _policies: dict[str, Any] = {}
     _container: ContainerInterface
-    _guard: GuardInterface[AuthenticatableInterface] | None = None
 
     def __init__(
         self,
         container: Resolves[ContainerInterface],
         abilities: dict[str, Any] = {},
         policies: dict[str, Any] = {},
-        user: AuthorizableInterface | None = None,
+        # NOTE: We need to use Any as type-hint here because if we use AuthorizableInterface, it will cause an error in the dependency injection system from FastAPI.
+        user: Optional[Any] = None,
     ) -> None:
         self._abilities = abilities
         self._policies = policies
@@ -204,10 +204,6 @@ class Gate(GateInterface):
 
         method_name = self._format_ability_to_method(ability)
 
-        print(
-            f"Resolving policy callback for ability '{ability}' with method name '{method_name}'"
-        )
-
         if callable(getattr(policy, method_name, None)):
             return getattr(policy, method_name)
 
@@ -262,6 +258,5 @@ class Gate(GateInterface):
     async def __ioc_call__(
         self, guard: Resolves[GuardInterface[AuthenticatableInterface]]
     ) -> None:
-        self._guard = guard
         self._user = cast(AuthorizableInterface, guard.maybe_user)
         self._container.instance(GateInterface, self)

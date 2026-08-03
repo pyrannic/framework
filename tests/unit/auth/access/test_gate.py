@@ -140,13 +140,15 @@ async def test_gate_authorize_raises_forbidden_exception_with_policy(
     assert "403: This action is forbidden." in error
 
 
-def test_gate_define_ability(gate: GateInterface):
+@pytest.mark.asyncio
+async def test_gate_define_ability(gate: GateInterface):
     gate.define_ability("new-ability", lambda user: user.id == 1)  # type: ignore
     assert gate.has("new-ability")
-    assert gate.allows("new-ability")
+    assert await gate.allows("new-ability")
 
 
-def test_gate_define_policy(gate: GateInterface):
+@pytest.mark.asyncio
+async def test_gate_define_policy(gate: GateInterface):
     gate.define_policy(Order, OrderPolicy)
-    assert gate.allows("create", Order)
-    assert gate.allows("update", Order(id=1, user_id=1))
+    assert await gate.allows("create", Order)
+    assert await gate.allows("update", Order(id=1, user_id=1))

@@ -20,5 +20,5 @@ class AppServiceProvider(ServiceProvider):
         self.container.when(BarService).needs(FooServiceInterface).give(FooService2)
 
     async def boot(self, gate: Resolves[GateInterface]) -> None:
-        gate.define("view_heroes", lambda user: True)  # type: ignore
+        gate.define_ability("view_heroes", lambda user: True)  # type: ignore
         # gate.policy(Hero, HeroPolicy)

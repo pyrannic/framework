@@ -266,9 +266,6 @@ class Container(ContainerInterface):
             await self._resolve_instance_method(instance, "__ioc_call__", request)
 
             return cast(T, instance)
-        except Exception as e:
-            print(f"Error resolving {abstract}")
-            raise e
         finally:
             if not needs_contextual_build:
                 self._resolved[binding_key] = True
