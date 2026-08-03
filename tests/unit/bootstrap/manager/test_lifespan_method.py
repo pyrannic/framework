@@ -7,6 +7,7 @@ from pyrannic.bootstrap.manager import BootstrapManager
 from pyrannic.bootstrap.service_provider import ServiceProvider
 from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from tests.unit.bootstrap.manager.providers import (
+    CustomExceptionServiceProvider,
     FooServiceProvider,
     ServiceProviderRaiseRuntimeErrorOnBoot,
     ServiceProviderRaiseRuntimeErrorOnInitialize,
@@ -196,3 +197,33 @@ async def test_lifespan__non_critical_provider_fails_when_raise_runtime_error(
     error = str(exc_info.value)
     assert "ServiceProviderRaiseRuntimeErrorOnBoot boot method called" in error
     assert "ServiceProviderRaiseRuntimeErrorOnBoot failed to boot" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_lifespan__provider_fails_raising_custom_error(
+    application: Application,
+    critical_services: list[type[ServiceProvider]],
+    caplog: pytest.LogCaptureFixture,
+):
+    manager = BootstrapManager([CustomExceptionServiceProvider])
+    manager.start_critical_services(application, critical_services)
+    manager.run(application)
+
+    mock: Mock = application.container.instance("custom_exception_service")
+    config: ConfigRepositoryInterface = application.container.instance("config")
+
+    with pytest.raises(Exception) as exc_info:
+        async with manager.lifespan(application):
+            mock.initialize.assert_called_once_with(config)
+            mock.boot.assert_called_once_with(config)
+            mock.failed.assert_called_once_with("boot")
+
+    mock.initialize.assert_called_once_with(config)
+    mock.boot.assert_called_once_with(config)
+    mock.failed.assert_not_called()
+    mock.shutdown.assert_not_called()
+    mock.exception.assert_called_once()
+
+    error = str(exc_info.value)
+    assert "CustomExceptionServiceProvider exception method called" in error
+    assert "CustomExceptionServiceProvider failed to boot" in caplog.text
