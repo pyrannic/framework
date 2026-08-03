@@ -3,20 +3,26 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from pyrannic import ResourceNotFoundException
+from pyrannic import ResourceNotFoundException, Safeguard
+from pyrannic.contracts import GateInterface, GuardInterface
+from pyrannic.ioc import Resolves
 from tests.application.app.http.resources.hero import Hero, HeroesCollection
 from tests.application.app.models.hero import Hero as HeroModel
+from tests.application.app.models.user import User
 from tests.application.app.repositories.heroes import HeroesRepository
 
-router = APIRouter(tags=["Heroes"])
+router = APIRouter(
+    tags=["Heroes"],
+)
 
 
 @router.get(
     "/heroes",
     summary="Heroes Endpoint",
     description="Endpoint to retrieve the list of heroes.",
+    dependencies=[Depends(Safeguard())],
 )
-def index(
+async def index(
     # container: Resolves[ContainerInterface],
     # container2: Container,
     # app: App,
@@ -24,10 +30,21 @@ def index(
     # repository4: Resolves[HeroesRepository],
     # foo: Resolves[FooServiceInterface],
     # bar: Resolves[BarService],
+    guard: Resolves[GuardInterface[User]],
+    gate: Resolves[GateInterface],
     repository: HeroesRepository = Depends(),
     # repository: Scoped[Repository[HeroModel]],
 ) -> HeroesCollection:
-    return HeroesCollection(repository.where(HeroModel.name.like("%man%")).paginate())
+    print(f"Guard: {guard.user.email}")
+
+    if await gate.user.can("create", HeroModel):
+        print("User can create heroes!!!")
+
+    if await gate.user.can("view", HeroModel()):
+        print("User can view heroes!!!")
+
+    return HeroesCollection(repository.paginate())
+    # return HeroesCollection(repository.where(HeroModel.name.like("%man%")).paginate())
 
 
 @router.get(
