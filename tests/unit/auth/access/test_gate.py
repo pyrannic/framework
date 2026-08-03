@@ -4,7 +4,17 @@ from pyrannic.auth import ForbiddenException, UnauthorizedException
 from pyrannic.auth.access.gate import Gate
 from pyrannic.contracts.application import ApplicationInterface
 from pyrannic.contracts.auth.access.gate import GateInterface
-from tests.unit.auth.conftest import Order, OrderPolicy, Post
+from tests.unit.auth.conftest import (
+    Category,
+    Order,
+    OrderPolicy,
+    Post,
+    PostEntity,
+    PostModel,
+    PostPolicy,
+    PostSchema,
+    PostTable,
+)
 
 
 @pytest.mark.asyncio
@@ -152,3 +162,59 @@ async def test_gate_define_policy(gate: GateInterface):
     gate.define_policy(Order, OrderPolicy)
     assert await gate.allows("create", Order)
     assert await gate.allows("update", Order(id=1, user_id=1))
+
+
+@pytest.mark.asyncio
+async def test_gate_policy_with_resource_as_str(gate: GateInterface):
+    assert await gate.allows("create", "Post")
+
+
+@pytest.mark.asyncio
+async def test_gate_with_resource_with_suffixes(gate: GateInterface):
+    gate.define_policy(PostTable, PostPolicy)
+    gate.define_policy(PostModel, PostPolicy)
+    gate.define_policy(PostEntity, PostPolicy)
+    gate.define_policy(PostSchema, PostPolicy)
+
+    assert await gate.allows("update", PostTable(id=1, user_id=1))
+    assert await gate.allows("update", PostModel(id=1, user_id=1))
+    assert await gate.allows("update", PostEntity(id=1, user_id=1))
+    assert await gate.allows("update", PostSchema(id=1, user_id=1))
+
+
+@pytest.mark.asyncio
+async def test_gate_with_different_policy_formats(gate: GateInterface):
+    assert await gate.allows("mark_as_read", Post(id=1, user_id=2))
+    assert await gate.allows("Mark_As_Read", Post(id=1, user_id=2))
+    assert await gate.allows("MARK_AS_READ", Post(id=1, user_id=2))
+
+    assert await gate.allows("mark-as-read", Post(id=1, user_id=2))
+    assert await gate.allows("Mark-As-Read", Post(id=1, user_id=2))
+    assert await gate.allows("MARK-AS-READ", Post(id=1, user_id=2))
+
+    assert await gate.allows("markAsRead", Post(id=1, user_id=2))
+    assert await gate.allows("MarkAsRead", Post(id=1, user_id=2))
+
+
+@pytest.mark.asyncio
+async def test_gate_with_policy_returning_response(gate: GateInterface):
+    assert await gate.allows("mark_as_read", Post(id=1, user_id=2))
+
+
+@pytest.mark.asyncio
+async def test_gate_with_policy_raising_unauthorized_exception(gate: GateInterface):
+    assert await gate.denies("rate", Post(id=1, user_id=2))
+
+
+@pytest.mark.asyncio
+async def test_gate_guess_policy_names_using(gate: GateInterface):
+    gate.guess_policy_names_using(
+        lambda resource: Category.__module__ + ".CategoryPolicy"
+    )
+    assert await gate.allows("remove", Category(id=1, user_id=1))
+
+
+@pytest.mark.asyncio
+async def test_gate_resource_doesnt_exist_denies_always(gate: GateInterface):
+    assert await gate.denies("add", "Tag")
+    assert not await gate.allows("add", "Tag")

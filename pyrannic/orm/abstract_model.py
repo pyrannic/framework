@@ -2,7 +2,7 @@ from pyrannic.contracts.orm.model import ModelInterface
 from pyrannic.contracts.support.serializable import SerializableInterface
 from pyrannic.support import inflect, string
 
-_SUFFIXES_TO_REMOVE = ["Model", "Entity", "Schema", "Table"]
+COMMON_SUFFIXES_TO_REMOVE = ["Model", "Entity", "Schema", "Table"]
 
 
 class AbstractModel(ModelInterface, SerializableInterface):
@@ -19,7 +19,7 @@ class AbstractModel(ModelInterface, SerializableInterface):
         """
         name = cls.__name__
 
-        for suffix in _SUFFIXES_TO_REMOVE:
+        for suffix in COMMON_SUFFIXES_TO_REMOVE:
             if name.endswith(suffix):
                 name = name.replace(suffix, "", 1)
 

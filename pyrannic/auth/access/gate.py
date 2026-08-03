@@ -12,9 +12,9 @@ from pyrannic.contracts import (
     GuardInterface,
 )
 from pyrannic.ioc import Resolves
+from pyrannic.orm.abstract_model import COMMON_SUFFIXES_TO_REMOVE
+from pyrannic.support.collections import li
 from pyrannic.support.reflection import get_class
-
-_SUFFIXES_TO_REMOVE = ["Model", "Entity", "Schema", "Table"]
 
 
 class Gate(GateInterface):
@@ -22,6 +22,7 @@ class Gate(GateInterface):
     _abilities: dict[str, Any] = {}
     _policies: dict[str, Any] = {}
     _container: ContainerInterface
+    _guess_policy_names_callback: Callable[[str], str | list[str]] | None = None
 
     def __init__(
         self,
@@ -30,11 +31,13 @@ class Gate(GateInterface):
         policies: dict[str, Any] | None = None,
         # NOTE: We need to use Any as type-hint here because if we use AuthorizableInterface, it will cause an error in the dependency injection system from FastAPI.
         user: Optional[Any] = None,
+        guess_policy_names_callback: Callable[[str], str | list[str]] | None = None,
     ) -> None:
         self._abilities = abilities or {}
+        self._user = user
         self._policies = policies or {}
         self._container = container
-        self._user = user
+        self._guess_policy_names_callback = guess_policy_names_callback
 
     def has(self, *abilities: str) -> bool:
         for ability in abilities:
@@ -111,6 +114,7 @@ class Gate(GateInterface):
             self._abilities,
             self._policies,
             user,
+            self._guess_policy_names_callback,
         )
 
     @property
@@ -151,7 +155,7 @@ class Gate(GateInterface):
     ) -> bool:
         callback = await self._resolve_auth_callback(ability, *args)
 
-        if len(args) > 0 and isinstance(args[0], type):
+        if len(args) > 0 and (isinstance(args[0], type) or isinstance(args[0], str)):
             args = args[1:]
 
         return callback(user, *args, **kwargs)
@@ -220,7 +224,7 @@ class Gate(GateInterface):
         else:
             model_name = type(model).__name__
 
-        for suffix in _SUFFIXES_TO_REMOVE:
+        for suffix in COMMON_SUFFIXES_TO_REMOVE:
             if model_name.endswith(suffix):
                 model_name = model_name[: -len(suffix)]
                 break
@@ -233,9 +237,11 @@ class Gate(GateInterface):
         # TODO - Add support to register policies using decarators.
 
         if policy is None:
-            modules = self._guess_policy_module_paths(model_name)
-            for module_path in modules:
-                policy = get_class(module_path, class_suffix="Policy")
+            names = self._guess_policy_names(model_name)
+
+            for name in names:
+                module_name, class_name = string.parse_module_class(name)
+                policy = get_class(module_name, class_name=class_name)
 
                 if policy is not None:
                     policy = await self._resolve_policy(policy)
@@ -246,14 +252,25 @@ class Gate(GateInterface):
     async def _resolve_policy(self, policy: type[Any]) -> Any:
         return await self._container.resolve(policy)
 
-    def _guess_policy_module_paths(self, model_name: str) -> list[str]:
-        model_name = string.to_snake_case(model_name)
+    def _guess_policy_names(self, model_name: str) -> list[str]:
+        if self._guess_policy_names_callback is not None:
+            return li.wrap(self._guess_policy_names_callback(model_name))
+        else:
+            module_name = string.to_snake_case(model_name)
+            model_name = string.to_pascal_case(model_name) + "Policy"
 
-        return [
-            f"app.policies.{model_name}",
-            f"app.models.policies.{model_name}",
-            f"app.auth.policies.{model_name}",
-        ]
+            return [
+                f"app.policies.{module_name}.{model_name}",
+                f"app.models.policies.{module_name}.{model_name}",
+                f"app.auth.policies.{module_name}.{model_name}",
+            ]
+
+    def guess_policy_names_using(
+        self,
+        callback: Callable[[str], str | list[str]],
+    ) -> Self:
+        self._guess_policy_names_callback = callback
+        return self
 
     async def __ioc_call__(
         self, guard: Resolves[GuardInterface[AuthenticatableInterface]]

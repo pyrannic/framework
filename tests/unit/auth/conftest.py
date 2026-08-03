@@ -4,8 +4,10 @@ import pytest_asyncio
 
 from pyrannic.auth.access.authorizable import Authorizable
 from pyrannic.auth.access.gate import Gate, GateInterface
+from pyrannic.auth.access.response import Response
 from pyrannic.auth.authenticatable import Authenticatable
 from pyrannic.auth.bearer_guard import BearerGuard
+from pyrannic.auth.unauthorized_exception import UnauthorizedException
 from pyrannic.contracts import (
     AuthenticatableInterface,
     GuardInterface,
@@ -26,7 +28,29 @@ class Post:
         self.user_id = user_id
 
 
+class PostTable(Post):
+    pass
+
+
+class PostModel(Post):
+    pass
+
+
+class PostEntity(Post):
+    pass
+
+
+class PostSchema(Post):
+    pass
+
+
 class Order:
+    def __init__(self, id: int, user_id: int):
+        self.id = id
+        self.user_id = user_id
+
+
+class Category:
     def __init__(self, id: int, user_id: int):
         self.id = id
         self.user_id = user_id
@@ -45,6 +69,18 @@ class PostPolicy:
     def delete(self, user: User, post: Post) -> bool:
         return user.id == post.user_id
 
+    def mark_as_read(self, user: User, post: Post) -> Response:
+        return (
+            Response.allow()
+            if user.id != post.user_id
+            else Response.deny("You cannot mark this post as read.")
+        )
+
+    def rate(self, user: User, post: Post) -> Response:
+        raise UnauthorizedException(
+            "You cannot rate this post because you are not authorized to do so."
+        )
+
 
 class OrderPolicy:
     def create(self, user: User) -> bool:
@@ -58,6 +94,11 @@ class OrderPolicy:
 
     def delete(self, user: User, order: Order) -> bool:
         return user.id == order.user_id
+
+
+class CategoryPolicy:
+    def remove(self, user: User, category: Category) -> bool:
+        return user.id == category.user_id
 
 
 class MemoryUserProvider(UserProviderInterface):
@@ -130,7 +171,7 @@ async def guard(application: ApplicationInterface) -> GuardInterface[User]:
     return guard
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="function")
 async def gate(application: ApplicationInterface) -> GateInterface:
     (gate, _, __) = await setup_auth(application)
     return gate
