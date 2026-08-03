@@ -1,4 +1,9 @@
 from .application import ApplicationInterface as ApplicationInterface
+from .auth.access.authorizable import AuthorizableInterface as AuthorizableInterface
+from .auth.access.gate import GateInterface as GateInterface
+from .auth.authenticatable import AuthenticatableInterface as AuthenticatableInterface
+from .auth.guard import GuardInterface as GuardInterface
+from .auth.user_provider import UserProviderInterface as UserProviderInterface
 from .config.configuration import ConfigurationInterface as ConfigurationInterface
 from .config.repository import ConfigRepositoryInterface as ConfigRepositoryInterface
 from .container.container import ContainerInterface as ContainerInterface
@@ -10,5 +15,6 @@ from .http.resources.collection import (
 from .http.resources.resource import ResourceInterface as ResourceInterface
 from .logging.logger import LoggerInterface as LoggerInterface
 from .orm.async_repository import AsyncRepositoryInterface as AsyncRepositoryInterface
+from .orm.model import ModelInterface as ModelInterface
 from .orm.repository import RepositoryInterface as RepositoryInterface
 from .pagination.paginator import PaginatorInterface as PaginatorInterface

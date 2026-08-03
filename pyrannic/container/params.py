@@ -1,4 +1,5 @@
 import inspect
+from abc import ABC
 from collections.abc import Callable
 from typing import Any, Literal, cast, get_origin
 
@@ -9,13 +10,11 @@ from pyrannic.container.decorators.singleton import singleton
 from pyrannic.contracts.http.request import RequestInterface
 
 
-class Resolves(Depends):
-    def __init__(
+class _Injector(ABC):
+    def wrap_dependency_if_needed(
         self,
         dependency: str | type | Callable[..., Any] | None = None,
-        use_cache: bool = True,
-        scope: Literal["function", "request"] | None = None,
-    ):
+    ) -> type | Callable[..., Any] | None:
         if (
             isinstance(dependency, str)
             or inspect.isclass(dependency)
@@ -23,7 +22,7 @@ class Resolves(Depends):
         ):
             dependency = self.wrap_dependency(dependency)  # pyright: ignore[reportArgumentType]
 
-        super().__init__(dependency=dependency, use_cache=use_cache, scope=scope)
+        return dependency
 
     @classmethod
     def wrap_dependency(cls, abstract: str | type) -> Callable[..., Any]:
@@ -33,6 +32,20 @@ class Resolves(Depends):
             )
 
         return dependency
+
+
+class Resolves(Depends, _Injector):
+    def __init__(
+        self,
+        dependency: str | type | Callable[..., Any] | None = None,
+        use_cache: bool = True,
+        scope: Literal["function", "request"] | None = None,
+    ):
+        super().__init__(
+            dependency=self.wrap_dependency_if_needed(dependency),
+            use_cache=use_cache,
+            scope=scope,
+        )
 
 
 class Singleton(Resolves):
