@@ -21,6 +21,7 @@ from pyrannic.contracts.container.container import ContainerInterface
 from pyrannic.contracts.container.contextual_binding_builder import (
     ContextualBindingBuilderInterface,
 )
+from pyrannic.support.exceptions.illegal_argument import IllegalArgumentException
 from pyrannic.support.reflection import (
     get_generic_type,
     is_async_callable,
@@ -122,8 +123,8 @@ class Container(ContainerInterface):
             closure = concrete
 
         if not isinstance(closure, FunctionType):
-            raise RequestValidationError(
-                [f"Concrete {concrete} must be a class or a callable"]
+            raise IllegalArgumentException(
+                f"Concrete {concrete} must be a class or a callable"
             )
 
         self._bindings[binding_key] = Binding(abstract, closure, concrete, shared)
@@ -331,13 +332,11 @@ class Container(ContainerInterface):
 
         if not binding:
             if isinstance(abstract, str):
-                raise RuntimeError([f"No binding found for key {abstract}"])
+                raise ValueError(f"No binding found for key {abstract}")
             elif is_interface(abstract):
-                raise RuntimeError(
-                    [f"No binding found for interface {abstract.__name__}"]
-                )
+                raise ValueError(f"No binding found for interface {abstract.__name__}")
             elif is_generic_interface(abstract):
-                raise RuntimeError(
+                raise ValueError(
                     f"No binding found for generic interface {abstract.__name__}"
                 )
 
@@ -373,6 +372,8 @@ class Container(ContainerInterface):
                     for generic_type in generic_types:
                         if issubclass(generic_type, orig_generic_type):
                             return binding
+
+        return None
 
     async def call(
         self,

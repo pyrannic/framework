@@ -70,7 +70,7 @@ async def test_make_with_mixed_parameters(container: ContainerInterface):
 
 @pytest.mark.asyncio
 async def test_make_with_interface_not_bound(container: ContainerInterface):
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(ValueError) as exc_info:
         await container.make(FooInterface)
 
     error = str(exc_info.value)
@@ -79,7 +79,7 @@ async def test_make_with_interface_not_bound(container: ContainerInterface):
 
 @pytest.mark.asyncio
 async def test_make_with_key_not_bound(container: ContainerInterface):
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(ValueError) as exc_info:
         await container.make("FooInterface")
 
     error = str(exc_info.value)
@@ -108,7 +108,7 @@ async def test_make_with_generic_interface_subclass(container: ContainerInterfac
 async def test_make_with_generic_interface_subclass_raising_error(
     container: ContainerInterface,
 ):
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(ValueError) as exc_info:
         await container.make(FooGenericInterface[SubFooModel])
 
     error = str(exc_info.value)

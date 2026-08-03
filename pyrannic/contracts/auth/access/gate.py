@@ -7,7 +7,7 @@ from .authorizable import AuthorizableInterface
 
 class GateInterface(ABC):
     @abstractmethod
-    def has(self, *abilities: str | Sequence[str]) -> bool:
+    def has(self, *abilities: str) -> bool:
         """
         Determine if a given ability has been defined.
 

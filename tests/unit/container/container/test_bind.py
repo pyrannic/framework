@@ -1,5 +1,4 @@
 import pytest
-from fastapi.exceptions import RequestValidationError
 
 from pyrannic.contracts.container.container import ContainerInterface
 from tests.unit.container.conftest import (
@@ -35,11 +34,10 @@ async def test_bind_using_async_callable(container: ContainerInterface):
 
 
 def test_bind_invalid_concrete(container: ContainerInterface):
-    with pytest.raises(RequestValidationError) as exc_info:
+    with pytest.raises(ValueError) as exc_info:
         container.bind(FooInterface, "hi!")  # type: ignore
 
     error = str(exc_info.value)
-    assert "validation error" in error
     assert "Concrete hi! must be a class or a callable" in error
 
 
