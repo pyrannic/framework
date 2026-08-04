@@ -4,6 +4,7 @@ from pyrannic.contracts.container.container import ContainerInterface
 from tests.unit.container.conftest import (
     FooImplementation,
     FooInterface,
+    ResolverClass,
     resolve_foo_interface,
 )
 
@@ -14,8 +15,38 @@ def test_bind_using_type(container: ContainerInterface):
 
 
 @pytest.mark.asyncio
-async def test_bind_using_callable(container: ContainerInterface):
+async def test_bind_using_lambda(container: ContainerInterface):
     container.bind(FooInterface, lambda app, request: FooImplementation())  # type: ignore
+
+    instance = await container.resolve(FooInterface)
+
+    assert container.is_bound(FooInterface)
+    assert isinstance(instance, FooImplementation)
+
+
+@pytest.mark.asyncio
+async def test_bind_using_instance_method(container: ContainerInterface):
+    container.bind(FooInterface, ResolverClass().resolve_instancemethod)
+
+    instance = await container.resolve(FooInterface)
+
+    assert container.is_bound(FooInterface)
+    assert isinstance(instance, FooImplementation)
+
+
+@pytest.mark.asyncio
+async def test_bind_using_class_method(container: ContainerInterface):
+    container.bind(FooInterface, ResolverClass.resolve_classmethod)
+
+    instance = await container.resolve(FooInterface)
+
+    assert container.is_bound(FooInterface)
+    assert isinstance(instance, FooImplementation)
+
+
+@pytest.mark.asyncio
+async def test_bind_using_static_method(container: ContainerInterface):
+    container.bind(FooInterface, ResolverClass.resolve_staticmethod)
 
     instance = await container.resolve(FooInterface)
 

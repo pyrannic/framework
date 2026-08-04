@@ -1,7 +1,6 @@
 import inspect
 from collections.abc import Callable
 from contextlib import AsyncExitStack
-from types import FunctionType
 from typing import Any, Awaitable, TypeVar, cast, get_args, get_origin
 
 from fastapi import Request
@@ -36,7 +35,7 @@ class Binding:
     def __init__(
         self,
         abstract: str | type,
-        concrete: Callable[..., Any],
+        concrete: Callable[[ApplicationInterface, Request], Awaitable[T]],
         orig_concrete: type[Any] | Callable[..., Any],
         shared: bool = False,
     ) -> None:
@@ -111,7 +110,7 @@ class Container(ContainerInterface):
     def bind(
         self,
         abstract: str | type,
-        concrete: type[Any] | Callable[..., Any],
+        concrete: type[Any] | Callable[[ApplicationInterface, Request], Awaitable[T]],
         shared: bool = False,
     ) -> None:
         binding_key = self._abstract_to_str(abstract)
@@ -122,12 +121,17 @@ class Container(ContainerInterface):
         else:
             closure = concrete
 
-        if not isinstance(closure, FunctionType):
+        if not isinstance(closure, Callable):
             raise IllegalArgumentException(
                 f"Concrete {concrete} must be a class or a callable"
             )
 
-        self._bindings[binding_key] = Binding(abstract, closure, concrete, shared)
+        self._bindings[binding_key] = Binding(
+            abstract,
+            cast(Callable[[ApplicationInterface, Request], Awaitable[T]], closure),
+            concrete,
+            shared,
+        )
 
     def bind_if(
         self,
