@@ -1,7 +1,7 @@
 import inspect
 from collections.abc import Callable
 from types import CoroutineType
-from typing import Any, Optional, Self, Sequence, cast
+from typing import Any, Optional, Self, Sequence, Union, cast
 
 import pyrannic.support.string as string
 from pyrannic.auth import UnauthorizedException
@@ -148,12 +148,12 @@ class Gate(GateInterface):
             return Response(False, str(e), None)
 
     async def _raw(self, ability: str, *args: Any, **kwargs: Any) -> bool | Response:
-        return await self._call_auth_callback(ability, self.user, *args, **kwargs)
+        return await self._call_auth_callback(ability, self._user, *args, **kwargs)
 
     async def _call_auth_callback(
         self,
         ability: str,
-        user: AuthorizableInterface,
+        user: AuthorizableInterface | None,
         *args: Any,
         **kwargs: Any,
     ) -> bool | Response:
@@ -223,7 +223,7 @@ class Gate(GateInterface):
         if callback is not None and callable(callback):
 
             async def resolve_callback(
-                user: AuthorizableInterface, *args: Any, **kwargs: Any
+                user: AuthorizableInterface | None, *args: Any, **kwargs: Any
             ) -> bool | Response:
                 result = await self._call_policy_before(
                     policy, ability, user, *args, **kwargs
@@ -232,12 +232,12 @@ class Gate(GateInterface):
                 if result is not None:
                     return result
 
-                result = callback(user, *args, **kwargs)
-
-                if inspect.isawaitable(result):
-                    result = await result
-
-                return result
+                return cast(
+                    bool | Response,
+                    await self._call_callback_with_args(
+                        callback, user, *args, **kwargs
+                    ),
+                )
 
             return resolve_callback
 
@@ -247,21 +247,52 @@ class Gate(GateInterface):
         self,
         policy: object,
         ability: str,
-        user: AuthorizableInterface,
+        user: AuthorizableInterface | None,
         *args: Any,
         **kwargs: Any,
     ) -> bool | Response | None:
         before_method = getattr(policy, "before", None)
 
         if before_method is not None and callable(before_method):
-            result = before_method(ability, user, *args, **kwargs)
-
-            if inspect.isawaitable(result):
-                result = await result
-
-            return cast(bool | Response | None, result)
+            return await self._call_callback_with_args(
+                before_method, user, ability, *args, **kwargs
+            )
 
         return None
+
+    async def _call_callback_with_args(
+        self,
+        callback: Callable[..., Any],
+        user: AuthorizableInterface | None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool | Response | None:
+        if self._can_be_called_with_user(user, callback):
+            result = callback(user, *args, **kwargs)
+        else:
+            result = None
+
+        if inspect.isawaitable(result):
+            result = await result
+
+        return result
+
+    def _can_be_called_with_user(
+        self,
+        user: AuthorizableInterface | None,
+        callback: Callable[..., Any],
+    ) -> bool:
+        if user is None:
+            signature = inspect.signature(callback)
+            user_param = signature.parameters.get("user")
+
+            return (
+                user_param is not None
+                and type(user_param.annotation) is Union
+                and type(None) in user_param.annotation.__args__  # type: ignore
+            )
+
+        return True
 
     def _format_ability_to_method(self, ability: str) -> str:
         return string.to_snake_case(ability)

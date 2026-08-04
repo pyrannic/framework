@@ -68,7 +68,7 @@ class Category:
 
 
 class PostPolicy:
-    def before(self, ability: str, user: User, post: Post | None = None) -> bool | None:
+    def before(self, user: User, ability: str, post: Post | None = None) -> bool | None:
         if user.is_banned:
             return False
 
@@ -99,7 +99,11 @@ class PostPolicy:
             else Response.deny("You cannot mark this post as read.")
         )
 
-    def rate(self, user: User, post: Post) -> Response:
+    def rate(self, user: User | None, post: Post) -> Response:
+        # Condition to allow test guest users: test_gate_with_guest_user
+        if user is None:
+            return Response.allow()
+
         raise UnauthorizedException(
             "You cannot rate this post because you are not authorized to do so."
         )
@@ -107,7 +111,7 @@ class PostPolicy:
 
 class OrderPolicy:
     async def before(
-        self, ability: str, user: User, order: Order | None = None
+        self, user: User, ability: str, order: Order | None = None
     ) -> bool | None:
         if user.is_banned:
             return False

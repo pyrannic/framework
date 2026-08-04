@@ -18,8 +18,7 @@ from tests.conftest import (
 )
 
 
-@pytest.mark.asyncio
-async def test_gate_user_raises_unauthorized_exception(
+def test_gate_user_raises_unauthorized_exception(
     application: ApplicationInterface,
 ):
     gate = Gate(application.container)
@@ -29,6 +28,12 @@ async def test_gate_user_raises_unauthorized_exception(
 
     error = str(exc_info.value)
     assert "401: This action is unauthorized." in error
+
+
+def test_gate_user(gate: GateInterface):
+    user = User(id=1, password="password")
+    gate.set_user(user)
+    assert gate.user == user
 
 
 def test_gate_has(gate: GateInterface):
@@ -247,3 +252,10 @@ async def test_gate_async_before_method(gate: GateInterface):
     assert await gate.for_user(User(id=1, password="password", is_admin=True)).allows(
         "delete", Order(id=1, user_id=1)
     )
+
+
+@pytest.mark.asyncio
+async def test_gate_with_guest_user(gate: GateInterface):
+    # Configure the gate as unauthenticated (a.k.a. guest user)
+    gate = gate.set_user(None)
+    assert await gate.allows("rate", Post(id=1, user_id=1))
