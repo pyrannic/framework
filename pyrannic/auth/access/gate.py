@@ -236,8 +236,6 @@ class Gate(GateInterface):
         if model_name in self._policies:
             policy = await self._resolve_policy(self._policies[model_name])
 
-        # TODO - Add support to register policies using decarators.
-
         if policy is None:
             names = self._guess_policy_names(model_name)
 
