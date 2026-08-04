@@ -14,6 +14,7 @@ from tests.conftest import (
     PostPolicy,
     PostSchema,
     PostTable,
+    User,
 )
 
 
@@ -207,6 +208,12 @@ async def test_gate_with_policy_raising_unauthorized_exception(gate: GateInterfa
 
 
 @pytest.mark.asyncio
+async def test_gate_with_async_policy(gate: GateInterface):
+    gate.define_policy(Order, OrderPolicy)
+    assert await gate.allows("archive", Order(id=1, user_id=1))
+
+
+@pytest.mark.asyncio
 async def test_gate_guess_policy_names_using(gate: GateInterface):
     gate.guess_policy_names_using(
         lambda resource: Category.__module__ + ".CategoryPolicy"
@@ -218,3 +225,25 @@ async def test_gate_guess_policy_names_using(gate: GateInterface):
 async def test_gate_resource_doesnt_exist_denies_always(gate: GateInterface):
     assert await gate.denies("add", "Tag")
     assert not await gate.allows("add", "Tag")
+
+
+@pytest.mark.asyncio
+async def test_gate_before_method_returns_false(gate: GateInterface):
+    assert await gate.for_user(User(id=1, password="password", is_banned=True)).denies(
+        "publish", Post(id=1, user_id=1)
+    )
+
+
+@pytest.mark.asyncio
+async def test_gate_before_method_returns_true(gate: GateInterface):
+    assert await gate.for_user(User(id=1, password="password", is_admin=True)).allows(
+        "rate", Post(id=1, user_id=1)
+    )
+
+
+@pytest.mark.asyncio
+async def test_gate_async_before_method(gate: GateInterface):
+    gate.define_policy(Order, OrderPolicy)
+    assert await gate.for_user(User(id=1, password="password", is_admin=True)).allows(
+        "delete", Order(id=1, user_id=1)
+    )

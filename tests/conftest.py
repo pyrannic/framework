@@ -20,9 +20,17 @@ from pyrannic.contracts import (
 
 
 class User(Authenticatable, Authorizable):
-    def __init__(self, id: int, password: str):
+    def __init__(
+        self,
+        id: int,
+        password: str,
+        is_admin: bool = False,
+        is_banned: bool = False,
+    ):
         self.id = id
         self.password = password
+        self.is_admin = is_admin
+        self.is_banned = is_banned
 
 
 class Post:
@@ -60,6 +68,15 @@ class Category:
 
 
 class PostPolicy:
+    def before(self, ability: str, user: User, post: Post | None = None) -> bool | None:
+        if user.is_banned:
+            return False
+
+        if user.is_admin:
+            return True
+
+        return None
+
     def create(self, user: User) -> bool:
         return True
 
@@ -70,6 +87,9 @@ class PostPolicy:
         return user.id == post.user_id
 
     def delete(self, user: User, post: Post) -> bool:
+        return user.id == post.user_id
+
+    def publish(self, user: User, post: Post) -> bool:
         return user.id == post.user_id
 
     def mark_as_read(self, user: User, post: Post) -> Response:
@@ -86,6 +106,17 @@ class PostPolicy:
 
 
 class OrderPolicy:
+    async def before(
+        self, ability: str, user: User, order: Order | None = None
+    ) -> bool | None:
+        if user.is_banned:
+            return False
+
+        if user.is_admin:
+            return True
+
+        return None
+
     def create(self, user: User) -> bool:
         return True
 
@@ -96,6 +127,9 @@ class OrderPolicy:
         return user.id == order.user_id
 
     def delete(self, user: User, order: Order) -> bool:
+        return False
+
+    async def archive(self, user: User, order: Order) -> bool:
         return user.id == order.user_id
 
 

@@ -1,5 +1,7 @@
+import inspect
 from collections.abc import Callable
-from typing import Any, Optional, Self, Sequence
+from types import CoroutineType
+from typing import Any, Optional, Self, Sequence, cast
 
 import pyrannic.support.string as string
 from pyrannic.auth import UnauthorizedException
@@ -146,27 +148,32 @@ class Gate(GateInterface):
             return Response(False, str(e), None)
 
     async def _raw(self, ability: str, *args: Any, **kwargs: Any) -> bool | Response:
-        return await self._call_auth_callback(self.user, ability, *args, **kwargs)
+        return await self._call_auth_callback(ability, self.user, *args, **kwargs)
 
     async def _call_auth_callback(
         self,
-        user: AuthorizableInterface,
         ability: str,
+        user: AuthorizableInterface,
         *args: Any,
         **kwargs: Any,
-    ) -> bool:
+    ) -> bool | Response:
         callback = await self._resolve_auth_callback(ability, *args)
 
         if len(args) > 0 and (isinstance(args[0], type) or isinstance(args[0], str)):
             args = args[1:]
 
-        return callback(user, *args, **kwargs)
+        result = callback(user, *args, **kwargs)
+
+        if inspect.isawaitable(result):
+            result = await result
+
+        return result
 
     async def _resolve_auth_callback(
         self,
         ability: str,
         *args: Any,
-    ) -> Callable[..., bool]:
+    ) -> Callable[..., CoroutineType[Any, Any, bool | Response] | bool | Response]:
         callback = await self._resolve_policy_callback_if_possible(ability, *args)
 
         if callback is None:
@@ -177,14 +184,14 @@ class Gate(GateInterface):
 
         return callback
 
-    def _default_callback(self, _: Any) -> bool:
+    def _default_callback(self, *_: Any) -> bool:
         return False
 
     async def _resolve_policy_callback_if_possible(
         self,
         ability: str,
         *args: Any,
-    ) -> Callable[..., bool] | None:
+    ) -> Callable[..., CoroutineType[Any, Any, bool | Response]] | None:
         callback = None
 
         if len(args) > 0:
@@ -205,10 +212,30 @@ class Gate(GateInterface):
         self,
         ability: str,
         policy: object,
-    ) -> Callable[..., bool] | None:
+    ) -> Callable[..., CoroutineType[Any, Any, bool | Response]] | None:
         """Resolve the callback for a policy check."""
 
         method_name = self._format_ability_to_method(ability)
+        callback: Callable[..., bool | Response] | None = getattr(
+            policy, method_name, None
+        )
+
+        if callback is not None and callable(callback):
+
+            async def resolve_callback(
+                user: AuthorizableInterface, *args: Any, **kwargs: Any
+            ) -> bool | Response:
+                result = callback(user, *args, **kwargs)
+
+                if inspect.isawaitable(result):
+                    result = await result
+
+                return result
+
+            return resolve_callback
+
+        return None
+
 
         if callable(getattr(policy, method_name, None)):
             return getattr(policy, method_name)
