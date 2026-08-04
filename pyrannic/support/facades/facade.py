@@ -1,5 +1,5 @@
-from abc import update_abstractmethods
 import inspect
+from abc import update_abstractmethods
 from typing import Any, TypeVar, cast
 
 from pyrannic.contracts.application import ApplicationInterface
@@ -24,12 +24,12 @@ class Facade:
         return self._resolve_facade_instance(self.facade_accessor)
 
     @property
-    def facade_accessor(self) -> str:
+    def facade_accessor(self) -> str | type:
         """Get the registered name of the component in the IoC container that this facade represents."""
         return to_snake_case(self.__class__.__name__)
 
-    def _resolve_facade_instance(self, name: str) -> Any:
-        return self.get_facade_application().container.instance(name)  # type: ignore
+    def _resolve_facade_instance(self, abstract: str | type) -> Any:
+        return self.get_facade_application().container.instance(abstract)  # type: ignore
 
     @classmethod
     def set_facade_application(cls, app: ApplicationInterface) -> None:
@@ -47,10 +47,18 @@ def facade(accessor_or_cls: type[T] | str) -> T:
     is_facade_accessor = isinstance(accessor_or_cls, str)
 
     def decorator(cls: type[T]) -> T:
-        interface = cls.__mro__[0]
+        interface = cls.__mro__[1]  # Get the first base class (the interface)
 
         if Facade not in cls.__mro__:
-            cls = cast(type[T], type(cls.__name__, (Facade,) + cls.__mro__, {}))
+            cls = cast(
+                type[T],
+                type(
+                    cls.__name__,
+                    # Put the base class as the first one to ensure that overridden Facade methods are used.
+                    cls.__mro__[0:1] + (Facade,) + cls.__mro__[1:],
+                    {},
+                ),
+            )
 
         methods = inspect.getmembers(interface, predicate=inspect.isfunction)
         properties = inspect.getmembers(interface, predicate=inspect.isdatadescriptor)

@@ -8,6 +8,7 @@ from pyrannic.contracts import (
     GateInterface,
     GuardInterface,
 )
+from pyrannic.ioc import Resolves
 
 
 class AuthServiceProvider(ServiceProvider):
@@ -18,6 +19,10 @@ class AuthServiceProvider(ServiceProvider):
 
     def register(self) -> None:
         self._register_security_model()
+
+    async def boot(self, gate: Resolves[GateInterface]) -> None:
+        # Register the Gate instance to be used in the Facade.
+        self.container.instance(GateInterface, gate)
 
     def _register_security_model(self) -> None:
         config = self.container.instance(ConfigRepositoryInterface)

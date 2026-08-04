@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends
 
 from pyrannic import ResourceNotFoundException
 from pyrannic.auth import Authenticate
-from pyrannic import ResourceNotFoundException, Safeguard
-from pyrannic.contracts import GateInterface, GuardInterface
+from pyrannic.contracts.auth.guard import GuardInterface
+from pyrannic.facades import Gate
 from pyrannic.ioc import Resolves
 from tests.application.app.http.resources.hero import Hero, HeroesCollection
 from tests.application.app.models.hero import Hero as HeroModel
@@ -33,16 +33,16 @@ async def index(
     # foo: Resolves[FooServiceInterface],
     # bar: Resolves[BarService],
     guard: Resolves[GuardInterface[User]],
-    gate: Resolves[GateInterface],
+    # gate: Resolves[GateInterface],
     repository: HeroesRepository = Depends(),
     # repository: Scoped[Repository[HeroModel]],
 ) -> HeroesCollection:
-    print(f"Guard: {guard.user.email}")
+    # print(f"Guard: {guard.user.email}")
 
-    if await gate.user.can("create", HeroModel):
+    if await guard.user.can("create", HeroModel):
         print("User can create heroes!!!")
 
-    if await gate.user.can("view", HeroModel()):
+    if await Gate.user.can("view", HeroModel()):
         print("User can view heroes!!!")
 
     return HeroesCollection(repository.paginate())
