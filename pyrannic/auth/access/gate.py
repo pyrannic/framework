@@ -225,6 +225,13 @@ class Gate(GateInterface):
             async def resolve_callback(
                 user: AuthorizableInterface, *args: Any, **kwargs: Any
             ) -> bool | Response:
+                result = await self._call_policy_before(
+                    policy, ability, user, *args, **kwargs
+                )
+
+                if result is not None:
+                    return result
+
                 result = callback(user, *args, **kwargs)
 
                 if inspect.isawaitable(result):
@@ -236,9 +243,23 @@ class Gate(GateInterface):
 
         return None
 
+    async def _call_policy_before(
+        self,
+        policy: object,
+        ability: str,
+        user: AuthorizableInterface,
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool | Response | None:
+        before_method = getattr(policy, "before", None)
 
-        if callable(getattr(policy, method_name, None)):
-            return getattr(policy, method_name)
+        if before_method is not None and callable(before_method):
+            result = before_method(ability, user, *args, **kwargs)
+
+            if inspect.isawaitable(result):
+                result = await result
+
+            return cast(bool | Response | None, result)
 
         return None
 
