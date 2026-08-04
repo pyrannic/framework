@@ -3,6 +3,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
+from pyrannic import ResourceNotFoundException
+from pyrannic.auth import Authenticate
 from pyrannic import ResourceNotFoundException, Safeguard
 from pyrannic.contracts import GateInterface, GuardInterface
 from pyrannic.ioc import Resolves
@@ -13,6 +15,7 @@ from tests.application.app.repositories.heroes import HeroesRepository
 
 router = APIRouter(
     tags=["Heroes"],
+    dependencies=[Authenticate()],
 )
 
 
@@ -20,7 +23,6 @@ router = APIRouter(
     "/heroes",
     summary="Heroes Endpoint",
     description="Endpoint to retrieve the list of heroes.",
-    dependencies=[Depends(Safeguard())],
 )
 async def index(
     # container: Resolves[ContainerInterface],

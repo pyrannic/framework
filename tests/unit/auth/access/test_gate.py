@@ -4,7 +4,7 @@ from pyrannic.auth import ForbiddenException, UnauthorizedException
 from pyrannic.auth.access.gate import Gate
 from pyrannic.contracts.application import ApplicationInterface
 from pyrannic.contracts.auth.access.gate import GateInterface
-from tests.unit.auth.conftest import (
+from tests.conftest import (
     Category,
     Order,
     OrderPolicy,

@@ -1,7 +1,7 @@
 import pytest
 
 from pyrannic.contracts.auth.guard import GuardInterface
-from tests.unit.auth.conftest import Post, User
+from tests.conftest import Post, User
 
 
 @pytest.mark.asyncio

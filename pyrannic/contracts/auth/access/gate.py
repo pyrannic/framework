@@ -116,13 +116,22 @@ class GateInterface(ABC):
         :return: A new gate instance for the specified user.
         """
 
+    @abstractmethod
+    def set_user(self, user: AuthorizableInterface | None) -> Self:
+        """
+        Set the user for the current gate instance.
+
+        :param user: The user to set.
+        :return: The current gate instance.
+        """
+
     @property
     @abstractmethod
     def user(self) -> AuthorizableInterface:
         """
-        Get the currently authenticated user.
+        Get the current user to check authorization for.
 
-        :return: The currently authenticated user.
+        :return: The current user.
         """
 
     @abstractmethod

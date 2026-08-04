@@ -1,15 +1,13 @@
 from collections.abc import Callable
-from typing import Any, Optional, Self, Sequence, cast
+from typing import Any, Optional, Self, Sequence
 
 import pyrannic.support.string as string
 from pyrannic.auth import UnauthorizedException
 from pyrannic.auth.access.response import Response
 from pyrannic.contracts import (
-    AuthenticatableInterface,
     AuthorizableInterface,
     ContainerInterface,
     GateInterface,
-    GuardInterface,
 )
 from pyrannic.ioc import Resolves
 from pyrannic.orm.abstract_model import COMMON_SUFFIXES_TO_REMOVE
@@ -116,6 +114,10 @@ class Gate(GateInterface):
             user,
             self._guess_policy_names_callback,
         )
+
+    def set_user(self, user: AuthorizableInterface | None) -> Self:
+        self._user = user
+        return self
 
     @property
     def user(self) -> AuthorizableInterface:
@@ -271,9 +273,3 @@ class Gate(GateInterface):
     ) -> Self:
         self._guess_policy_names_callback = callback
         return self
-
-    async def __ioc_call__(
-        self, guard: Resolves[GuardInterface[AuthenticatableInterface]]
-    ) -> None:
-        self._user = cast(AuthorizableInterface, guard.maybe_user)
-        self._container.instance(GateInterface, self)

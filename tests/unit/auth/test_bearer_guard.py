@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from pyrannic.auth.bearer_guard import BearerGuard
-from tests.unit.auth.conftest import MemoryUserProvider
+from tests.conftest import MemoryUserProvider
 
 
 def test_bearer_guard_empty():
