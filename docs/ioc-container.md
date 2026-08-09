@@ -172,6 +172,23 @@ As a shorthand version, you can use the `Resolve` annotation:
 --8<-- "docs_src/ioc_container/basic_02_example.py"
 ```
 
+
+### Resolution Callbacks
+
+When a dependency is resolved, the container attempts to execute two methods on the resolved object: **`__ioc_resolved__`** and **`__ioc_call__`**. 
+
+They are invoked through the container, allowing you to use type-hinted dependencies within them. 
+Furthermore, both methods support asynchronous execution.
+
+```python hl_lines="9 10 11"
+--8<-- "docs_src/ioc_container/resolution_callback_01_example.py"
+```
+
+The container executes **`__ioc_resolved__`** first. If the dependency is configured as *scoped* or *singleton*, this method is only called when the dependency is initially created. Under any other circumstances, it will be executed every time.
+
+In contrast, **`__ioc_call__`** is invariably invoked each time the container returns the dependency.
+
+
 ## Method Invocation and Injection
 
 You might occasionally need to execute a method on an object instance and have the container handle the automatic injection of that method's dependencies. To illustrate this, consider the class below:
