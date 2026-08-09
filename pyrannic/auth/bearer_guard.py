@@ -4,11 +4,12 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from pyrannic.contracts import UserProviderInterface
-from pyrannic.ioc import Resolves
+from pyrannic.ioc import Resolves, scoped
 
 from .base_guard import BaseGuard
 
 
+@scoped
 class BearerGuard(BaseGuard):
     def __init__(self, user_provider: Resolves[UserProviderInterface]):
         self.set_provider(user_provider)
@@ -17,7 +18,7 @@ class BearerGuard(BaseGuard):
         self,
         credentials: Annotated[
             HTTPAuthorizationCredentials | None,
-            Depends(HTTPBearer(auto_error=False), use_cache=False),
+            Depends(HTTPBearer()),
         ],
     ) -> None:
         token = credentials.credentials if credentials else None
