@@ -1,9 +1,8 @@
 import inspect
-from collections.abc import Callable
-from types import CoroutineType
-from typing import Any, Optional, Self, Sequence, Union, cast
+from collections.abc import Callable, Sequence
+from types import CoroutineType, UnionType
+from typing import Any, Self, cast
 
-import pyrannic.support.string as string
 from pyrannic.auth import UnauthorizedException
 from pyrannic.auth.access.response import Response
 from pyrannic.contracts import (
@@ -13,6 +12,7 @@ from pyrannic.contracts import (
 )
 from pyrannic.ioc import Resolves
 from pyrannic.orm.abstract_model import COMMON_SUFFIXES_TO_REMOVE
+from pyrannic.support import string
 from pyrannic.support.collections import li
 from pyrannic.support.reflection import get_class
 
@@ -30,7 +30,7 @@ class Gate(GateInterface):
         abilities: dict[str, Any] | None = None,
         policies: dict[str, Any] | None = None,
         # NOTE: We need to use Any as type-hint here because if we use AuthorizableInterface, it will cause an error in the dependency injection system from FastAPI.
-        user: Optional[Any] = None,
+        user: Any | None = None,
         guess_policy_names_callback: Callable[[str], str | list[str]] | None = None,
     ) -> None:
         self._abilities = abilities or {}
@@ -159,7 +159,7 @@ class Gate(GateInterface):
     ) -> bool | Response:
         callback = await self._resolve_auth_callback(ability, *args)
 
-        if len(args) > 0 and (isinstance(args[0], type) or isinstance(args[0], str)):
+        if len(args) > 0 and isinstance(args[0], (type, str)):
             args = args[1:]
 
         result = callback(user, *args, **kwargs)
@@ -206,7 +206,7 @@ class Gate(GateInterface):
         self,
         ability: str,
     ) -> Callable[..., bool] | None:
-        return self._abilities[ability] if ability in self._abilities else None
+        return self._abilities.get(ability, None)
 
     def _resolve_policy_callback(
         self,
@@ -288,8 +288,8 @@ class Gate(GateInterface):
 
             return (
                 user_param is not None
-                and type(user_param.annotation) is Union
-                and type(None) in user_param.annotation.__args__  # type: ignore
+                and type(user_param.annotation) is UnionType
+                and type(None) in user_param.annotation.__args__
             )
 
         return True
