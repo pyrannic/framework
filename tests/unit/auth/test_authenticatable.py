@@ -1,4 +1,4 @@
-from tests.unit.auth.conftest import User
+from tests.conftest import User
 
 
 def test_authenticatable_methods():

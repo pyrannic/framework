@@ -116,13 +116,22 @@ class GateInterface(ABC):
         :return: A new gate instance for the specified user.
         """
 
+    @abstractmethod
+    def set_user(self, user: AuthorizableInterface | None) -> Self:
+        """
+        Set the user for the current gate instance.
+
+        :param user: The user to set.
+        :return: The current gate instance.
+        """
+
     @property
     @abstractmethod
     def user(self) -> AuthorizableInterface:
         """
-        Get the currently authenticated user.
+        Get the current user to check authorization for.
 
-        :return: The currently authenticated user.
+        :return: The current user.
         """
 
     @abstractmethod
@@ -132,6 +141,7 @@ class GateInterface(ABC):
 
         :param ability: The name of the ability.
         :param callback: A callback that determines if the ability is granted.
+        :return: The current gate instance.
         """
 
     @abstractmethod
@@ -141,4 +151,19 @@ class GateInterface(ABC):
 
         :param model: The model class to register the policy for.
         :param policy: The policy class to register.
+        :return: The current gate instance.
+        """
+
+    @abstractmethod
+    def guess_policy_names_using(
+        self,
+        callback: Callable[[str], str | list[str]],
+    ) -> Self:
+        """
+        Set a callback to guess policy names for resources.
+        The names must contain the full module path and class name of the policy.
+        E.g.: "myapp.policies.FooPolicy" or ["myapp.policies.FooPolicy", "myapp.policies.BarPolicy"].
+
+        :param callback: A callback that takes a resource name and returns a policy name or a list of policy names.
+        :return: The current gate instance.
         """

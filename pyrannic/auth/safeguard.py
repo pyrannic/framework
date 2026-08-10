@@ -1,8 +1,18 @@
 from collections.abc import Callable
 from typing import Any, cast
 
-from fastapi import Request
+from fastapi import Depends, Request
 from fastapi.security.base import SecurityBase
+
+from pyrannic.auth.authenticatable import AuthenticatableInterface
+from pyrannic.contracts.auth.access.authorizable import AuthorizableInterface
+from pyrannic.contracts.auth.access.gate import GateInterface
+from pyrannic.contracts.auth.guard import GuardInterface
+from pyrannic.ioc import Resolves
+
+
+def Authenticate():
+    return Depends(Safeguard())
 
 
 class Safeguard(SecurityBase):
@@ -38,6 +48,14 @@ class Safeguard(SecurityBase):
     def get_security_model(cls) -> SecurityBase | None:
         return cls._security_model
 
-    async def __call__(self, request: Request) -> Any:
+    async def __call__(
+        self,
+        request: Request,
+        guard: Resolves[GuardInterface[AuthenticatableInterface]],
+        gate: Resolves[GateInterface],
+    ) -> Any:
+        # Resolve the user from the guard and set it in the gate.
+        gate.set_user(cast(AuthorizableInterface | None, guard.maybe_user))
+
         callable = cast(Callable[..., Any], self._security_model)
         return await callable(request) if self._security_model else None

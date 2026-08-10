@@ -9,6 +9,8 @@ from fastapi.security import (
 )
 
 from pyrannic.auth.safeguard import Safeguard
+from pyrannic.contracts.auth.access.gate import GateInterface
+from pyrannic.contracts.auth.guard import GuardInterface
 
 
 def test_safeguard_raise_runtime_error():
@@ -48,7 +50,11 @@ async def test_safeguard_call():
     safeguard = Safeguard()
     request = Mock(spec=Request)
     request.headers = {"Authorization": "Bearer token"}
-    result = await safeguard(request)
+
+    guard = Mock(spec=GuardInterface)
+    gate = Mock(spec=GateInterface)
+
+    result = await safeguard(request, guard, gate)
 
     assert isinstance(result, HTTPAuthorizationCredentials)
     assert result.scheme == "Bearer"

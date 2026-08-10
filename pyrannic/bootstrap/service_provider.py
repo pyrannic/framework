@@ -63,9 +63,9 @@ class ServiceProvider(ABC):
         This method can be overridden by non-critical service providers to perform specific actions when they fail during initialization or boot, such as setting internal flags or performing cleanup operations.
         """
 
-    def exception(self, original_exception: Exception) -> Exception:
+    def exception(self, error: Exception) -> Exception:
         """
         Return an exception to be raised when a critical service provider fails during initialization or boot.
         By default, it returns the original exception, but it can be overridden by critical service providers to return a specific exception type with a custom message.
         """
-        return original_exception
+        return error

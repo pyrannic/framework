@@ -1,20 +1,20 @@
-from collections.abc import Callable
-from typing import Any, Optional, Self, Sequence, cast
+import inspect
+from collections.abc import Awaitable, Callable, Sequence
+from types import UnionType
+from typing import Any, Self, cast
 
-import pyrannic.support.string as string
 from pyrannic.auth import UnauthorizedException
 from pyrannic.auth.access.response import Response
 from pyrannic.contracts import (
-    AuthenticatableInterface,
     AuthorizableInterface,
     ContainerInterface,
     GateInterface,
-    GuardInterface,
 )
 from pyrannic.ioc import Resolves
+from pyrannic.orm.abstract_model import COMMON_SUFFIXES_TO_REMOVE
+from pyrannic.support import string
+from pyrannic.support.collections import li
 from pyrannic.support.reflection import get_class
-
-_SUFFIXES_TO_REMOVE = ["Model", "Entity", "Schema", "Table"]
 
 
 class Gate(GateInterface):
@@ -22,6 +22,7 @@ class Gate(GateInterface):
     _abilities: dict[str, Any] = {}
     _policies: dict[str, Any] = {}
     _container: ContainerInterface
+    _guess_policy_names_callback: Callable[[str], str | list[str]] | None = None
 
     def __init__(
         self,
@@ -29,12 +30,14 @@ class Gate(GateInterface):
         abilities: dict[str, Any] | None = None,
         policies: dict[str, Any] | None = None,
         # NOTE: We need to use Any as type-hint here because if we use AuthorizableInterface, it will cause an error in the dependency injection system from FastAPI.
-        user: Optional[Any] = None,
+        user: Any | None = None,
+        guess_policy_names_callback: Callable[[str], str | list[str]] | None = None,
     ) -> None:
         self._abilities = abilities or {}
+        self._user = user
         self._policies = policies or {}
         self._container = container
-        self._user = user
+        self._guess_policy_names_callback = guess_policy_names_callback
 
     def has(self, *abilities: str) -> bool:
         for ability in abilities:
@@ -111,7 +114,12 @@ class Gate(GateInterface):
             self._abilities,
             self._policies,
             user,
+            self._guess_policy_names_callback,
         )
+
+    def set_user(self, user: AuthorizableInterface | None) -> Self:
+        self._user = user
+        return self
 
     @property
     def user(self) -> AuthorizableInterface:
@@ -140,27 +148,32 @@ class Gate(GateInterface):
             return Response(False, str(e), None)
 
     async def _raw(self, ability: str, *args: Any, **kwargs: Any) -> bool | Response:
-        return await self._call_auth_callback(self.user, ability, *args, **kwargs)
+        return await self._call_auth_callback(ability, self._user, *args, **kwargs)
 
     async def _call_auth_callback(
         self,
-        user: AuthorizableInterface,
         ability: str,
+        user: AuthorizableInterface | None,
         *args: Any,
         **kwargs: Any,
-    ) -> bool:
+    ) -> bool | Response:
         callback = await self._resolve_auth_callback(ability, *args)
 
-        if len(args) > 0 and isinstance(args[0], type):
+        if len(args) > 0 and isinstance(args[0], (type, str)):
             args = args[1:]
 
-        return callback(user, *args, **kwargs)
+        result = callback(user, *args, **kwargs)
+
+        if inspect.isawaitable(result):
+            result = await result
+
+        return result
 
     async def _resolve_auth_callback(
         self,
         ability: str,
         *args: Any,
-    ) -> Callable[..., bool]:
+    ) -> Callable[..., Awaitable[bool | Response] | bool | Response]:
         callback = await self._resolve_policy_callback_if_possible(ability, *args)
 
         if callback is None:
@@ -171,14 +184,14 @@ class Gate(GateInterface):
 
         return callback
 
-    def _default_callback(self, _: Any) -> bool:
+    def _default_callback(self, *_: Any) -> bool:
         return False
 
     async def _resolve_policy_callback_if_possible(
         self,
         ability: str,
         *args: Any,
-    ) -> Callable[..., bool] | None:
+    ) -> Callable[..., Awaitable[bool | Response]] | None:
         callback = None
 
         if len(args) > 0:
@@ -193,21 +206,93 @@ class Gate(GateInterface):
         self,
         ability: str,
     ) -> Callable[..., bool] | None:
-        return self._abilities[ability] if ability in self._abilities else None
+        return self._abilities.get(ability, None)
 
     def _resolve_policy_callback(
         self,
         ability: str,
         policy: object,
-    ) -> Callable[..., bool] | None:
+    ) -> Callable[..., Awaitable[bool | Response]] | None:
         """Resolve the callback for a policy check."""
 
         method_name = self._format_ability_to_method(ability)
+        callback: Callable[..., bool | Response] | None = getattr(
+            policy, method_name, None
+        )
 
-        if callable(getattr(policy, method_name, None)):
-            return getattr(policy, method_name)
+        if callback is not None and callable(callback):
+
+            async def resolve_callback(
+                user: AuthorizableInterface | None, *args: Any, **kwargs: Any
+            ) -> bool | Response:
+                result = await self._call_policy_before(
+                    policy, ability, user, *args, **kwargs
+                )
+
+                if result is not None:
+                    return result
+
+                return cast(
+                    bool | Response,
+                    await self._call_callback_with_args(
+                        callback, user, *args, **kwargs
+                    ),
+                )
+
+            return resolve_callback
 
         return None
+
+    async def _call_policy_before(
+        self,
+        policy: object,
+        ability: str,
+        user: AuthorizableInterface | None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool | Response | None:
+        before_method = getattr(policy, "before", None)
+
+        if before_method is not None and callable(before_method):
+            return await self._call_callback_with_args(
+                before_method, user, ability, *args, **kwargs
+            )
+
+        return None
+
+    async def _call_callback_with_args(
+        self,
+        callback: Callable[..., Any],
+        user: AuthorizableInterface | None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool | Response | None:
+        if self._can_be_called_with_user(user, callback):
+            result = callback(user, *args, **kwargs)
+        else:
+            result = None
+
+        if inspect.isawaitable(result):
+            result = await result
+
+        return result
+
+    def _can_be_called_with_user(
+        self,
+        user: AuthorizableInterface | None,
+        callback: Callable[..., Any],
+    ) -> bool:
+        if user is None:
+            signature = inspect.signature(callback)
+            user_param = signature.parameters.get("user")
+
+            return (
+                user_param is not None
+                and type(user_param.annotation) is UnionType
+                and type(None) in user_param.annotation.__args__
+            )
+
+        return True
 
     def _format_ability_to_method(self, ability: str) -> str:
         return string.to_snake_case(ability)
@@ -220,7 +305,7 @@ class Gate(GateInterface):
         else:
             model_name = type(model).__name__
 
-        for suffix in _SUFFIXES_TO_REMOVE:
+        for suffix in COMMON_SUFFIXES_TO_REMOVE:
             if model_name.endswith(suffix):
                 model_name = model_name[: -len(suffix)]
                 break
@@ -230,12 +315,12 @@ class Gate(GateInterface):
         if model_name in self._policies:
             policy = await self._resolve_policy(self._policies[model_name])
 
-        # TODO - Add support to register policies using decarators.
-
         if policy is None:
-            modules = self._guess_policy_module_paths(model_name)
-            for module_path in modules:
-                policy = get_class(module_path, class_suffix="Policy")
+            names = self._guess_policy_names(model_name)
+
+            for name in names:
+                module_name, class_name = string.parse_module_class(name)
+                policy = get_class(module_name, class_name=class_name)
 
                 if policy is not None:
                     policy = await self._resolve_policy(policy)
@@ -246,17 +331,22 @@ class Gate(GateInterface):
     async def _resolve_policy(self, policy: type[Any]) -> Any:
         return await self._container.resolve(policy)
 
-    def _guess_policy_module_paths(self, model_name: str) -> list[str]:
-        model_name = string.to_snake_case(model_name)
+    def _guess_policy_names(self, model_name: str) -> list[str]:
+        if self._guess_policy_names_callback is not None:
+            return li.wrap(self._guess_policy_names_callback(model_name))
+        else:
+            module_name = string.to_snake_case(model_name)
+            model_name = string.to_pascal_case(model_name) + "Policy"
 
-        return [
-            f"app.policies.{model_name}",
-            f"app.models.policies.{model_name}",
-            f"app.auth.policies.{model_name}",
-        ]
+            return [
+                f"app.policies.{module_name}.{model_name}",
+                f"app.models.policies.{module_name}.{model_name}",
+                f"app.auth.policies.{module_name}.{model_name}",
+            ]
 
-    async def __ioc_call__(
-        self, guard: Resolves[GuardInterface[AuthenticatableInterface]]
-    ) -> None:
-        self._user = cast(AuthorizableInterface, guard.maybe_user)
-        self._container.instance(GateInterface, self)
+    def guess_policy_names_using(
+        self,
+        callback: Callable[[str], str | list[str]],
+    ) -> Self:
+        self._guess_policy_names_callback = callback
+        return self

@@ -136,6 +136,19 @@ class UnbootableCriticalServiceProvider(MockServiceProvider):
         raise SystemError("UnbootableCriticalServiceProvider boot method called")
 
 
+class CustomExceptionServiceProvider(MockServiceProvider):
+    async def boot(
+        self,
+        config: Annotated[ConfigRepositoryInterface, Resolves("config")],
+    ) -> None:
+        await super().boot(config)
+        raise RuntimeError("ServiceProviderRaiseRuntimeErrorOnBoot boot method called")
+
+    def exception(self, error: Exception) -> Exception:
+        self.mock.exception(error)
+        return Exception("CustomExceptionServiceProvider exception method called")
+
+
 class ServiceProviderWithSingletons(MockServiceProvider):
     __singletons__: dict[str | type, type] = {
         "foo_singleton": Mock,

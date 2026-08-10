@@ -3,6 +3,9 @@ from tests.application.app.models.user import User
 
 
 class PostPolicy:
+    def before(self, ability: str, user: User, post: Post | None = None) -> bool | None:
+        return False
+
     def create(self, user: User) -> bool:
         return True
 

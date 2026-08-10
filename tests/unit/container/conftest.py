@@ -99,6 +99,25 @@ class SingletonClass(FooInterface):
         return "SingletonClass"
 
 
+class ResolverClass:
+    def resolve_instancemethod(
+        self, app: ApplicationInterface, request: Request
+    ) -> FooInterface:
+        return FooImplementation()
+
+    @classmethod
+    def resolve_classmethod(
+        cls, app: ApplicationInterface, request: Request
+    ) -> FooInterface:
+        return FooImplementation()
+
+    @staticmethod
+    def resolve_staticmethod(
+        app: ApplicationInterface, request: Request
+    ) -> FooInterface:
+        return FooImplementation()
+
+
 def callable_with_dependencies(foo: Resolves[FooImplementation]) -> None:
     assert isinstance(foo, FooImplementation)
     assert foo.foo_method() == "FooImplementation"

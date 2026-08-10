@@ -1,7 +1,7 @@
 import pytest
 
 from pyrannic.auth.base_guard import BaseGuard
-from tests.unit.auth.conftest import MemoryUserProvider
+from tests.conftest import MemoryUserProvider
 
 
 def test_base_guard_empty():
