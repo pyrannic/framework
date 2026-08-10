@@ -1,6 +1,6 @@
 import inspect
-from collections.abc import Callable, Sequence
-from types import CoroutineType, UnionType
+from collections.abc import Awaitable, Callable, Sequence
+from types import UnionType
 from typing import Any, Self, cast
 
 from pyrannic.auth import UnauthorizedException
@@ -173,7 +173,7 @@ class Gate(GateInterface):
         self,
         ability: str,
         *args: Any,
-    ) -> Callable[..., CoroutineType[Any, Any, bool | Response] | bool | Response]:
+    ) -> Callable[..., Awaitable[bool | Response] | bool | Response]:
         callback = await self._resolve_policy_callback_if_possible(ability, *args)
 
         if callback is None:
@@ -191,7 +191,7 @@ class Gate(GateInterface):
         self,
         ability: str,
         *args: Any,
-    ) -> Callable[..., CoroutineType[Any, Any, bool | Response]] | None:
+    ) -> Callable[..., Awaitable[bool | Response]] | None:
         callback = None
 
         if len(args) > 0:
@@ -212,7 +212,7 @@ class Gate(GateInterface):
         self,
         ability: str,
         policy: object,
-    ) -> Callable[..., CoroutineType[Any, Any, bool | Response]] | None:
+    ) -> Callable[..., Awaitable[bool | Response]] | None:
         """Resolve the callback for a policy check."""
 
         method_name = self._format_ability_to_method(ability)
