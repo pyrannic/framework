@@ -5,7 +5,7 @@ from app.http.resources.post import Post as PostResource
 from app.repositories.posts import PostsRepository
 from fastapi import APIRouter, Body
 
-from pyrannic import ForbiddenException, ResourceNotFoundException
+from pyrannic import ResourceNotFoundException
 from pyrannic.contracts import GateInterface
 from pyrannic.ioc import Resolves
 
@@ -28,8 +28,7 @@ async def update(
     if post is None:
         raise ResourceNotFoundException(post_id)
 
-    if not await gate.allows("update-post", post):
-        raise ForbiddenException("User does not have permission to update this post.")
+    await gate.authorize("update", post)
 
     post.title = request.title
     post.content = request.content

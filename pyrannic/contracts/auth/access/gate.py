@@ -162,7 +162,7 @@ class GateInterface(ABC):
         """
         Set a callback to guess policy names for resources.
         The names must contain the full module path and class name of the policy.
-        E.g.: "myapp.policies.FooPolicy" or ["myapp.policies.FooPolicy", "myapp.policies.BarPolicy"].
+        E.g.: "myapp.policies.foo.FooPolicy" or ["myapp.policies.foo.FooPolicy", "myapp.policies.bar.BarPolicy"].
 
         :param callback: A callback that takes a resource name and returns a policy name or a list of policy names.
         :return: The current gate instance.

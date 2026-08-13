@@ -1,13 +1,14 @@
 from typing import Annotated
 
-from app.http.requests.post import PostRequest
-from app.http.resources.post import Post as PostResource
-from app.repositories.posts import PostsRepository
 from fastapi import APIRouter, Body
 
 from pyrannic import ForbiddenException, ResourceNotFoundException
-from pyrannic.contracts import GateInterface
+from pyrannic.contracts import GateInterface, GuardInterface
 from pyrannic.ioc import Resolves
+from tests.application.app.http.requests.post import PostRequest
+from tests.application.app.http.resources.post import Post as PostResource
+from tests.application.app.models.user import User
+from tests.application.app.repositories.posts import PostsRepository
 
 router = APIRouter(tags=["Posts"], prefix="/posts")
 
@@ -22,18 +23,19 @@ async def update(
     request: Annotated[PostRequest, Body()],
     repository: Resolves[PostsRepository],
     gate: Resolves[GateInterface],
+    guard: Resolves[GuardInterface[User]],
 ) -> PostResource:
-    post = await repository.find(post_id)
+    post = repository.find(post_id)
 
     if post is None:
         raise ResourceNotFoundException(post_id)
 
-    if not await gate.allows("update-post", post):
+    if not await guard.user.can("update", post):
         raise ForbiddenException("User does not have permission to update this post.")
 
     post.title = request.title
     post.content = request.content
 
-    await repository.update(post)
+    repository.update(post)
 
     return PostResource.from_model(post)
