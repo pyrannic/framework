@@ -50,12 +50,12 @@ To authorize an action and automatically raise a `ForbiddenException` when a use
 --8<-- "docs_src/security/authorization/authorize_example.py"
 ```
 
-#### Providing Additional Context
+#### Provoding Additional Context {: #providing-additional-context--abilities}
 
 The `Gate` methods for authorizing abilities (`allows`, `denies`, `check`, `any`, `none`, `authorize`, `can`, `cannot`) can receive extra arguments. These extra elements are passed as positional parameters or named parameters to the ability closure, and can be used for additional context when making authorization decisions:
 
 ```python hl_lines="1 6"
---8<-- "docs_src/security/authorization/additional_context_example.py"
+--8<-- "docs_src/security/authorization/additional_context_example_01.py"
 ```
 
 ### Gate Responses
@@ -207,7 +207,18 @@ Certain policy methods, such as `create`, do not require a specific model instan
 --8<-- "docs_src/security/authorization/authorizing_actions_example_07.py"
 ```
 
-#### Supplying Additional Context
+#### Provoding Additional Context {: #providing-additional-context--policies}
 
-!!! danger "Work in Progress"
-    This section is currently under development and will be accessible very soon.
+When evaluating authorization with policies, you can provide extra arguments to the several authorization methods. These extra elements are passed as positional parameters or named parameters to the policy method to offer extra context for decision-making.
+
+For instance, review this `PostPolicy` method signature featuring a supplementary `category` parameter:
+
+```python title="app/policies/post.py"
+--8<-- "docs_src/security/authorization/additional_context_example_02.py"
+```
+
+To check whether the authenticated user has permission to update a specific post, this policy method can be called as follows:
+
+```python title="app/http/routers/posts.py" hl_lines="12"
+--8<-- "docs_src/security/authorization/additional_context_example_03.py"
+```

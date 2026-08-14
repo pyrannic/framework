@@ -54,10 +54,16 @@ For every incoming request, the guard defines the comprehensive process used to 
 
 ### The Guard Interface
 
+!!! danger "Work in Progress"
+    This section is currently under development and will be accessible very soon.
 
 ## User Providers
 
 ### The User Provider Interface
+
+!!! danger "Work in Progress"
+    This section is currently under development and will be accessible very soon.
+
 ### The Authenticatable Interface
 
 !!! danger "Work in Progress"
