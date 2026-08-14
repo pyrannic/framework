@@ -114,7 +114,7 @@ class AbstractConnector(ConnectorInterface, ABC, Generic[EngineType, SessionType
         )
 
         alembic_cfg.set_main_option(
-            "pyranninc.asyncio",
+            "pyrannic.asyncio",
             str(self._config.boolean("orm.drivers.sqlalchemy.asyncio")),
         )
 
