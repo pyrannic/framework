@@ -71,3 +71,7 @@ class QueryBuilderInterface(ABC, Generic[T]):
     @abstractmethod
     def only_removed(self) -> Self:
         """Include only removed records in the query results."""
+
+    @abstractmethod
+    def join(self, *args: Any, **kwargs: Any) -> Self:
+        """Add a join clause to the current query."""
