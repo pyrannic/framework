@@ -17,6 +17,6 @@ class SQLAlchemyUserProviderConfig(Configuration):
 
 class UserProvidersConfig(Configuration):
     sqlalchemy: SQLAlchemyUserProviderConfig = Field(
-        default=SQLAlchemyUserProviderConfig()
+        default_factory=lambda: SQLAlchemyUserProviderConfig()
     )
     """Configuration for the SQLAlchemy user provider."""
