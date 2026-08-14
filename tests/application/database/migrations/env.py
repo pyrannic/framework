@@ -82,7 +82,7 @@ def run_migrations() -> None:
 
     config_data = config.get_section(config.config_ini_section, {})
 
-    if config_data.get("pyranninc.asyncio", "false").lower() == "true":
+    if config_data.get("pyrannic.asyncio", "false").lower() == "true":
         asyncio.run(run_async_migrations(config_data))
     else:
         run_sync_migrations(config_data)
