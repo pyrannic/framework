@@ -12,10 +12,10 @@ class GuardConfig(Configuration):
     provider: str = Field(default="sqlalchemy")
     """The user provider to be used by the guard."""
 
-    security_model: SecurityBase = Field(default=HTTPBearer())
+    security_model: SecurityBase = Field(default_factory=lambda: HTTPBearer())
     """The security model to be used by the guard. If not set, the default security model for the driver will be used."""
 
 
 class GuardsConfig(Configuration):
-    bearer: GuardConfig = Field(default=GuardConfig())
+    bearer: GuardConfig = Field(default_factory=lambda: GuardConfig())
     """Configuration for the bearer guard."""
