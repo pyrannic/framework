@@ -18,3 +18,4 @@ from .orm.async_repository import AsyncRepositoryInterface as AsyncRepositoryInt
 from .orm.model import ModelInterface as ModelInterface
 from .orm.repository import RepositoryInterface as RepositoryInterface
 from .pagination.paginator import PaginatorInterface as PaginatorInterface
+from .support.serializable import SerializableInterface as SerializableInterface
