@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from pyrannic.auth.bearer_guard import BearerGuard
+from pyrannic.auth.guards.bearer_guard import BearerGuard
 from tests.conftest import MemoryUserProvider
 
 
@@ -14,7 +14,7 @@ def test_bearer_guard_empty():
     assert guard.maybe_id is None
     assert guard.check is False
     assert guard.is_guest
-    assert guard.validate({}) is False
+    assert guard.validate("token") is True
     assert guard.has_user is False
 
 

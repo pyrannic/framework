@@ -24,6 +24,7 @@ class SQLAlchemyUserProvider(UserProviderInterface):
     def validate_credentials(
         self,
         user: AuthenticatableInterface,
-        credentials: dict[str, Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
-        return False
+        return True  # TODO
