@@ -23,7 +23,8 @@ class UserProviderInterface(ABC):
         """
         Retrieve a user by their credentials.
 
-        :param credentials: The user's credentials.
+        :param args: Positional arguments for the credentials.
+        :param kwargs: Keyword arguments for the credentials.
         :return: The user object or None if not found.
         """
 
@@ -31,12 +32,14 @@ class UserProviderInterface(ABC):
     def validate_credentials(
         self,
         user: AuthenticatableInterface,
-        credentials: dict[str, Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         Validate a user against the given credentials.
 
         :param user: The user object.
-        :param credentials: The user's credentials.
+        :param args: Positional arguments for the credentials.
+        :param kwargs: Keyword arguments for the credentials.
         :return: True if the credentials are valid, False otherwise.
         """

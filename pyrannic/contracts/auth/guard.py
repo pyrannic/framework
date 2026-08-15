@@ -60,11 +60,12 @@ class GuardInterface(ABC, Generic[AuthenticatableType]):
         """
 
     @abstractmethod
-    def validate(self, credentials: dict[str, Any]) -> bool:
+    def validate(self, *args: Any, **kwargs: Any) -> bool:
         """
         Validate a user's credentials.
 
-        :param credentials: A dictionary containing user credentials.
+        :param args: Positional arguments for the credentials.
+        :param kwargs: Keyword arguments for the credentials.
         :return: True if the credentials are valid, False otherwise.
         """
 

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -11,6 +11,8 @@ from .base_guard import BaseGuard
 
 @scoped
 class BearerGuard(BaseGuard):
+    model: HTTPAuthorizationCredentials
+
     def __init__(self, user_provider: Resolves[UserProviderInterface]):
         self.set_provider(user_provider)
 
@@ -21,10 +23,16 @@ class BearerGuard(BaseGuard):
             Depends(HTTPBearer()),
         ],
     ) -> None:
-        token = credentials.credentials if credentials else None
+        if credentials and credentials.credentials:
+            self.model = credentials
+            await self.authenticate(credentials.credentials)
 
-        if token:
-            user = await self.provider.retrieve_by_credentials(token=token)
+    async def authenticate(self, token: str) -> None:
+        if token and self.validate(token):
+            user = await self.provider.retrieve_by_credentials(token)
 
-            if user:
+            if user and self.provider.validate_credentials(user, token):
                 self.set_user(user)
+
+    def validate(self, token: str, *args: Any, **kwargs: Any) -> bool:
+        return True

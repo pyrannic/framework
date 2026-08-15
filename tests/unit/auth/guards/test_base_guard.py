@@ -1,6 +1,6 @@
 import pytest
 
-from pyrannic.auth.base_guard import BaseGuard
+from pyrannic.auth.guards.base_guard import BaseGuard
 from tests.conftest import MemoryUserProvider
 
 
