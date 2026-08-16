@@ -20,7 +20,7 @@ class BearerGuard(BaseGuard):
         self,
         credentials: Annotated[
             HTTPAuthorizationCredentials | None,
-            Depends(HTTPBearer()),
+            Depends(HTTPBearer(auto_error=False)),
         ],
     ) -> None:
         if credentials and credentials.credentials:

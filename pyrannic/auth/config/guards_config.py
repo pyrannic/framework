@@ -9,7 +9,9 @@ class GuardConfig(Configuration):
     driver: str = Field(default="bearer")
     """The authentication driver to be used by the guard."""
 
-    security_model: SecurityBase = Field(default_factory=HTTPBearer)
+    security_model: SecurityBase = Field(
+        default_factory=lambda: HTTPBearer(auto_error=False)
+    )
     """The security model to be used by the guard. If not set, the default security model for the driver will be used."""
 
 
@@ -17,7 +19,9 @@ class JwtGuardConfig(GuardConfig):
     driver: str = Field(default="jwt")
     """The authentication driver to be used by the guard."""
 
-    security_model: SecurityBase = Field(default_factory=HTTPBearer)
+    security_model: SecurityBase = Field(
+        default_factory=lambda: HTTPBearer(auto_error=False)
+    )
     """The security model to be used by the guard. If not set, the default security model for the driver will be used."""
 
     jwks_url: str | None = Field(default=None)
