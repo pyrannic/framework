@@ -5,20 +5,23 @@ from fastapi import Depends, Request
 from fastapi.security.base import SecurityBase
 
 from pyrannic.auth.authenticatable import AuthenticatableInterface
+from pyrannic.auth.unauthorized_exception import UnauthorizedException
 from pyrannic.contracts.auth.access.authorizable import AuthorizableInterface
 from pyrannic.contracts.auth.access.gate import GateInterface
 from pyrannic.contracts.auth.guard import GuardInterface
 from pyrannic.ioc import Resolves
 
 
-def Authenticate():
-    return Depends(Safeguard())
+def Authenticate(allow_guests: bool = False):
+    return Depends(Safeguard(allow_guests))
 
 
 class Safeguard(SecurityBase):
     _security_model: SecurityBase | None = None
 
-    def __init__(self) -> None:
+    def __init__(self, allow_guests: bool = False) -> None:
+        self._allow_guests = allow_guests
+
         if self._security_model:
             self.model = self._security_model.model
             self.scheme_name = self._security_model.scheme_name
@@ -54,8 +57,13 @@ class Safeguard(SecurityBase):
         guard: Resolves[GuardInterface[AuthenticatableInterface]],
         gate: Resolves[GateInterface],
     ) -> Any:
+        user = guard.maybe_user
+
+        if not self._allow_guests and not user:
+            raise UnauthorizedException()
+
         # Resolve the user from the guard and set it in the gate.
-        gate.set_user(cast(AuthorizableInterface | None, guard.maybe_user))
+        gate.set_user(cast(AuthorizableInterface | None, user))
 
         callable = cast(Callable[..., Any], self._security_model)
         return await callable(request) if self._security_model else None
