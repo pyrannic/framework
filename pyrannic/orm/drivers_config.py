@@ -5,5 +5,5 @@ from pyrannic.orm.sqlalchemy.config import SQLAlchemyConfig
 
 
 class DriversConfig(Configuration):
-    sqlalchemy: SQLAlchemyConfig = Field(default_factory=lambda: SQLAlchemyConfig())
+    sqlalchemy: SQLAlchemyConfig = Field(default_factory=SQLAlchemyConfig)
     """Configuration for SQLAlchemy driver."""

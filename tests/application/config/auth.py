@@ -7,7 +7,7 @@ class AuthConfig(Configuration):
     guard: str = Field("jwt")
     """This determines the default authentication guard for your application."""
 
-    guards: GuardsConfig = Field(default_factory=lambda: GuardsConfig())
+    guards: GuardsConfig = Field(default_factory=GuardsConfig)
     """
     This configuration allows you to define the authentication guards for your application.
 
@@ -15,9 +15,7 @@ class AuthConfig(Configuration):
     from your database or other persistent storage systems.
     """
 
-    providers: UserProvidersConfig = Field(
-        default_factory=lambda: UserProvidersConfig()
-    )
+    providers: UserProvidersConfig = Field(default_factory=UserProvidersConfig)
     """
     Each authentication guard relies on a user provider to determine how users
     are retrieved from your database or application storage.
