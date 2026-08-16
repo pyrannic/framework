@@ -96,9 +96,6 @@ class JwtGuard(BearerGuard):
         except jwt.PyJWTError as e:
             raise self.unauthorized_exception(str(e)) from e
 
-    def validate(self, token: str, payload: dict[str, Any]) -> bool:
-        return True
-
     def unauthorized_exception(self, message: str) -> UnauthorizedException:
         # https://www.rfc-editor.org/info/rfc6750/#section-3.1
         header = {
