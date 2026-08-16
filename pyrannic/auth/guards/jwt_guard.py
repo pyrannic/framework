@@ -16,7 +16,7 @@ class JwtGuard(BearerGuard):
         user_provider: Resolves[UserProviderInterface],
         config: Resolves[ConfigRepositoryInterface],
     ):
-        self.set_provider(user_provider)
+        super().__init__(user_provider)
         self._config = config
         self._jwks_client = None
 
