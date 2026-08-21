@@ -9,7 +9,7 @@ from pyrannic.auth.access.authorizable import Authorizable
 from pyrannic.auth.access.gate import Gate, GateInterface
 from pyrannic.auth.access.response import Response
 from pyrannic.auth.authenticatable import Authenticatable
-from pyrannic.auth.bearer_guard import BearerGuard
+from pyrannic.auth.guards.bearer_guard import BearerGuard
 from pyrannic.auth.unauthorized_exception import UnauthorizedException
 from pyrannic.contracts import (
     ApplicationInterface,
@@ -154,10 +154,13 @@ class MemoryUserProvider(UserProviderInterface):
 
     async def retrieve_by_credentials(
         self,
-        *args: Any,
-        **kwargs: Any,
+        payload_or_token: dict[str, Any] | str,
     ) -> AuthenticatableInterface | None:
-        token = kwargs.get("token")
+        token = (
+            payload_or_token.get("password")
+            if isinstance(payload_or_token, dict)
+            else payload_or_token
+        )
 
         for user in self.users.values():
             if user.password == token:
@@ -167,11 +170,10 @@ class MemoryUserProvider(UserProviderInterface):
 
     def validate_credentials(
         self,
-        user: AuthenticatableInterface,
-        credentials: dict[str, Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
-        # Implement credential validation if needed
-        return False
+        return True
 
 
 async def setup_auth(

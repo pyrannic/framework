@@ -188,6 +188,14 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
 
         return self
 
+    def join(self, model: type[Any]) -> Self:
+        self._prepare_query()
+
+        assert isinstance(self._query, Select)
+        self._query = self._query.join(model)
+
+        return self
+
     def _supports_soft_deletion(self) -> bool:
         return issubclass(self.model, SoftDeletesInterface)
 

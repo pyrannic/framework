@@ -38,7 +38,7 @@ class BaseGuard(GuardInterface[AuthenticatableInterface]):
     def maybe_id(self) -> str | None:
         return self._user.get_auth_identifier() if self._user else None
 
-    def validate(self, credentials: dict[str, Any]) -> bool:
+    def validate(self, *args: Any, **kwargs: Any) -> bool:
         return False
 
     @property

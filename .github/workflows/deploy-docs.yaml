@@ -2,7 +2,7 @@ name: Build and Deploy the Documentation Site
 
 on:
   push:
-    branches: [ main, docs ]  # only run this workflow when changes are pushed to the main or docs branches
+    branches: [ main, dev, docs ]  # only run this workflow when changes are pushed to the main, dev, or docs branches
     # Specify paths so that docs deploy doesn't run on app code changes, only docs changes
     paths:
       - 'docs/**'

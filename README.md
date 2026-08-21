@@ -18,6 +18,7 @@ Built on top of [FastAPI](https://github.com/fastapi/fastapi), [Pydantic](https:
 - A quick and straightforward approach to [application configuration](https://pyrannic.github.io/framework/configuration/).
 - A modular [bootstrapping system](https://pyrannic.github.io/framework/bootstrap/).
 - A custom [dependency injection container](https://pyrannic.github.io/framework/ioc-container/) designed for advanced capabilities.
+- Intuitive and expressive modules for handling [authentication](https://pyrannic.github.io/framework/security/authentication/) and [authorization](https://pyrannic.github.io/framework/security/authorization/).
 - An intuitive and easy-to-use [database ORM](https://pyrannic.github.io/framework/database/getting-started/).
 - API [collections](https://pyrannic.github.io/framework/collections/) and [resources](https://pyrannic.github.io/framework/resources/) featuring built-in [pagination](https://pyrannic.github.io/framework/pagination/).
 
