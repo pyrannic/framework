@@ -30,6 +30,10 @@ class ConftestWithSuffix:
     pass
 
 
+class FooWithAnotherSuffix:
+    pass
+
+
 foo_attr = "foo_attr_value"
 bar_attr = "bar_attr_value"
 baz_attr = "baz_attr_value"
