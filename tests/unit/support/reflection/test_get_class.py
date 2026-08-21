@@ -1,4 +1,5 @@
 import tests.unit.support.reflection.conftest as conftest
+import tests.unit.support.reflection.conftest_test as conftest_2
 from pyrannic.support.reflection import get_class
 
 
@@ -17,6 +18,15 @@ def test_get_class_without_args():
     assert class_ is conftest.Conftest
 
 
+def test_get_class_without_args_2():
+    """
+    Test that get_class can find a class when the class name is not provided and
+    the class name does not match the module name.
+    """
+    class_ = get_class(conftest_2)
+    assert class_ is conftest_2.BarClass
+
+
 def test_get_class_with_class_name():
     class_ = get_class(conftest, class_name="FooClass")
 
@@ -27,6 +37,16 @@ def test_get_class_with_class_suffix():
     class_ = get_class(conftest, class_suffix="WithSuffix")
 
     assert class_ is conftest.ConftestWithSuffix
+
+
+def test_get_class_with_class_suffix_2():
+    """
+    Test that get_class can find a class with a suffix when the class name is
+    not provided and the class name does not match the module name.
+    """
+    class_ = get_class(conftest, class_suffix="WithAnotherSuffix")
+
+    assert class_ is conftest.FooWithAnotherSuffix
 
 
 def test_get_class_without_args_using_string_module_name():
@@ -45,3 +65,13 @@ def test_get_class_with_class_suffix_using_string_module_name():
     class_ = get_class("conftest", class_suffix="WithSuffix")
     assert class_ is not None
     assert "conftest.ConftestWithSuffix" in class_.__module__ + "." + class_.__name__
+
+
+def test_get_class_with_class_suffix_using_string_module_name_2():
+    """
+    Test that get_class can find a class with a suffix when the class name is
+    not provided and the class name does not match the module name.
+    """
+    class_ = get_class("conftest", class_suffix="WithAnotherSuffix")
+    assert class_ is not None
+    assert "conftest.FooWithAnotherSuffix" in class_.__module__ + "." + class_.__name__

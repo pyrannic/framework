@@ -120,12 +120,27 @@ def get_class(
         return None
 
     if class_name is None:
-        class_name = to_pascal_case(module.__name__.split(".")[-1])
+        class_module_name = to_pascal_case(module.__name__.split(".")[-1])
 
-        if class_suffix and not class_name.endswith(class_suffix):
-            class_name += class_suffix
+        if class_suffix and not class_module_name.endswith(class_suffix):
+            class_module_name += class_suffix
+    else:
+        class_module_name = class_name
 
-    class_ = getattr(module, class_name, None)
+    class_ = getattr(module, class_module_name, None)
+
+    # If the class is not found by name, search for the first class or a class with the given suffix.
+    # NOTE: Returns the first class alphabetically if no class name is provided and no suffix is provided.
+    if class_ is None and class_name is None:
+        members = getmembers(
+            module,
+            lambda member: (
+                isclass(member)
+                and (member.__name__.endswith(class_suffix) if class_suffix else True)
+            ),
+        )
+        print(f"Members found in module {module.__name__}: {members}")
+        class_ = members[0][1] if members else None
 
     return class_ if isclass(class_) else None
 
