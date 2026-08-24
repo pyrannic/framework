@@ -74,29 +74,35 @@ class AbstractConnector(ConnectorInterface, ABC, Generic[EngineType, SessionType
             await self._run_alembic_migrations()
 
     @property
-    def url(self) -> URL:
+    def url(self) -> URL | str:
         """
         Returns the database URL from the configuration.
         """
         if not self._url:
             connection = self._config.string("database.connection", default="sqlite")
+            url = self._config.optional_str(f"database.connections.{connection}.url")
 
-            self._url = URL.create(
-                drivername=self._config.string(
-                    f"database.connections.{connection}.driver"
-                ),
-                username=self._config.string(
-                    f"database.connections.{connection}.username"
-                ),
-                password=self._config.string(
-                    f"database.connections.{connection}.password"
-                ),
-                host=self._config.string(f"database.connections.{connection}.host"),
-                port=self._config.integer(f"database.connections.{connection}.port"),
-                database=self._config.string(
-                    f"database.connections.{connection}.database"
-                ),
-            )
+            if url:
+                self._url = url
+            else:
+                self._url = URL.create(
+                    drivername=self._config.string(
+                        f"database.connections.{connection}.driver"
+                    ),
+                    username=self._config.string(
+                        f"database.connections.{connection}.username"
+                    ),
+                    password=self._config.string(
+                        f"database.connections.{connection}.password"
+                    ),
+                    host=self._config.string(f"database.connections.{connection}.host"),
+                    port=self._config.integer(
+                        f"database.connections.{connection}.port"
+                    ),
+                    database=self._config.string(
+                        f"database.connections.{connection}.database"
+                    ),
+                )
 
         return self._url
 
@@ -110,7 +116,10 @@ class AbstractConnector(ConnectorInterface, ABC, Generic[EngineType, SessionType
             path.join("%(here)s", self._application.base_path, "database/migrations"),
         )
         alembic_cfg.set_main_option(
-            "sqlalchemy.url", self.url.render_as_string(hide_password=False)
+            "sqlalchemy.url",
+            self.url
+            if isinstance(self.url, str)
+            else self.url.render_as_string(hide_password=False),
         )
 
         alembic_cfg.set_main_option(
