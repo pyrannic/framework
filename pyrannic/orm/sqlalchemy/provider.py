@@ -11,10 +11,6 @@ from .connector import AsyncConnector, Connector
 
 
 class DatabaseServiceProvider(ServiceProvider):
-    __singletons__ = {
-        DatabaseManagerInterface: DatabaseManager,
-    }
-
     @property
     def is_critical(self) -> bool:
         return True
@@ -27,7 +23,8 @@ class DatabaseServiceProvider(ServiceProvider):
         return AsyncConnector if is_asyncio else Connector
 
     def register(self):
-        self.container.singleton(ConnectorInterface, self.connector)
+        self.container.scoped(DatabaseManagerInterface, DatabaseManager)
+        self.container.scoped(ConnectorInterface, self.connector)
 
     async def boot(self, manager: Annotated[DatabaseManagerInterface, Resolves()]):
         await manager.migrate()
