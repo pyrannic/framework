@@ -8,10 +8,11 @@ from sqlalchemy import URL, Engine, create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
+    async_scoped_session,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from pyrannic.container.params import Resolves
 from pyrannic.contracts.application import ApplicationInterface
@@ -166,7 +167,7 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
                 expire_on_commit=False,
             )
 
-        return self._session
+        return scoped_session(self._session)
 
     async def disconnect(self) -> None:
         self.engine.dispose()
@@ -206,7 +207,7 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
                 expire_on_commit=False,
             )
 
-        return self._session
+        return async_scoped_session(self._session, scopefunc=asyncio.current_task)
 
     async def disconnect(self) -> None:
         await self.engine.dispose()
