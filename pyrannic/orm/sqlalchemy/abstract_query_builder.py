@@ -36,8 +36,7 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
     _soft_deleting_scope: SoftDeletingScope[T]
 
     def __init__(self, logger: Logger):
-        if not hasattr(self, "__model__"):
-            self.__model__ = get_generic_type(self)
+        self._initialize_model()
 
         if not hasattr(self, "__scopes__"):
             self.__scopes__ = []
@@ -49,6 +48,19 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
 
         self._scopes.append(self._soft_deleting_scope)
         self._scopes.extend(self.__scopes__)
+
+    def _initialize_model(self) -> None:
+        if not hasattr(self, "__model__"):
+            model = get_generic_type(self)
+
+            if model is None:
+                raise ValueError(
+                    "The model type could not be determined. "
+                    "Please ensure that the class is properly typed with a generic model "
+                    "or explicitly set the '__model__' attribute in the subclass."
+                )
+
+            self.__model__ = model
 
     @property
     @abstractmethod
@@ -209,7 +221,8 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
         assert isinstance(self._query, Select)
 
         return (
-            self._query.with_only_columns(func.count(), maintain_column_froms=True)
+            self._query
+            .with_only_columns(func.count(), maintain_column_froms=True)
             .order_by(None)
             .limit(None)
             .offset(None)
