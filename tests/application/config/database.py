@@ -20,7 +20,7 @@ class SqliteConfig(DBConfig):
 
 
 class ConnectionsConfig(DBConfig):
-    sqlite: SqliteConfig = Field(default=SqliteConfig())
+    sqlite: SqliteConfig = Field(default_factory=SqliteConfig)
     """Configuration for SQLite database connection."""
 
 
@@ -30,8 +30,8 @@ class MigrationsConfig(DBConfig):
 
 
 class DatabaseConfig(DBConfig):
-    connections: ConnectionsConfig = Field(default=ConnectionsConfig())
+    connections: ConnectionsConfig = Field(default_factory=ConnectionsConfig)
     """Configuration for database connections."""
 
-    migrations: MigrationsConfig = Field(default=MigrationsConfig())
+    migrations: MigrationsConfig = Field(default_factory=MigrationsConfig)
     """Configuration for database migrations."""
