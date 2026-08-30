@@ -1,4 +1,4 @@
-from typing import Any, Tuple, cast
+from typing import Any, cast
 
 from sqlalchemy.sql.selectable import TypedReturnsRows
 
@@ -15,9 +15,9 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
             await self.session.commit()
             await self.session.refresh(model)
             return model
-        except Exception as e:
+        except Exception:
             await self.session.rollback()
-            self._logger.exception(f"Rolling Back. Error inserting object: {e}")
+            self._logger.exception("Rolling Back. Error inserting model.")
             raise
 
     async def update(self, model: T) -> T:
@@ -25,9 +25,9 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
             await self.session.merge(model)
             await self.session.commit()
             return model
-        except Exception as e:
+        except Exception:
             await self.session.rollback()
-            self._logger.exception(f"Rolling Back. Error updating model: {e}")
+            self._logger.exception("Rolling Back. Error updating model.")
             raise
 
     async def destroy(self, model: T | None = None) -> None:
@@ -35,11 +35,11 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
         self._before_query()
 
         try:
-            await self.session.execute(cast(TypedReturnsRows[Tuple[T]], self._query))
+            await self.session.execute(cast(TypedReturnsRows[tuple[T]], self._query))
             await self.session.commit()
-        except Exception as e:
+        except Exception:
             await self.session.rollback()
-            self._logger.exception(f"Rolling Back. Error destroying model: {e}")
+            self._logger.exception("Rolling Back. Error destroying model.")
             raise
         finally:
             self._reset_query()
@@ -51,14 +51,15 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
         return (await self.update(model)) if self._restore_model(model) else model
 
     async def count(self) -> int:
+        self._prepare_query()
         self._before_query()
-        return await self._count(reset_query=False)
+        return await self._count(reset_query=True)
 
     async def first(self) -> T | None:
         self._prepare_query()
         self._before_query()
         model = (
-            await self.session.scalars(cast(TypedReturnsRows[Tuple[T]], self._query))
+            await self.session.scalars(cast(TypedReturnsRows[tuple[T]], self._query))
         ).first()
         self._reset_query()
 
@@ -94,7 +95,7 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
 
     async def _get(self) -> list[T]:
         models = (
-            await self.session.scalars(cast(TypedReturnsRows[Tuple[T]], self._query))
+            await self.session.scalars(cast(TypedReturnsRows[tuple[T]], self._query))
         ).all()
         self._reset_query()
 
@@ -103,7 +104,7 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
     async def _count(self, reset_query: bool = True) -> int:
         count = (
             await self.session.execute(
-                cast(TypedReturnsRows[Tuple[int]], self._get_count_query)
+                cast(TypedReturnsRows[tuple[int]], self._get_count_query)
             )
         ).scalar()
 

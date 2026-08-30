@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import TypeVar
 
-ItemType = TypeVar("ItemType", covariant=True)
+ItemType_co = TypeVar("ItemType_co", covariant=True)
 MetaType = TypeVar("MetaType")
 
 
-class PaginatorInterface(ABC, Generic[ItemType, MetaType]):
+class PaginatorInterface[ItemType_co, MetaType](ABC):
     """
     A generic class that describes a paginator. This exposes two public properties:
 
@@ -15,7 +15,7 @@ class PaginatorInterface(ABC, Generic[ItemType, MetaType]):
 
     @property
     @abstractmethod
-    def items(self) -> list[ItemType]:
+    def items(self) -> list[ItemType_co]:
         pass
 
     @abstractmethod
