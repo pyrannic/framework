@@ -1,4 +1,4 @@
-from typing import Any, Tuple, cast
+from typing import Any, cast
 
 from sqlalchemy.sql.selectable import TypedReturnsRows
 
@@ -15,9 +15,9 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
             self.session.commit()
             self.session.refresh(model)
             return model
-        except Exception as e:
+        except Exception:
             self.session.rollback()
-            self._logger.exception(f"Rolling Back. Error inserting model: {e}")
+            self._logger.exception("Rolling Back. Error inserting model.")
             raise
 
     def update(self, model: T) -> T:
@@ -25,9 +25,9 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
             self.session.merge(model)
             self.session.commit()
             return model
-        except Exception as e:
+        except Exception:
             self.session.rollback()
-            self._logger.exception(f"Rolling Back. Error updating model: {e}")
+            self._logger.exception("Rolling Back. Error updating model.")
             raise
 
     def destroy(self, model: T | None = None) -> None:
@@ -35,11 +35,11 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
         self._before_query()
 
         try:
-            self.session.execute(cast(TypedReturnsRows[Tuple[T]], self._query))
+            self.session.execute(cast(TypedReturnsRows[tuple[T]], self._query))
             self.session.commit()
-        except Exception as e:
+        except Exception:
             self.session.rollback()
-            self._logger.exception(f"Rolling Back. Error destroying model: {e}")
+            self._logger.exception("Error destroying model. Rolling Back...")
             raise
         finally:
             self._reset_query()
@@ -51,14 +51,15 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
         return self.update(model) if self._restore_model(model) else model
 
     def count(self) -> int:
+        self._prepare_query()
         self._before_query()
-        return self._count(reset_query=False)
+        return self._count(reset_query=True)
 
     def first(self) -> T | None:
         self._prepare_query()
         self._before_query()
         model = (
-            self.session.scalars(cast(TypedReturnsRows[Tuple[T]], self._query))
+            self.session.scalars(cast(TypedReturnsRows[tuple[T]], self._query))
         ).first()
         self._reset_query()
 
@@ -92,7 +93,7 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
 
     def _get(self) -> list[T]:
         models = (
-            self.session.scalars(cast(TypedReturnsRows[Tuple[T]], self._query))
+            self.session.scalars(cast(TypedReturnsRows[tuple[T]], self._query))
         ).all()
         self._reset_query()
 
@@ -100,7 +101,7 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
 
     def _count(self, reset_query: bool = True) -> int:
         count = self.session.execute(
-            cast(TypedReturnsRows[Tuple[int]], self._get_count_query)
+            cast(TypedReturnsRows[tuple[int]], self._get_count_query)
         ).scalar()
 
         if reset_query:
