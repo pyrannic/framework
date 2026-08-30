@@ -26,14 +26,26 @@ class DatabaseManager(ConnectorInterface):
     async def disconnect(self) -> None:
         await self._connector.disconnect()
 
-    async def migrate(
+    def _get_migrations(
         self,
         migrations: list[type[MigrationInterface]] | None = None,
-    ) -> None:
+    ) -> list[type[MigrationInterface]]:
         if migrations is None:
             modules = get_module_paths(
                 os.path.join(self._application.base_path, "database/migrations/tables")
             )
             migrations = get_classes(modules, class_suffix="Table")
 
-        await self._connector.migrate(migrations)
+        return migrations
+
+    async def migrate(
+        self,
+        migrations: list[type[MigrationInterface]] | None = None,
+    ) -> None:
+        await self._connector.migrate(self._get_migrations(migrations))
+
+    async def rollback(
+        self,
+        migrations: list[type[MigrationInterface]] | None = None,
+    ) -> None:
+        await self._connector.rollback(self._get_migrations(migrations))
