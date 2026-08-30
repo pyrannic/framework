@@ -1,20 +1,23 @@
-from typing import Any, Generator
+from collections.abc import Generator
+from typing import Any
 
 import pytest
+import pytest_asyncio
 from starlette.testclient import TestClient
 
-from pyrannic.application import Application
-from pyrannic.contracts.application import ApplicationInterface
+from pyrannic import Application
+from pyrannic.contracts import ApplicationInterface, DatabaseManagerInterface
+
+
+@pytest_asyncio.fixture(scope="module")
+async def application():
+    application = Application(base_path="tests/application")
+    yield application
+    manager = await application.container.resolve(DatabaseManagerInterface)
+    await manager.disconnect()
 
 
 @pytest.fixture(scope="module")
-def application() -> ApplicationInterface:
-    return Application(base_path="tests/application")
-
-
-@pytest.fixture(scope="module")
-def http_client(
-    application: ApplicationInterface,
-) -> Generator[TestClient, Any, Any]:
+def http_client(application: ApplicationInterface) -> Generator[TestClient, Any, Any]:
     with TestClient(application) as client:
         yield client

@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, PropertyMock
 
 import pytest
 from fastapi import Request
@@ -8,7 +8,7 @@ from fastapi.security import (
     OAuth2PasswordBearer,
 )
 
-from pyrannic.auth.safeguard import Safeguard
+from pyrannic.auth import Safeguard, UnauthorizedException
 from pyrannic.contracts.auth.access.gate import GateInterface
 from pyrannic.contracts.auth.guard import GuardInterface
 
@@ -59,3 +59,43 @@ async def test_safeguard_call():
     assert isinstance(result, HTTPAuthorizationCredentials)
     assert result.scheme == "Bearer"
     assert result.credentials == "token"
+
+
+@pytest.mark.asyncio
+async def test_safeguard_call_raises_unauthorized_exception():
+    model = HTTPBearer(auto_error=False)
+    Safeguard.use_security_model(model)
+
+    safeguard = Safeguard()
+    request = Mock(spec=Request)
+    request.headers = {}
+
+    guard = MagicMock(spec=GuardInterface)
+    gate = Mock(spec=GateInterface)
+
+    type(guard).maybe_user = PropertyMock(return_value=None)
+
+    with pytest.raises(UnauthorizedException) as exc_info:
+        await safeguard(request, guard, gate)
+
+    error = str(exc_info.value)
+    assert "401: This action is unauthorized." in error
+
+
+@pytest.mark.asyncio
+async def test_safeguard_allow_guests():
+    model = HTTPBearer(auto_error=False)
+    Safeguard.use_security_model(model)
+
+    safeguard = Safeguard(allow_guests=True)
+    request = Mock(spec=Request)
+    request.headers = {}
+
+    guard = MagicMock(spec=GuardInterface)
+    gate = Mock(spec=GateInterface)
+
+    type(guard).maybe_user = PropertyMock(return_value=None)
+
+    result = await safeguard(request, guard, gate)
+
+    assert result is None

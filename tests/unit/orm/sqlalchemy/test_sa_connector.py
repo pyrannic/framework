@@ -3,9 +3,10 @@ from unittest.mock import Mock
 
 import pytest
 from pytest import MonkeyPatch
+from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from pyrannic.contracts import ApplicationInterface
+from pyrannic.contracts import ApplicationInterface, ConfigRepositoryInterface
 from pyrannic.orm.sqlalchemy import AsyncConnector, Connector
 
 
@@ -47,3 +48,55 @@ async def test_async_connector_disconnect(
 
     await connector.disconnect()
     mock.dispose.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_connector_url_using_database_file(
+    application: ApplicationInterface,
+):
+    config = application.container.instance(ConfigRepositoryInterface)
+    config.set("database.connections.sqlite.database", "database/database.sqlite")
+
+    connector = Connector(
+        application,
+        await application.container.resolve(Logger),
+        config,
+    )
+
+    assert str(connector.url) == "sqlite:///database/database.sqlite"
+
+
+@pytest.mark.asyncio
+async def test_abstract_connector_url_is_an_url_object(
+    application: ApplicationInterface,
+) -> None:
+    container = application.container
+    connector = Connector(
+        application,
+        await container.resolve(Logger),
+        await container.resolve("config"),
+    )
+
+    assert isinstance(connector.url, URL)
+
+
+@pytest.mark.asyncio
+async def test_abstract_connector_url_is_an_url_object_with_config(
+    application: ApplicationInterface,
+) -> None:
+    db_url = "sqlite+aiosqlite:///test.db"
+    container = application.container
+    config = await container.resolve(ConfigRepositoryInterface)
+
+    orig = config.get("database.connections.sqlite.url")
+    config.set("database.connections.sqlite.url", db_url)
+
+    connector = Connector(
+        application,
+        await container.resolve(Logger),
+        config,
+    )
+
+    assert isinstance(connector.url, str)
+    assert connector.url == db_url
+    config.set("database.connections.sqlite.url", orig)

@@ -6,17 +6,19 @@ from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-import pyrannic.support.string as string
 from pyrannic.container.param_functions import Resolves
 from pyrannic.contracts import ApplicationInterface, DatabaseManagerInterface
 from pyrannic.database.migration import Migration
 from pyrannic.orm.sqlalchemy import (
+    AsyncRepository,
     DatabaseServiceProvider,
     HasTimestamp,
     HasTimestamps,
     Model,
+    Repository,
     SoftDeletes,
 )
+from pyrannic.support import string
 
 
 class MockDatabaseServiceProvider(DatabaseServiceProvider):
@@ -79,8 +81,25 @@ class HasTimestampsModel(Model, HasTimestamps):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
 
-class SoftDeletesModel(Model, SoftDeletes):
+class FooModel(Model, SoftDeletes):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), default="Foo")
+
+
+class FooRepository(Repository[FooModel]):
+    pass
+
+
+class FooAsyncRepository(AsyncRepository[FooModel]):
+    pass
+
+
+class FoosTable(Migration):
+    async def up(self) -> None:
+        await self.schema.create(FooModel)
+
+    async def down(self) -> None:
+        await self.schema.drop(FooModel)
 
 
 class BarsTable(Migration):

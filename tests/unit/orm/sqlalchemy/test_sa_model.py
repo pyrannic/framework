@@ -26,6 +26,7 @@ async def test_is_dirty_and_is_clean(
     repository: RepositoryInterface[BarModel],
 ):
     manager = await application.container.resolve(DatabaseManagerInterface)
+    await manager.rollback([BarsTable])
     await manager.migrate([BarsTable])
 
     bar = BarModel(id=1, name="Bar")

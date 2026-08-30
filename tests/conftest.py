@@ -4,7 +4,7 @@ from typing import Any, cast
 import pytest
 import pytest_asyncio
 
-from pyrannic.application import Application
+from pyrannic import Application
 from pyrannic.auth.access.authorizable import Authorizable
 from pyrannic.auth.access.gate import Gate, GateInterface
 from pyrannic.auth.access.response import Response

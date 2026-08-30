@@ -1,24 +1,37 @@
 import pytest_asyncio
 
+from pyrannic import Application
 from pyrannic.contracts import (
     ApplicationInterface,
-    ConnectorInterface,
     DatabaseManagerInterface,
     RepositoryInterface,
 )
-from pyrannic.database.manager import DatabaseManager
-from pyrannic.facades import Config
-from pyrannic.orm.sqlalchemy import Connector, Repository
-from tests.unit.orm.sqlalchemy.utils import BarModel
+from pyrannic.orm.sqlalchemy import Repository
+from tests.unit.orm.sqlalchemy.utils import BarModel, FoosTable
+
+
+@pytest_asyncio.fixture(scope="module")
+async def application():
+    application = Application(base_path="tests/application")
+    yield application
+
+    try:
+        manager = await application.container.resolve(DatabaseManagerInterface)
+        await manager.disconnect()
+    except ValueError:
+        pass
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def init_soft_deletes_table(application: ApplicationInterface) -> None:
+    manager = await application.container.resolve(DatabaseManagerInterface)
+
+    await manager.rollback([FoosTable])
+    await manager.migrate([FoosTable])
 
 
 @pytest_asyncio.fixture()
 async def repository(
     application: ApplicationInterface,
 ) -> RepositoryInterface[BarModel]:
-    Config.set("database.connections.sqlite.database", ":memory:")
-
-    application.container.singleton(ConnectorInterface, Connector)
-    application.container.singleton(DatabaseManagerInterface, DatabaseManager)
-
     return await application.container.make(Repository[BarModel])

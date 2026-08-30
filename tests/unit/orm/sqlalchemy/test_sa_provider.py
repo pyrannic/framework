@@ -12,7 +12,7 @@ from tests.unit.orm.sqlalchemy.utils import MockDatabaseServiceProvider
 
 
 @pytest.mark.asyncio
-async def test_register_singletons():
+async def test_register_scoped():
     application = Application()
     bootstrap_manager = BootstrapManager([DatabaseServiceProvider])
 
