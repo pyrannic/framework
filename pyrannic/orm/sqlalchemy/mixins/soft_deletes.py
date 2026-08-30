@@ -14,6 +14,7 @@ class SoftDeletes(SoftDeletesInterface):
     def deleted_at(self) -> Mapped[datetime | None]:
         return mapped_column(
             DateTime(timezone=True),
+            default=None,
             nullable=True,
             comment="The date when the model has been deleted; NULL if not deleted.",
             name=self.__deleted_at_column_name__,
