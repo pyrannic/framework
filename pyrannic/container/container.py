@@ -1,7 +1,7 @@
 import inspect
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from contextlib import AsyncExitStack
-from typing import Any, Awaitable, TypeVar, cast, get_args, get_origin
+from typing import Any, TypeVar, cast, get_args, get_origin
 
 from fastapi import Request
 from fastapi.concurrency import run_in_threadpool
@@ -305,7 +305,7 @@ class Container(ContainerInterface):
         if binding_type == "scoped" and binding_key not in self._scoped_instances:
             self._scoped_instances.append(binding_key)
 
-        return True if binding_type in ("singleton", "scoped") else False
+        return binding_type in ("singleton", "scoped")
 
     def _get_binding_type(self, abstract: str | type[T]) -> str | None:
         if isinstance(abstract, str):
@@ -366,7 +366,7 @@ class Container(ContainerInterface):
         origin_abstract = cast(type, get_origin(abstract))
         generic_types = get_args(abstract)
 
-        for _, binding in self._bindings.items():
+        for binding in self._bindings.values():
             if inspect.isclass(binding.orig_concrete) and issubclass(
                 binding.orig_concrete, origin_abstract
             ):
@@ -494,12 +494,13 @@ class Container(ContainerInterface):
         # Add the __orig_class__ attribute to the origin class so that we can retrieve the generic type later.
         # For example, if we have a generic class Repository[Model], we can retrieve the Model type later by accessing the __orig_class__ attribute.
         # This is necessary because FastAPI's dependency injection system does not support generic types out of the box.
-        setattr(origin, "__orig_class__", generic)
+        origin.__orig_class__ = generic  # type: ignore
         instance = await self._resolve(origin, app, request, *args, **kwargs)
 
         try:
-            setattr(instance, "__orig_class__", generic)
-        except Exception:  # pragma: no cover
+            del origin.__orig_class__  # type: ignore
+            instance.__orig_class__ = generic  # type: ignore
+        except Exception:  # pragma: no cover  # noqa: BLE001, S110
             pass
 
         return instance
@@ -595,15 +596,13 @@ class Container(ContainerInterface):
         self, app: ApplicationInterface, context_manager: AsyncExitStack
     ) -> Request:
         """Generate a fallback request to be used when no request is available in the context of resolution."""
-        return Request(
-            {
-                "app": app,
-                "type": "http",
-                "method": "GET",
-                "path": "/",
-                "headers": [],
-                "query_string": b"",
-                "fastapi_inner_astack": context_manager,
-                "fastapi_function_astack": context_manager,
-            }
-        )
+        return Request({
+            "app": app,
+            "type": "http",
+            "method": "GET",
+            "path": "/",
+            "headers": [],
+            "query_string": b"",
+            "fastapi_inner_astack": context_manager,
+            "fastapi_function_astack": context_manager,
+        })
