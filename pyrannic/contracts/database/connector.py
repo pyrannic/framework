@@ -26,3 +26,12 @@ class ConnectorInterface(ABC):
         """
         Runs the provided migrations against the database.
         """
+
+    @abstractmethod
+    async def rollback(
+        self,
+        migrations: list[type[MigrationInterface]] | None = None,
+    ) -> None:
+        """
+        Rolls back the provided migrations against the database.
+        """

@@ -1,8 +1,9 @@
 import asyncio
 from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator
 from logging import Logger
 from os import path
-from typing import Annotated, Any, Generic, TypeVar
+from typing import Annotated, Any, TypeVar
 
 from sqlalchemy import URL, Engine, create_engine
 from sqlalchemy.ext.asyncio import (
@@ -28,7 +29,10 @@ SessionType = TypeVar(
 )
 
 
-class AbstractConnector(ConnectorInterface, ABC, Generic[EngineType, SessionType]):
+class AbstractConnector[
+    EngineType: Engine | AsyncEngine,
+    SessionType: sessionmaker[Session] | async_sessionmaker[AsyncSession],
+](ConnectorInterface, ABC):
     """
     Handles interactions with an SQL Database using SQLAlchemy.
     """
@@ -69,10 +73,22 @@ class AbstractConnector(ConnectorInterface, ABC, Generic[EngineType, SessionType
         self,
         migrations: list[type[MigrationInterface]] | None = None,
     ) -> None:
-        await self._run_migrations(migrations)
+        async for migration in self._run_migrations(migrations):
+            await migration.up()
+            self._logger.info(f"|- ✅ Applied migration {migration.__class__.__name__}")
 
         if self._config.boolean("database.migrations.alembic"):
             await self._run_alembic_migrations()
+
+    async def rollback(
+        self,
+        migrations: list[type[MigrationInterface]] | None = None,
+    ) -> None:
+        async for migration in self._run_migrations(migrations):
+            await migration.down()
+            self._logger.info(
+                f"|- ✅ Rolled back migration {migration.__class__.__name__}"
+            )
 
     @property
     def url(self) -> URL | str:
@@ -90,17 +106,19 @@ class AbstractConnector(ConnectorInterface, ABC, Generic[EngineType, SessionType
                     drivername=self._config.string(
                         f"database.connections.{connection}.driver"
                     ),
-                    username=self._config.string(
+                    username=self._config.optional_str(
                         f"database.connections.{connection}.username"
                     ),
-                    password=self._config.string(
+                    password=self._config.optional_str(
                         f"database.connections.{connection}.password"
                     ),
-                    host=self._config.string(f"database.connections.{connection}.host"),
-                    port=self._config.integer(
+                    host=self._config.optional_str(
+                        f"database.connections.{connection}.host"
+                    ),
+                    port=self._config.optional_int(
                         f"database.connections.{connection}.port"
                     ),
-                    database=self._config.string(
+                    database=self._config.optional_str(
                         f"database.connections.{connection}.database"
                     ),
                 )
@@ -133,15 +151,14 @@ class AbstractConnector(ConnectorInterface, ABC, Generic[EngineType, SessionType
     async def _run_migrations(
         self,
         migrations: list[type[MigrationInterface]] | None = None,
-    ) -> None:
+    ) -> AsyncGenerator[MigrationInterface, Any]:
         if migrations is not None:
             schema = Schema(self.engine, self._logger)
 
             for migration_cls in migrations:
                 migration = migration_cls()
                 migration.set_schema(schema)
-                await migration.up()
-                self._logger.info(f"|- ✅ Applied migration {migration_cls.__name__}")
+                yield migration
 
     async def _run_alembic_migrations(self):
         """
