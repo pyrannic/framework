@@ -64,7 +64,7 @@ def get_generic_type(instance_or_class: object | type[Any]) -> type | None:
     # Check if instance_or_class has the __orig_class__ attribute, which it is the generic type that we are searching.
     # Check container.py, _resolve_generic method, for more context.
     if hasattr(instance_or_class, "__orig_class__"):
-        instance_or_class = getattr(instance_or_class, "__orig_class__")
+        instance_or_class = instance_or_class.__orig_class__  # type: ignore
     else:
         if not isclass(instance_or_class):
             instance_or_class = cast(type[Any], type(instance_or_class))
@@ -139,7 +139,6 @@ def get_class(
                 and (member.__name__.endswith(class_suffix) if class_suffix else True)
             ),
         )
-        print(f"Members found in module {module.__name__}: {members}")
         class_ = members[0][1] if members else None
 
     return class_ if isclass(class_) else None
