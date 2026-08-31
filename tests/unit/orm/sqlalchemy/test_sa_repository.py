@@ -7,6 +7,8 @@ from pyrannic.orm.sqlalchemy import Repository
 from pyrannic.pagination.meta import PaginationMeta
 from tests.unit.orm.sqlalchemy.utils import (
     BarModel,
+    BazModel,
+    BazRepository,
     FooModel,
     FooRepository,
 )
@@ -32,6 +34,19 @@ async def test_repository_model__subclass(application: ApplicationInterface):
 
     assert isinstance(repository, FooRepository)
     assert repository.model == FooModel
+
+
+@pytest.mark.asyncio
+async def test_repository_raises_value_error(
+    application: ApplicationInterface,
+):
+    with pytest.raises(ValueError) as exc_info:
+        await application.container.resolve(Repository)
+
+    error = str(exc_info.value)
+    assert "The model type could not be determined" in error
+    assert "class is properly typed with a generic model" in error
+    assert "explicitly set the '__model__' attribute in the subclass" in error
 
 
 @pytest.mark.asyncio
@@ -171,6 +186,20 @@ async def test_repository_remove(application: ApplicationInterface) -> None:
 
 
 @pytest.mark.asyncio
+async def test_repository_try_remove_no_soft_delete_model(
+    application: ApplicationInterface,
+) -> None:
+    repository = await application.container.make(BazRepository)
+
+    model = repository.create(BazModel())
+    db_model = repository.remove(model)
+
+    assert db_model is not None
+    assert db_model == model
+    assert repository.find(model.id) == db_model == model
+
+
+@pytest.mark.asyncio
 async def test_repository_restore(application: ApplicationInterface) -> None:
     repository = await application.container.make(FooRepository)
 
@@ -267,7 +296,7 @@ async def test_repository_paginate(application: ApplicationInterface) -> None:
     for i in range(1, 21):
         repository.create(FooModel(name=f"Foo {i}"))
 
-    paginator = repository.order_by(FooModel.id).paginate(page=2, per_page=5)
+    paginator = repository.paginate(page=2, per_page=5)
     meta = paginator.meta(PaginationMeta)
 
     assert meta.current_page == 2
@@ -276,3 +305,155 @@ async def test_repository_paginate(application: ApplicationInterface) -> None:
     assert meta.last_page == 4
     assert len(paginator.items) == 5
     assert paginator.items[0].name == "Foo 6"
+
+
+@pytest.mark.asyncio
+async def test_repository_paginate_no_per_page(
+    application: ApplicationInterface,
+) -> None:
+    repository = await application.container.make(FooRepository)
+
+    for i in range(1, 21):
+        repository.create(FooModel(name=f"Foo {i}"))
+
+    paginator = repository.paginate(page=2)
+    meta = paginator.meta(PaginationMeta)
+
+    assert meta.current_page == 1
+    assert meta.per_page == 20
+    assert meta.total == 20
+    assert meta.last_page == 1
+    assert len(paginator.items) == 20
+    assert paginator.items[0].name == "Foo 1"
+
+
+@pytest.mark.asyncio
+async def test_repository_paginate_negative_per_page(
+    application: ApplicationInterface,
+) -> None:
+    repository = await application.container.make(FooRepository)
+
+    for i in range(1, 21):
+        repository.create(FooModel(name=f"Foo {i}"))
+
+    paginator = repository.paginate(page=2, per_page=-5)
+    meta = paginator.meta(PaginationMeta)
+
+    assert meta.current_page == 1
+    assert meta.per_page == 20
+    assert meta.total == 20
+    assert meta.last_page == 1
+    assert len(paginator.items) == 20
+    assert paginator.items[0].name == "Foo 1"
+
+
+@pytest.mark.asyncio
+async def test_repository_paginate_negative_page(
+    application: ApplicationInterface,
+) -> None:
+    repository = await application.container.make(FooRepository)
+
+    for i in range(1, 21):
+        repository.create(FooModel(name=f"Foo {i}"))
+
+    paginator = repository.paginate(page=-12, per_page=15)
+    meta = paginator.meta(PaginationMeta)
+
+    assert meta.current_page == 1
+    assert meta.per_page == 15
+    assert meta.total == 20
+    assert meta.last_page == 2
+    assert len(paginator.items) == 15
+    assert paginator.items[0].name == "Foo 1"
+
+
+@pytest.mark.asyncio
+async def test_repository_paginate_page_is_none(
+    application: ApplicationInterface,
+) -> None:
+    repository = await application.container.make(FooRepository)
+
+    for i in range(1, 21):
+        repository.create(FooModel(name=f"Foo {i}"))
+
+    paginator = repository.paginate(page=None, per_page=15)  # pyright: ignore[reportArgumentType]
+    meta = paginator.meta(PaginationMeta)
+
+    assert meta.current_page == 1
+    assert meta.per_page == 15
+    assert meta.total == 20
+    assert meta.last_page == 2
+    assert len(paginator.items) == 15
+    assert paginator.items[0].name == "Foo 1"
+
+
+@pytest.mark.asyncio
+async def test_repository_paginate_resolve_last_page(
+    application: ApplicationInterface,
+) -> None:
+    repository = await application.container.make(FooRepository)
+
+    assert repository._resolve_last_page() == 1  # pyright: ignore[reportPrivateUsage]
+    assert repository._resolve_last_page(-20) == 1  # pyright: ignore[reportPrivateUsage]
+
+
+@pytest.mark.asyncio
+async def test_repository_where_kwargs(application: ApplicationInterface) -> None:
+    repository = await application.container.make(FooRepository)
+
+    for i in range(1, 21):
+        repository.create(FooModel(name=f"Foo {i}"))
+
+    models = repository.where(name="Foo 1").get()
+
+    assert len(models) == 1
+    assert models[0].name == "Foo 1"
+
+
+@pytest.mark.asyncio
+async def test_repository_filter_with_filters(
+    application: ApplicationInterface,
+) -> None:
+    repository = await application.container.make(FooRepository)
+
+    for i in range(1, 21):
+        repository.create(FooModel(name=f"Foo {i}"))
+
+    models = repository.filter(FooModel.name == "Foo 1").get()
+
+    assert len(models) == 1
+    assert models[0].name == "Foo 1"
+
+
+@pytest.mark.asyncio
+async def test_repository_filter_kwargs(application: ApplicationInterface) -> None:
+    repository = await application.container.make(FooRepository)
+
+    for i in range(1, 21):
+        repository.create(FooModel(name=f"Foo {i}"))
+
+    models = repository.filter(name="Foo 1").get()
+
+    assert len(models) == 1
+    assert models[0].name == "Foo 1"
+
+
+@pytest.mark.asyncio
+async def test_repository_group_by(application: ApplicationInterface) -> None:
+    repository = await application.container.make(FooRepository)
+
+    for _ in range(1, 21):
+        repository.create(FooModel(name="Foo"))
+
+    models = repository.group_by(FooModel.name).get()
+
+    assert len(models) == 1
+    assert models[0].name == "Foo"
+
+
+@pytest.mark.asyncio
+async def test_repository_join(application: ApplicationInterface) -> None:
+    repository = await application.container.make(FooRepository)
+    repository.join(BazModel).get()
+
+    # TODO: Add assertions to verify the join behavior.
