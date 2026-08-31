@@ -30,6 +30,7 @@ class GuardInterface(ABC, Generic[AuthenticatableType]):
         Get the currently authenticated user.
 
         :return: The authenticated user.
+        :raises ValueError: If no user is currently authenticated.
         """
 
     @property

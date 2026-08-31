@@ -10,10 +10,8 @@ class ApplicationInterface(ABC, FastAPI):
     @abstractmethod
     def base_path(self) -> str:
         """The base path for the Pyrannic application installation."""
-        pass
 
     @property
     @abstractmethod
     def container(self) -> ContainerInterface:
         """The IoC container instance for the Pyrannic application."""
-        pass
