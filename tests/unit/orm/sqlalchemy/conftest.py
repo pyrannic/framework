@@ -7,7 +7,7 @@ from pyrannic.contracts import (
     RepositoryInterface,
 )
 from pyrannic.orm.sqlalchemy import Repository
-from tests.unit.orm.sqlalchemy.utils import BarModel, FoosTable
+from tests.unit.orm.sqlalchemy.utils import BarModel, BazsTable, FoosTable
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -23,11 +23,11 @@ async def application():
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def init_soft_deletes_table(application: ApplicationInterface) -> None:
+async def init_tables(application: ApplicationInterface) -> None:
     manager = await application.container.resolve(DatabaseManagerInterface)
 
-    await manager.rollback([FoosTable])
-    await manager.migrate([FoosTable])
+    await manager.rollback([FoosTable, BazsTable])
+    await manager.migrate([FoosTable, BazsTable])
 
 
 @pytest_asyncio.fixture()

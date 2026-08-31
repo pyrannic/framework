@@ -86,7 +86,17 @@ class FooModel(Model, SoftDeletes):
     name: Mapped[str] = mapped_column(String(255), default="Foo")
 
 
+class BazModel(Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), default="Baz")
+    foo_id: Mapped[int] = mapped_column(ForeignKey("foos.id"), nullable=True)
+
+
 class FooRepository(Repository[FooModel]):
+    pass
+
+
+class BazRepository(Repository[BazModel]):
     pass
 
 
@@ -108,3 +118,11 @@ class BarsTable(Migration):
 
     async def down(self) -> None:
         await self.schema.drop(BarModel)
+
+
+class BazsTable(Migration):
+    async def up(self) -> None:
+        await self.schema.create(BazModel)
+
+    async def down(self) -> None:
+        await self.schema.drop(BazModel)
