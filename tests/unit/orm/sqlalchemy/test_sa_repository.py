@@ -37,9 +37,7 @@ async def test_repository_model__subclass(application: ApplicationInterface):
 
 
 @pytest.mark.asyncio
-async def test_repository_raises_value_error(
-    application: ApplicationInterface,
-):
+async def test_repository_raises_value_error(application: ApplicationInterface):
     with pytest.raises(ValueError) as exc_info:
         await application.container.resolve(Repository)
 
@@ -195,7 +193,6 @@ async def test_repository_try_remove_no_soft_delete_model(
     db_model = repository.remove(model)
 
     assert db_model is not None
-    assert db_model == model
     assert repository.find(model.id) == db_model == model
 
 

@@ -90,7 +90,7 @@ def get_generic_type(instance_or_class: object | type[Any]) -> type | None:
     args = get_args(instance_or_class)
     size = len(args)
 
-    return args[0] if size > 0 else None
+    return args[0] if size > 0 and args[0].__name__ != "T" else None
 
 
 def get_functions(
