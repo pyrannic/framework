@@ -1,7 +1,8 @@
 import os
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from logging import Logger
-from typing import AsyncGenerator, Self, Type
+from typing import Self
 
 from dotenv import load_dotenv
 
@@ -12,14 +13,14 @@ from pyrannic.support.reflection import get_attr
 
 
 class BootstrapManager:
-    _service_provider_classes: list[Type[ServiceProvider]]
+    _service_provider_classes: list[type[ServiceProvider]]
     _service_provider_instances: list[ServiceProvider]
     _running = False
     _critical_services_started = False
 
     def __init__(
         self,
-        service_providers: list[Type[ServiceProvider]] | None = None,
+        service_providers: list[type[ServiceProvider]] | None = None,
     ) -> None:
         self._service_provider_classes = service_providers or []
         self._service_provider_instances = []
@@ -38,7 +39,7 @@ class BootstrapManager:
             - The critical services are registered and available for use.
             - The environment variables from the .env file are loaded into the application.
         """
-        load_dotenv(os.path.join(app.base_path, ".env"))
+        self._load_dotenv(app)
         Facade.set_facade_application(app)
 
         for provider_class in services:
@@ -69,7 +70,7 @@ class BootstrapManager:
                 self._register_provider(provider)
                 self._service_provider_instances.append(provider)
                 self._logger.info(f"✅ Registered {name}")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 self._provider_exec_failed(provider, "register", e)
 
         return self
@@ -110,7 +111,7 @@ class BootstrapManager:
                     self._logger.info(
                         f"✅ {info_message} {provider.__class__.__name__}"
                     )
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 self._provider_exec_failed(provider, method_name, e)
 
     def _provider_exec_failed(
@@ -154,7 +155,7 @@ class BootstrapManager:
     def _discover_service_providers(
         self,
         app: ApplicationInterface,
-    ) -> list[Type[ServiceProvider]]:
+    ) -> list[type[ServiceProvider]]:
         if bool(self._service_provider_classes):
             return self._service_provider_classes
 
@@ -163,3 +164,12 @@ class BootstrapManager:
             "providers",
             [],
         )
+
+    def _load_dotenv(self, app: ApplicationInterface):
+        load_dotenv(os.path.join(app.base_path, ".env"))
+        environment = os.environ.get("APP_ENV", None)
+
+        if environment is not None:
+            env_file = os.path.join(app.base_path, f".env.{environment}")
+            print(env_file)
+            load_dotenv(env_file, override=True)

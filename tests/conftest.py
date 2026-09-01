@@ -215,7 +215,7 @@ def application() -> ApplicationInterface:
 
 @pytest.fixture(scope="session", autouse=True)
 def set_env():
-    os.environ["DB_DATABASE"] = ":memory:"
+    os.environ["APP_ENV"] = "tests"
 
 
 @pytest_asyncio.fixture(scope="module")

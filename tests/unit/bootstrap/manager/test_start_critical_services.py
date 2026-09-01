@@ -5,7 +5,7 @@ import pytest
 from pyrannic.application import Application
 from pyrannic.bootstrap.manager import BootstrapManager
 from pyrannic.bootstrap.service_provider import ServiceProvider
-from pyrannic.config.env import read_int
+from pyrannic.config.env import read_int, read_str
 from pyrannic.contracts.config.repository import ConfigRepositoryInterface
 from pyrannic.support.facades.facade import Facade
 
@@ -17,6 +17,15 @@ def test_start_critical_services__dotenv_loaded(
 ):
     manager.start_critical_services(application, critical_services)
     assert read_int("TEST_CRITICAL_SERVICE") == 98
+
+
+def test_start_critical_services__dotenv_app_env_loaded(
+    manager: BootstrapManager,
+    application: Application,
+    critical_services: list[type[ServiceProvider]],
+):
+    manager.start_critical_services(application, critical_services)
+    assert read_str("FOO") == "bar"
 
 
 def test_start_critical_services__facade_configured(
