@@ -44,7 +44,7 @@ class GuardInterface(ABC, Generic[AuthenticatableType]):
 
     @property
     @abstractmethod
-    def id(self) -> str | None:
+    def id(self) -> str:
         """
         Get the ID of the currently authenticated user.
 
