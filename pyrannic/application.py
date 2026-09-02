@@ -14,7 +14,7 @@ from pyrannic.support.facades.config import Config
 
 
 class Application(ApplicationInterface):
-    _critical_service_providers: list[type[ServiceProvider]] = [
+    _critical_service_providers: list[type[ServiceProvider]] = [  # noqa: RUF012
         ConfigRepositoryProvider,
         LoggingServiceProvider,
     ]

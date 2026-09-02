@@ -8,8 +8,7 @@ from pyrannic.contracts import DatabaseManagerInterface
 
 @pytest_asyncio.fixture(scope="module")
 async def application():
-    os.environ["DB_DRIVER"] = "sqlite+aiosqlite"
-    os.environ["SQLALCHEMY_ASYNCIO"] = "True"
+    os.environ["APP_ENV"] = "async-tests"
 
     application = Application(base_path="tests/application")
     yield application
@@ -20,5 +19,4 @@ async def application():
     except ValueError:
         pass
 
-    os.environ["DB_DRIVER"] = "sqlite"
-    os.environ["SQLALCHEMY_ASYNCIO"] = "False"
+    os.environ["APP_ENV"] = "tests"

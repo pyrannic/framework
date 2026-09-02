@@ -55,6 +55,7 @@ async def test_connector_url_using_database_file(
     application: ApplicationInterface,
 ):
     config = application.container.instance(ConfigRepositoryInterface)
+    config.set("database.connections.sqlite.url", None)
     config.set("database.connections.sqlite.database", "database/database.sqlite")
 
     connector = Connector(
@@ -63,7 +64,11 @@ async def test_connector_url_using_database_file(
         config,
     )
 
-    assert str(connector.url) == "sqlite:///database/database.sqlite"
+    assert isinstance(connector.url, URL)
+    assert (
+        connector.url.render_as_string(hide_password=False)
+        == "sqlite://root:password@localhost:3306/database/database.sqlite"
+    )
 
 
 @pytest.mark.asyncio
@@ -71,6 +76,10 @@ async def test_abstract_connector_url_is_an_url_object(
     application: ApplicationInterface,
 ) -> None:
     container = application.container
+
+    config = container.instance(ConfigRepositoryInterface)
+    config.set("database.connections.sqlite.url", None)
+
     connector = Connector(
         application,
         await container.resolve(Logger),

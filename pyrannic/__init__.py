@@ -13,6 +13,9 @@ from .auth.unauthorized_exception import UnauthorizedException as UnauthorizedEx
 from .bootstrap.service_provider import ServiceProvider as ServiceProvider
 from .config.configuration import Configuration as Configuration
 from .container.param_functions import Resolves as Resolves
+from .database.config.base_config import DatabaseConfig as DatabaseConfig
+from .database.config.postgresql_config import PostgresqlConfig as PostgresqlConfig
+from .database.config.sqlite_config import SqliteConfig as SqliteConfig
 from .database.migration import Migration as Migration
 from .http.exceptions.resource_not_found import (
     ResourceNotFoundException as ResourceNotFoundException,

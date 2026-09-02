@@ -1,5 +1,6 @@
 import os
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 
 def read_str(key: str, default: str | None = "") -> str:

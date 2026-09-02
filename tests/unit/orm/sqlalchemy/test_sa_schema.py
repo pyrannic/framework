@@ -57,7 +57,7 @@ async def test_log_on_exception(
     application: ApplicationInterface,
 ):
     # Use a driver that will raise an exception when trying to create/drop the table
-    Config.set("database.connections.sqlite.driver", "sqlite+aiosqlite")
+    Config.set("database.connections.sqlite.url", "sqlite+aiosqlite:///:memory:")
 
     application.container.singleton(ConnectorInterface, Connector)
     application.container.singleton(DatabaseManagerInterface, DatabaseManager)

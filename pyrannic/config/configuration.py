@@ -2,13 +2,13 @@ import json
 from typing import Any
 
 from pydantic.fields import FieldInfo
-
 from pydantic_settings import (
     BaseSettings,
     DotEnvSettingsSource,
     EnvSettingsSource,
     PydanticBaseSettingsSource,
 )
+
 from pyrannic.contracts.config.configuration import ConfigurationInterface
 
 

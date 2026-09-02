@@ -77,7 +77,7 @@ class AbstractConnector[
             await migration.up()
             self._logger.info(f"|- ✅ Applied migration {migration.__class__.__name__}")
 
-        if self._config.boolean("database.migrations.alembic"):
+        if self._config.boolean("orm.drivers.sqlalchemy.alembic"):
             await self._run_alembic_migrations()
 
     async def rollback(
