@@ -51,7 +51,7 @@ async def test_async_connector_disconnect(
 
 
 @pytest.mark.asyncio
-async def test_connector_url_using_database_file(
+async def test_connector_url_using_sqlite_database_file(
     application: ApplicationInterface,
 ):
     config = application.container.instance(ConfigRepositoryInterface)
@@ -67,7 +67,7 @@ async def test_connector_url_using_database_file(
     assert isinstance(connector.url, URL)
     assert (
         connector.url.render_as_string(hide_password=False)
-        == "sqlite://root:password@localhost:3306/database/database.sqlite"
+        == "sqlite:///database/database.sqlite"
     )
 
 
