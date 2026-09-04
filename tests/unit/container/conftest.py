@@ -1,14 +1,17 @@
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Generator, Generic
+from collections.abc import Generator
 
 import pytest
 from fastapi import Request
 
-from pyrannic.container.container import T
+from pyrannic.auth import BaseGuard
 from pyrannic.container.decorators import scoped, singleton
-from pyrannic.contracts.application import ApplicationInterface
-from pyrannic.contracts.container.container import ContainerInterface
+from pyrannic.contracts import (
+    ApplicationInterface,
+    AuthenticatableInterface,
+    ContainerInterface,
+)
 from pyrannic.ioc import Resolves
 
 
@@ -71,11 +74,11 @@ class SubFooModel(FooModel):
     pass
 
 
-class FooGeneric(Generic[T]):
+class FooGeneric[T]:
     pass
 
 
-class FooGenericInterface(ABC, Generic[T]):
+class FooGenericInterface[T](ABC):
     pass
 
 
@@ -84,6 +87,28 @@ class FooGenericImplementation(FooGenericInterface[FooModel]):
 
 
 class SubFooGenericImplementation(FooGenericInterface[SubFooModel]):
+    pass
+
+
+class BarGenericInterface[T: FooInterface](ABC):
+    pass
+
+
+class BarImplementation(BarGenericInterface[FooImplementation]):
+    pass
+
+
+class User(AuthenticatableInterface):
+    def __init__(self, user_id: int, username: str):
+        self.user_id = user_id
+        self.username = username
+
+
+class TestGuard(BaseGuard):
+    pass
+
+
+class TestingGuard(BaseGuard):
     pass
 
 

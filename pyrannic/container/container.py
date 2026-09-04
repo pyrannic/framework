@@ -1,7 +1,7 @@
 import inspect
 from collections.abc import Awaitable, Callable
 from contextlib import AsyncExitStack
-from typing import Any, TypeVar, cast, get_args, get_origin
+from typing import Any, TypeVar, cast, get_args, get_origin, get_type_hints
 
 from fastapi import Request
 from fastapi.concurrency import run_in_threadpool
@@ -364,20 +364,56 @@ class Container(ContainerInterface):
 
     def _get_binding_for_generic_interface(self, abstract: type[T]) -> Binding | None:
         origin_abstract = cast(type, get_origin(abstract))
-        generic_types = get_args(abstract)
 
         for binding in self._bindings.values():
-            if inspect.isclass(binding.orig_concrete) and issubclass(
-                binding.orig_concrete, origin_abstract
-            ):
-                orig_generic_type = get_generic_type(binding.orig_concrete)
+            if self._binding_is_subclass(binding, origin_abstract):
+                generic_type = get_generic_type(binding.orig_concrete)
+                if self._binding_match_generic_type(abstract, generic_type):
+                    return binding
 
-                if orig_generic_type is not None:
-                    for generic_type in generic_types:
-                        if issubclass(generic_type, orig_generic_type):
-                            return binding
+            elif self._binding_is_callable(binding):
+                generic_type = get_args(
+                    get_type_hints(binding.orig_concrete).get("return")
+                )
+
+                if not generic_type:
+                    raise RuntimeError(
+                        "\n\n"
+                        f"Cannot determine the return type of the function {binding.orig_concrete}\n"
+                        "If you are using a lambda function, please use a regular function instead, as lambdas do not support type hints.\n"
+                        "If you are using a regular function, please ensure that it has a return type hint, e.g.:\n\n"
+                        "def my_function(...) -> ReturnType:\n"
+                        "    ...\n\n"
+                    )
+
+                if self._binding_match_generic_type(abstract, generic_type):
+                    return binding
 
         return None
+
+    def _binding_is_subclass(self, binding: Binding, abstract: type) -> bool:
+        return inspect.isclass(binding.orig_concrete) and issubclass(
+            binding.orig_concrete, abstract
+        )
+
+    def _binding_is_callable(self, binding: Binding) -> bool:
+        return not inspect.isclass(binding.orig_concrete) and callable(
+            binding.orig_concrete
+        )
+
+    def _binding_match_generic_type(
+        self,
+        abstract: str | type[T],
+        target_generic_type: type | tuple[type,] | None,
+    ) -> bool:
+        if target_generic_type is not None:
+            generic_types = get_args(abstract)
+
+            for generic_type in generic_types:
+                if issubclass(generic_type, target_generic_type):
+                    return True
+
+        return False  # pragma: no cover
 
     async def call(
         self,

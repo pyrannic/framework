@@ -1,7 +1,10 @@
 import pytest
+from fastapi import Request
 
-from pyrannic.contracts.container.container import ContainerInterface
+from pyrannic.contracts import ApplicationInterface, ContainerInterface
 from tests.unit.container.conftest import (
+    BarGenericInterface,
+    BarImplementation,
     FooImplementation,
     FooInterface,
     ResolverClass,
@@ -22,6 +25,37 @@ async def test_bind_using_lambda(container: ContainerInterface):
 
     assert container.is_bound(FooInterface)
     assert isinstance(instance, FooImplementation)
+
+
+@pytest.mark.asyncio
+async def test_bind_generic_interface_using_lambda(container: ContainerInterface):
+    container.bind(
+        BarGenericInterface[FooInterface],
+        lambda app, request: BarImplementation(),  # type: ignore
+    )
+
+    with pytest.raises(RuntimeError) as exc_info:
+        await container.resolve(BarGenericInterface[FooImplementation])
+
+    error = str(exc_info.value)
+    assert "Cannot determine the return type of the function" in error
+    assert "If you are using a lambda function" in error
+    assert "If you are using a regular function" in error
+
+
+@pytest.mark.asyncio
+async def test_bind_generic_interface_using_function(container: ContainerInterface):
+    def _resolve_bar_generic_interface(
+        app: ApplicationInterface,
+        request: Request,
+    ) -> BarGenericInterface[FooInterface]:
+        return BarImplementation()
+
+    container.bind(BarGenericInterface[FooInterface], _resolve_bar_generic_interface)
+    instance = await container.resolve(BarGenericInterface[FooImplementation])
+
+    assert container.is_bound(BarGenericInterface[FooInterface])
+    assert isinstance(instance, BarImplementation)
 
 
 @pytest.mark.asyncio

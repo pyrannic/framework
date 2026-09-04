@@ -1,5 +1,9 @@
 import pytest
+from fastapi import Request
 
+from pyrannic.contracts.application import ApplicationInterface
+from pyrannic.contracts.auth.authenticatable import AuthenticatableInterface
+from pyrannic.contracts.auth.guard import GuardInterface
 from pyrannic.contracts.container.container import ContainerInterface
 from pyrannic.support.reflection import get_generic_type
 from tests.unit.container.conftest import (
@@ -15,6 +19,9 @@ from tests.unit.container.conftest import (
     FooSecondaryImplementation,
     SubFooGenericImplementation,
     SubFooModel,
+    TestGuard,
+    TestingGuard,
+    User,
 )
 
 
@@ -133,3 +140,32 @@ async def test_resolve_with_generic_interface_subclass_raising_error(
 
     error = str(exc_info.value)
     assert "No binding found for generic interface FooGenericInterface" in error
+
+
+@pytest.mark.asyncio
+async def test_resolve_subclass_does_not_override_parent_binding(
+    container: ContainerInterface,
+):
+    container.bind(GuardInterface[AuthenticatableInterface], TestingGuard)
+    container.bind(GuardInterface[User], lambda app, request: TestGuard())  # type: ignore
+
+    guard = await container.resolve(GuardInterface[AuthenticatableInterface])
+    guard2 = await container.resolve(GuardInterface[User])
+
+    assert isinstance(guard, TestingGuard)
+    assert isinstance(guard2, TestGuard)
+
+
+@pytest.mark.asyncio
+async def test_resolve_subclass_can_resolve_parent_binding(
+    container: ContainerInterface,
+):
+    def _resolve_guard_interface(
+        app: ApplicationInterface, request: Request
+    ) -> GuardInterface[AuthenticatableInterface]:
+        return TestGuard()
+
+    container.bind(GuardInterface[AuthenticatableInterface], _resolve_guard_interface)
+    guard = await container.resolve(GuardInterface[User])
+
+    assert isinstance(guard, TestGuard)
