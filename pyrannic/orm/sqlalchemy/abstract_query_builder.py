@@ -18,8 +18,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import InstrumentedAttribute
 
 from pyrannic.contracts.orm.mixins.soft_deletes import SoftDeletesInterface
-from pyrannic.contracts.orm.query_builder import QueryBuilderInterface
-from pyrannic.contracts.orm.repository import T
+from pyrannic.contracts.orm.query_builder import QueryBuilderInterface, T
 from pyrannic.contracts.orm.scope import ScopeInterface
 from pyrannic.orm.sqlalchemy.scopes.soft_deleting_scope import SoftDeletingScope
 from pyrannic.support.datetime import get_current_utc_datetime

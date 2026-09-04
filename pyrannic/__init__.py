@@ -20,6 +20,9 @@ from .database.migration import Migration as Migration
 from .http.exceptions.resource_not_found import (
     ResourceNotFoundException as ResourceNotFoundException,
 )
+from .http.exceptions.unprocessable_entity import (
+    UnprocessableEntityException as UnprocessableEntityException,
+)
 from .http.providers import (
     ExceptionHandlersServiceProvider as ExceptionHandlersServiceProvider,
 )

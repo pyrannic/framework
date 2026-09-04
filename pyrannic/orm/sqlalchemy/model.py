@@ -25,7 +25,7 @@ class Model(BaseModel, AbstractModel, Serializable):
 
     @classmethod
     def primary_key_column(cls) -> ColumnExpressionArgument[Any]:
-        return list(cls.__table__.primary_key.columns)[0]  # type: ignore
+        return next(iter(cls.__table__.primary_key.columns))  # type: ignore
 
     @property
     def primary_key_value(self) -> Any:

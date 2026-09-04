@@ -1,4 +1,5 @@
-from typing import Any, Callable, Self
+from collections.abc import Callable
+from typing import Any, Self
 
 from pyrannic.contracts.container.container import ContainerInterface
 from pyrannic.contracts.container.contextual_binding_builder import (

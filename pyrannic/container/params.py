@@ -20,9 +20,9 @@ class _Injector(ABC):
             or inspect.isclass(dependency)
             or inspect.isclass(get_origin(dependency))
         ):
-            dependency = self.wrap_dependency(dependency)  # pyright: ignore[reportArgumentType]
+            dependency = self.wrap_dependency(cast(str | type, dependency))
 
-        return dependency
+        return cast(type | Callable[..., Any] | None, dependency)
 
     @classmethod
     def wrap_dependency(cls, abstract: str | type) -> Callable[..., Any]:

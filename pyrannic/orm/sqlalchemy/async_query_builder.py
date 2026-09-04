@@ -2,7 +2,7 @@ from logging import Logger
 from typing import Annotated
 
 from pyrannic.container.param_functions import Resolves
-from pyrannic.contracts.orm.repository import T
+from pyrannic.contracts.orm.query_builder import T
 from pyrannic.orm.sqlalchemy.abstract_query_builder import AbstractQueryBuilder
 from pyrannic.orm.sqlalchemy.session import AsyncSession
 

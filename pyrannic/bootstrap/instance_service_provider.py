@@ -1,14 +1,12 @@
-from abc import abstractmethod
 import inspect
-from typing import Any, Generic, TypeVar
+from abc import abstractmethod
+from typing import Any
 
 from pyrannic.bootstrap.service_provider import ServiceProvider
 from pyrannic.support.reflection import get_generic_type
 
-ServiceType = TypeVar("ServiceType")
 
-
-class InstanceServiceProvider(ServiceProvider, Generic[ServiceType]):
+class InstanceServiceProvider[ServiceType](ServiceProvider):
     @property
     def _has_dependencies(self) -> bool:
         argspec = inspect.getfullargspec(self._create)
@@ -16,7 +14,13 @@ class InstanceServiceProvider(ServiceProvider, Generic[ServiceType]):
 
     @property
     def abstract(self) -> str | type:
-        return get_generic_type(self)
+        abstract = get_generic_type(self)
+
+        assert abstract is not None, (
+            "The abstract type must be specified in the generic type of the InstanceServiceProvider."
+        )
+
+        return abstract
 
     @property
     def aliases(self) -> list[str | type] | None:

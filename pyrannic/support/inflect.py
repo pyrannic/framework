@@ -20,10 +20,8 @@
 # 95% for Verbs.find_lemma() (for regular verbs)
 # 96% for Verbs.find_lexeme() (for regular verbs)
 
-from __future__ import division, unicode_literals
 
 import re
-from builtins import range
 from typing import Any
 
 VERB, NOUN, ADJECTIVE, ADVERB = "VB", "NN", "JJ", "RB"
@@ -34,50 +32,48 @@ VERB, NOUN, ADJECTIVE, ADVERB = "VB", "NN", "JJ", "RB"
 # http://www.csse.monash.edu.au/~damian/papers/HTML/Plurals.html
 
 # Prepositions are used in forms like "mother-in-law" and "man at arms".
-plural_prepositions = set(
-    (
-        "about",
-        "before",
-        "during",
-        "of",
-        "till",
-        "above",
-        "behind",
-        "except",
-        "off",
-        "to",
-        "across",
-        "below",
-        "for",
-        "on",
-        "under",
-        "after",
-        "beneath",
-        "from",
-        "onto",
-        "until",
-        "among",
-        "beside",
-        "in",
-        "out",
-        "unto",
-        "around",
-        "besides",
-        "into",
-        "over",
-        "upon",
-        "at",
-        "between",
-        "near",
-        "since",
-        "with",
-        "athwart",
-        "betwixt",
-        "beyond",
-        "but",
-        "by",
-    )
-)
+plural_prepositions = {
+    "about",
+    "before",
+    "during",
+    "of",
+    "till",
+    "above",
+    "behind",
+    "except",
+    "off",
+    "to",
+    "across",
+    "below",
+    "for",
+    "on",
+    "under",
+    "after",
+    "beneath",
+    "from",
+    "onto",
+    "until",
+    "among",
+    "beside",
+    "in",
+    "out",
+    "unto",
+    "around",
+    "besides",
+    "into",
+    "over",
+    "upon",
+    "at",
+    "between",
+    "near",
+    "since",
+    "with",
+    "athwart",
+    "betwixt",
+    "beyond",
+    "but",
+    "by",
+}
 
 # Inflection rules that are either:
 # - general,
@@ -545,7 +541,7 @@ plural_categories = {
 def pluralize(
     word: str,
     pos: str = NOUN,
-    custom: dict[str, str] = {},
+    custom: dict[str, str] | None = None,
     classical: bool = True,
 ) -> str:
     """Returns the plural of a given word, e.g., child => children.
@@ -553,6 +549,9 @@ def pluralize(
     (i.e., where "matrix" pluralizes to "matrices" and not "matrixes").
     The custom dictionary is for user-defined replacements.
     """
+    if custom is None:
+        custom = {}
+
     if word in custom:
         return custom[word]
     # Recurse genitives.
@@ -573,9 +572,7 @@ def pluralize(
             w[1] == "general"
             or w[1] == "General"
             and w[0] not in plural_categories["general-generals"]
-        ):
-            return word.replace(w[0], pluralize(w[0], pos, custom, classical))
-        elif w[1] in plural_prepositions:
+        ) or w[1] in plural_prepositions:
             return word.replace(w[0], pluralize(w[0], pos, custom, classical))
         else:
             return word.replace(w[-1], pluralize(w[-1], pos, custom, classical))
@@ -587,17 +584,19 @@ def pluralize(
     for i in n:
         for suffix, inflection, category, classic in plural_rules[i]:
             # A general rule, or a classic rule in classical mode.
-            if category is None:
-                if not classic or (classic and classical):
-                    if suffix.search(word) is not None:
-                        return suffix.sub(inflection, word)
+            if (
+                category is None
+                and (not classic or (classic and classical))
+                and suffix.search(word) is not None
+            ):
+                return suffix.sub(inflection, word)
             # A rule pertaining to a specific category of words.
-            if category is not None:
-                if word in plural_categories[category] and (
-                    not classic or (classic and classical)
-                ):
-                    if suffix.search(word) is not None:
-                        return suffix.sub(inflection, word)
+            if category is not None and (
+                word in plural_categories[category]
+                and (not classic or (classic and classical))
+                and suffix.search(word) is not None
+            ):
+                return suffix.sub(inflection, word)
     return word
 
 

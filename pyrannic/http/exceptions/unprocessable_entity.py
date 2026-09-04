@@ -1,8 +1,8 @@
 from typing import Any
 
-from pydantic import BaseModel
-from fastapi import status, Request
+from fastapi import Request, status
 from fastapi.exceptions import RequestValidationError
+from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
 from pyrannic.http.exceptions.exception import HttpExceptionResponse

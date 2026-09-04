@@ -116,7 +116,7 @@ def get_class(
 
     try:
         module = _import_module_if_needed(module)
-    except Exception:
+    except ImportError:
         return None
 
     if class_name is None:
@@ -175,7 +175,7 @@ def get_attr(
         return getattr(module, attr_name, default)
     except Exception as e:
         if default is None or not isinstance(e, ModuleNotFoundError):
-            raise e
+            raise
 
     return default
 

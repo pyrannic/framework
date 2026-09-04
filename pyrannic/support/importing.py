@@ -1,6 +1,7 @@
 import importlib
+from collections.abc import Generator
 from types import ModuleType
-from typing import Any, Generator
+from typing import Any
 
 from pyrannic.support.path import get_module_paths
 

@@ -1,13 +1,11 @@
 import math
-from typing import Any, TypeVar
+from typing import Any
 
-from pyrannic.contracts.pagination.paginator import PaginatorInterface
+from pyrannic.contracts.pagination.paginator import ItemType_co, PaginatorInterface
 from pyrannic.pagination.meta import PaginationMeta
 
-ItemType = TypeVar("ItemType", covariant=True)
 
-
-class Paginator(PaginatorInterface[ItemType, PaginationMeta]):
+class Paginator(PaginatorInterface[ItemType_co, PaginationMeta]):
     """
     A generic class that describes a paginator. This exposes two public properties:
 
@@ -15,7 +13,7 @@ class Paginator(PaginatorInterface[ItemType, PaginationMeta]):
     - meta: Give us a PaginationMeta instance with meta information about the paginator.
     """
 
-    __items: list[ItemType]
+    __items: list[ItemType_co]
     __page: int = 1
     __total: int = 0
     __per_page: int
@@ -24,7 +22,7 @@ class Paginator(PaginatorInterface[ItemType, PaginationMeta]):
 
     def __init__(
         self,
-        items: list[ItemType],
+        items: list[ItemType_co],
         page: int = 1,
         per_page: int = 15,
         total: int = 0,
@@ -39,7 +37,7 @@ class Paginator(PaginatorInterface[ItemType, PaginationMeta]):
         self.__kwargs = kwargs
 
     @property
-    def items(self) -> list[ItemType]:
+    def items(self) -> list[ItemType_co]:
         return self.__items
 
     def meta(self, meta_class: type[PaginationMeta] = PaginationMeta) -> PaginationMeta:

@@ -1,4 +1,5 @@
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from pyrannic.contracts.support.serializable import SerializableInterface
 from pyrannic.orm.sqlalchemy.inspectionable import Inspectionable

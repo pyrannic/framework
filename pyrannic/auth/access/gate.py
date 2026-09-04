@@ -3,8 +3,8 @@ from collections.abc import Awaitable, Callable, Sequence
 from types import UnionType
 from typing import Any, Self, cast
 
-from pyrannic.auth import UnauthorizedException
 from pyrannic.auth.access.response import Response
+from pyrannic.auth.unauthorized_exception import UnauthorizedException
 from pyrannic.contracts import (
     AuthorizableInterface,
     ContainerInterface,
@@ -19,8 +19,8 @@ from pyrannic.support.reflection import get_class
 
 class Gate(GateInterface):
     _user: AuthorizableInterface | None = None
-    _abilities: dict[str, Any] = {}
-    _policies: dict[str, Any] = {}
+    _abilities: dict[str, Any]
+    _policies: dict[str, Any]
     _container: ContainerInterface
     _guess_policy_names_callback: Callable[[str], str | list[str]] | None = None
 

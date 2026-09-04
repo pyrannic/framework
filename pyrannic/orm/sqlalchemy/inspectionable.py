@@ -5,7 +5,7 @@ from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import DeclarativeBase, MapperProperty, RelationshipProperty
 
 
-class classproperty(object):
+class classproperty:
     """
     @property for @classmethod
     taken from http://stackoverflow.com/a/13624858

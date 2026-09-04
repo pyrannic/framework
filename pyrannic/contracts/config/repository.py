@@ -86,5 +86,5 @@ class ConfigRepositoryInterface(ABC):
         """Get the specified configuration value as a boolean."""
 
     @abstractmethod
-    def list(self, name: str, default: list[T] = []) -> list[T]:
+    def list(self, name: str, default: list[T] | None = None) -> list[T]:
         """Get the specified configuration value as a list."""

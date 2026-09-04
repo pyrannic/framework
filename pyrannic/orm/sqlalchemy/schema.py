@@ -54,3 +54,4 @@ class Schema(SchemaInterface):
                 callback(self._engine, tables=[table])
         except Exception as e:
             self._logger.error(exception_msg.format(table_name, str(e)))
+            raise

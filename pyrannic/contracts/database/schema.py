@@ -7,10 +7,8 @@ class SchemaInterface(ABC):
         """
         Creates the table in the database if it does not exist.
         """
-        pass
 
     async def drop(self, blueprint: Any) -> None:
         """
         Drops the table from the database if it exists.
         """
-        pass

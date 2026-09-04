@@ -69,12 +69,13 @@ async def test_log_on_exception(
 
     logger = await application.container.resolve(Logger)
 
-    schema = Schema(connector.engine, logger)
+    with pytest.raises(Exception) as _:
+        schema = Schema(connector.engine, logger)
 
-    await schema.create(BarModel)
-    assert "Failed to create bars table:" in caplog.text
+        await schema.create(BarModel)
+        assert "Failed to create bars table:" in caplog.text
 
-    await schema.drop(BarModel)
-    assert "Failed to drop bars table:" in caplog.text
+        await schema.drop(BarModel)
+        assert "Failed to drop bars table:" in caplog.text
 
     Config.set("database.connections.sqlite.driver", "sqlite")

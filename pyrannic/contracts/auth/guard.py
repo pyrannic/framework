@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Self
+from typing import Any, Self
 
-from .authenticatable import AuthenticatableType
+from .authenticatable import AuthenticatableInterface
 
 
-class GuardInterface(ABC, Generic[AuthenticatableType]):
+class GuardInterface[T: AuthenticatableInterface](ABC):
     @property
     @abstractmethod
     def check(self) -> bool:
@@ -25,7 +25,7 @@ class GuardInterface(ABC, Generic[AuthenticatableType]):
 
     @property
     @abstractmethod
-    def user(self) -> AuthenticatableType:
+    def user(self) -> T:
         """
         Get the currently authenticated user.
 
@@ -35,7 +35,7 @@ class GuardInterface(ABC, Generic[AuthenticatableType]):
 
     @property
     @abstractmethod
-    def maybe_user(self) -> AuthenticatableType | None:
+    def maybe_user(self) -> T | None:
         """
         Get the currently authenticated user.
 
@@ -80,7 +80,7 @@ class GuardInterface(ABC, Generic[AuthenticatableType]):
         """
 
     @abstractmethod
-    def set_user(self, user: AuthenticatableType) -> Self:
+    def set_user(self, user: T) -> Self:
         """
         Set the current user.
 

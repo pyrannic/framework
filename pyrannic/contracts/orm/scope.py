@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Generic
 
-from pyrannic.contracts.orm.query_builder import QueryBuilderInterface, T
+from pyrannic.contracts.orm.query_builder import QueryBuilderInterface
 
 
-class ScopeInterface(ABC, Generic[T]):
+class ScopeInterface[T](ABC):
     """
     Interface for defining query scopes that can be applied to query builders.
     """
@@ -14,4 +13,3 @@ class ScopeInterface(ABC, Generic[T]):
         """
         Apply the scope to the given query builder.
         """
-        pass

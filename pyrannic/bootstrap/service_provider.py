@@ -7,15 +7,15 @@ from pyrannic.contracts.container.container import ContainerInterface
 
 
 class ServiceProvider(ABC):
+    __bindings__: dict[str | type, type] = {}  # noqa: RUF012
+    """All of the container bindings that should be registered."""
+
+    __singletons__: dict[str | type, type] = {}  # noqa: RUF012
+    """All of the container singletons that should be registered."""
+
     def __init__(self, app: ApplicationInterface, logger: Logger | None = None):
         self.app = app
         self.logger = logger
-
-    __bindings__: dict[str | type, type] = {}
-    """All of the container bindings that should be registered."""
-
-    __singletons__: dict[str | type, type] = {}
-    """All of the container singletons that should be registered."""
 
     @property
     def container(self) -> ContainerInterface:

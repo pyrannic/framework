@@ -7,10 +7,10 @@ from pyrannic.support.collections.dot_dict import get, has, set
 
 
 class ConfigRepository(ConfigRepositoryInterface):
-    _items: dict[str, Any] = {}
+    _items: dict[str, Any]
 
-    def __init__(self, items: dict[str, Any] = dict()) -> None:
-        self._items = items
+    def __init__(self, items: dict[str, Any] | None = None) -> None:
+        self._items = items or {}
 
     def __getattr__(self, name: str) -> Any:
         if self.has(name):
@@ -106,5 +106,5 @@ class ConfigRepository(ConfigRepositoryInterface):
     def bool(self, name: str, default: bool = False) -> bool:
         return self.optional_boolean(name, default) or default
 
-    def list(self, name: str, default: list[T] = []) -> list[T]:
-        return self.optional_list(name, default) or default
+    def list(self, name: str, default: list[T] | None = None) -> list[T]:
+        return self.optional_list(name, default) or []

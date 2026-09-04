@@ -1,11 +1,9 @@
 import inspect
 from abc import update_abstractmethods
-from typing import Any, TypeVar, cast
+from typing import Any, cast
 
 from pyrannic.contracts.application import ApplicationInterface
 from pyrannic.support.string import to_snake_case
-
-T = TypeVar("T")
 
 
 class Facade:
@@ -43,7 +41,7 @@ class Facade:
         return cls._app
 
 
-def facade(accessor_or_cls: type[T] | str) -> T:
+def facade[T](accessor_or_cls: type[T] | str) -> T:
     is_facade_accessor = isinstance(accessor_or_cls, str)
 
     def decorator(cls: type[T]) -> T:
@@ -80,7 +78,7 @@ def facade(accessor_or_cls: type[T] | str) -> T:
                 setattr(cls, name, property(lambda self, n=name: self._property(n)))
 
         if is_facade_accessor:
-            setattr(cls, "facade_accessor", property(lambda _: accessor_or_cls))
+            cls.facade_accessor = property(lambda _: accessor_or_cls)  # pyright: ignore[reportAttributeAccessIssue]
 
         update_abstractmethods(cls)
 

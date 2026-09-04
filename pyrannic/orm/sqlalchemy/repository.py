@@ -2,7 +2,8 @@ from typing import Any, cast
 
 from sqlalchemy.sql.selectable import TypedReturnsRows
 
-from pyrannic.contracts.orm.repository import RepositoryInterface, T
+from pyrannic.contracts.orm.query_builder import T
+from pyrannic.contracts.orm.repository import RepositoryInterface
 from pyrannic.contracts.pagination.paginator import PaginatorInterface
 from pyrannic.orm.sqlalchemy.query_builder import QueryBuilder
 from pyrannic.pagination.paginator import Paginator

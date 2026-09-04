@@ -1,4 +1,5 @@
-from typing import Any, Generic, Sequence, TypeAlias, TypeVar, Union, cast
+from collections.abc import Sequence
+from typing import Any, TypeVar, cast
 
 from pydantic import BaseModel, model_serializer
 
@@ -11,26 +12,26 @@ from pyrannic.contracts.support.serializable import SerializableInterface
 from pyrannic.pagination.meta import PaginationMeta
 from pyrannic.support.reflection import get_generic_type, is_optional
 
-ResourceType = TypeVar("ResourceType", covariant=True, bound=ResourceInterface)
+ResourceType_co = TypeVar("ResourceType_co", covariant=True, bound=ResourceInterface)
 
-ItemsType: TypeAlias = Union[
-    Sequence[ResourceType],
-    Sequence[SerializableInterface],
-    PaginatorInterface[SerializableInterface, PaginationMeta],
-]
+type ItemsType[ResourceType_co: ResourceInterface] = (
+    Sequence[ResourceType_co]
+    | Sequence[SerializableInterface]
+    | PaginatorInterface[SerializableInterface, PaginationMeta]
+)
 
 
-class _ResourceCollection(Generic[ResourceType], ResourceCollectionInterface):
-    __resource_cls__: type[ResourceType]
+class _ResourceCollection[ResourceType_co](ResourceCollectionInterface):
+    __resource_cls__: type[ResourceType_co]
     __meta_cls__: type[PaginationMeta] = PaginationMeta
 
-    data: list[ResourceType]
+    data: list[ResourceType_co]
 
 
-class BaseCollection(BaseModel, _ResourceCollection[ResourceType]):
+class BaseCollection(BaseModel, _ResourceCollection[ResourceType_co]):
     def __init__(
         self,
-        data: ItemsType[ResourceType],
+        data: ItemsType[ResourceType_co],
         with_relationships: bool | list[str] = True,
         **kwargs: Any,
     ):
@@ -95,11 +96,11 @@ class BaseCollection(BaseModel, _ResourceCollection[ResourceType]):
             "Resource class must be set before initializing ResourceCollection"
         )
 
-        self.__resource_cls__ = cast(type[ResourceType], resource_cls)
+        self.__resource_cls__ = cast(type[ResourceType_co], resource_cls)
 
 
-class ResourceCollection(BaseCollection[ResourceType]):
-    def __init__(self, items: ItemsType[ResourceType], /, **kwargs: Any) -> None:
+class ResourceCollection(BaseCollection[ResourceType_co]):
+    def __init__(self, items: ItemsType[ResourceType_co], /, **kwargs: Any) -> None:
         kwargs["data"] = items
         super().__init__(**kwargs)
 

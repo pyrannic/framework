@@ -36,7 +36,7 @@ class JwtGuardConfig(GuardConfig):
     If not set, the default algorithm will be used.
     """
 
-    require: list[str] = Field(default_factory=lambda: [])
+    require: list[str] = Field(default_factory=list)
     """The list of claims that must be present in the JWT."""
 
     verify: list[str] = Field(

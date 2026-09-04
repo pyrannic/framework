@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from collections.abc import Callable
-from typing import Any, Self, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any, Self
 
 from .authorizable import AuthorizableInterface
 

@@ -1,6 +1,5 @@
 import os
-
-from typing_extensions import Annotated
+from typing import Annotated
 
 from pyrannic.container.params import Resolves
 from pyrannic.contracts.application import ApplicationInterface

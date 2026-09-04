@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Self, TypeVar, overload
+from typing import Any, Self, TypeVar, overload
 
 from pyrannic.contracts.orm.model import ModelInterface
 
 T = TypeVar("T", bound=ModelInterface)
 
 
-class QueryBuilderInterface(ABC, Generic[T]):
+class QueryBuilderInterface[T](ABC):
     @property
     @abstractmethod
     def model(self) -> type[T]:
