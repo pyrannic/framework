@@ -8,4 +8,4 @@ def get_module_paths(package_path: str) -> list[str]:
     pattern = "**/*.py"
     files = [f for f in glob(path.join(package_path, pattern), recursive=True)]
 
-    return files
+    return sorted(files)
