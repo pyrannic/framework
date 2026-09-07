@@ -171,5 +171,4 @@ class BootstrapManager:
 
         if environment is not None:
             env_file = os.path.join(app.base_path, f".env.{environment}")
-            print(env_file)
             load_dotenv(env_file, override=True)
