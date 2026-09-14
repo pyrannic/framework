@@ -174,7 +174,11 @@ def get_attr(
         module = _import_module_if_needed(module)
         return getattr(module, attr_name, default)
     except Exception as e:
-        if default is None or not isinstance(e, ModuleNotFoundError):
+        if (default is None or not isinstance(e, ModuleNotFoundError)) or (
+            default is None
+            and str(module).replace("\\", "/").replace("/", ".").replace(".py", "")
+            in str(e)
+        ):
             raise
 
     return default
