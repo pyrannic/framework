@@ -13,20 +13,14 @@ def get_session(
     manager: Annotated[DatabaseManagerInterface, Resolves()],
 ) -> Generator[Any, Any, _Session | None]:
     with manager.connection() as session:
-        try:
-            yield session
-        finally:
-            session.close()
+        yield session
 
 
 async def get_async_session(
     manager: Annotated[DatabaseManagerInterface, Resolves()],
 ) -> AsyncGenerator[Any, _AsyncSession]:
     async with manager.connection() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+        yield session
 
 
 AsyncSession = Annotated[_AsyncSession, Depends(get_async_session)]
