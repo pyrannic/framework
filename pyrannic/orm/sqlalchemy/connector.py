@@ -9,11 +9,10 @@ from sqlalchemy import URL, Engine, create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
-    async_scoped_session,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from pyrannic.container.params import Resolves
 from pyrannic.contracts.application import ApplicationInterface
@@ -184,7 +183,7 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
                 expire_on_commit=False,
             )
 
-        return scoped_session(self._session)
+        return self._session
 
     async def disconnect(self) -> None:
         self.engine.dispose()
@@ -195,16 +194,24 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
         Returns the SQLAlchemy engine instance.
         """
 
-        # TODO: Use config.orm.sqlalchemy settings for pool size, echo, max_overflow, etc.
-
         if not self._engine:
+            kwargs = {
+                "pool_size": self._config.optional_integer(
+                    "orm.drivers.sqlalchemy.pool_size"
+                ),
+                "max_overflow": self._config.optional_integer(
+                    "orm.drivers.sqlalchemy.max_overflow"
+                ),
+            }
+
             self._engine = create_engine(
                 self.url,
-                echo=False,
-                # TODO pool_size=5,
-                # TODO max_overflow=5,
-                pool_pre_ping=True,
-                future=True,  # lazy connections
+                echo=self._config.boolean("orm.drivers.sqlalchemy.echo"),
+                pool_pre_ping=self._config.boolean(
+                    "orm.drivers.sqlalchemy.pool_pre_ping"
+                ),
+                future=self._config.boolean("orm.drivers.sqlalchemy.future"),
+                **{k: v for k, v in kwargs.items() if v is not None},
             )
 
         return self._engine
@@ -224,7 +231,7 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
                 expire_on_commit=False,
             )
 
-        return async_scoped_session(self._session, scopefunc=asyncio.current_task)
+        return self._session
 
     async def disconnect(self) -> None:
         await self.engine.dispose()
@@ -235,16 +242,24 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
         Returns the SQLAlchemy async engine instance.
         """
 
-        # TODO: Use config.orm.sqlalchemy settings for pool size, echo, etc.
-
         if not self._engine:
+            kwargs = {
+                "pool_size": self._config.optional_integer(
+                    "orm.drivers.sqlalchemy.pool_size"
+                ),
+                "max_overflow": self._config.optional_integer(
+                    "orm.drivers.sqlalchemy.max_overflow"
+                ),
+            }
+
             self._engine = create_async_engine(
                 self.url,
-                echo=False,
-                # TODO pool_size=5,
-                # TODO max_overflow=5,
-                pool_pre_ping=True,
-                future=True,  # lazy connections
+                echo=self._config.boolean("orm.drivers.sqlalchemy.echo"),
+                pool_pre_ping=self._config.boolean(
+                    "orm.drivers.sqlalchemy.pool_pre_ping"
+                ),
+                future=self._config.boolean("orm.drivers.sqlalchemy.future"),
+                **{k: v for k, v in kwargs.items() if v is not None},
             )
 
         return self._engine
