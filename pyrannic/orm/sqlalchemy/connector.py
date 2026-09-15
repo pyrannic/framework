@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from pyrannic.container.params import Resolves
 from pyrannic.contracts.application import ApplicationInterface
@@ -169,6 +170,27 @@ class AbstractConnector[
         await asyncio.to_thread(command.upgrade, self.alembic_config, "head")
         self._logger.info("|- ✅ Applied Alembic migrations")
 
+    def _engine_options(self) -> dict[str, Any]:
+        options: dict[str, Any] = {
+            "echo": False,
+            "pool_pre_ping": True,
+            "future": True,
+        }
+
+        url = self.url
+
+        if (
+            isinstance(url, str)
+            and url.startswith("sqlite")
+            and ":memory:" in url
+            or isinstance(url, URL)
+            and url.drivername.startswith("sqlite")
+            and url.database == ":memory:"
+        ):
+            options["poolclass"] = StaticPool
+
+        return options
+
 
 class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
     """
@@ -198,14 +220,7 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
         # TODO: Use config.orm.sqlalchemy settings for pool size, echo, max_overflow, etc.
 
         if not self._engine:
-            self._engine = create_engine(
-                self.url,
-                echo=False,
-                # TODO pool_size=5,
-                # TODO max_overflow=5,
-                pool_pre_ping=True,
-                future=True,  # lazy connections
-            )
+            self._engine = create_engine(self.url, **self._engine_options())
 
         return self._engine
 
@@ -238,13 +253,6 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
         # TODO: Use config.orm.sqlalchemy settings for pool size, echo, etc.
 
         if not self._engine:
-            self._engine = create_async_engine(
-                self.url,
-                echo=False,
-                # TODO pool_size=5,
-                # TODO max_overflow=5,
-                pool_pre_ping=True,
-                future=True,  # lazy connections
-            )
+            self._engine = create_async_engine(self.url, **self._engine_options())
 
         return self._engine
