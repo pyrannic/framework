@@ -267,7 +267,10 @@ class Container(ContainerInterface):
                     instance = await instance
 
                 if self.is_shared(abstract):
-                    if request_scoped_instances is not None:
+                    if (
+                        request_scoped_instances is not None
+                        and binding_key in self._scoped_instances
+                    ):
                         request_scoped_instances[binding_key] = instance
                     else:
                         self._instances[binding_key] = instance
