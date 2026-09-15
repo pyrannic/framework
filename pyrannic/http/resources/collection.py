@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Any, TypeVar, cast
+from typing import Any, Generic, TypeVar, cast
 
 from pydantic import BaseModel, model_serializer
 
@@ -21,7 +21,8 @@ type ItemsType[ResourceType_co: ResourceInterface] = (
 )
 
 
-class _ResourceCollection[ResourceType_co](ResourceCollectionInterface):
+# NOTE: FastAPI seems that doesn't support type parameters to auto generate the API documentation, so generic class is used instead.
+class _ResourceCollection(ResourceCollectionInterface, Generic[ResourceType_co]):  # noqa: UP046
     __resource_cls__: type[ResourceType_co]
     __meta_cls__: type[PaginationMeta] = PaginationMeta
 
