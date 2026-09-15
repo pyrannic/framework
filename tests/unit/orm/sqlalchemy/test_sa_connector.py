@@ -5,6 +5,7 @@ import pytest
 from pytest import MonkeyPatch
 from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.pool import StaticPool
 
 from pyrannic.contracts import ApplicationInterface, ConfigRepositoryInterface
 from pyrannic.orm.sqlalchemy import AsyncConnector, Connector
@@ -108,4 +109,24 @@ async def test_abstract_connector_url_is_an_url_object_with_config(
 
     assert isinstance(connector.url, str)
     assert connector.url == db_url
+    config.set("database.connections.sqlite.url", orig)
+
+
+@pytest.mark.asyncio
+async def test_connector_uses_static_pool_for_in_memory_sqlite(
+    application: ApplicationInterface,
+) -> None:
+    container = application.container
+    config = await container.resolve(ConfigRepositoryInterface)
+    orig = config.get("database.connections.sqlite.url")
+    config.set("database.connections.sqlite.url", "sqlite:///:memory:")
+
+    connector = Connector(
+        application,
+        await container.resolve(Logger),
+        config,
+    )
+
+    assert isinstance(connector.engine.pool, StaticPool)
+
     config.set("database.connections.sqlite.url", orig)
