@@ -7,6 +7,7 @@ from .auth.user_provider import UserProviderInterface as UserProviderInterface
 from .config.configuration import ConfigurationInterface as ConfigurationInterface
 from .config.repository import ConfigRepositoryInterface as ConfigRepositoryInterface
 from .container.container import ContainerInterface as ContainerInterface
+from .database.auth_type import AsyncAuthTypeInterface as AsyncAuthTypeInterface
 from .database.auth_type import AuthTypeInterface as AuthTypeInterface
 from .database.connection_driver import (
     ConnectionDriverInterface as ConnectionDriverInterface,

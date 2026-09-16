@@ -1,3 +1,4 @@
+from .auth_type import AsyncAuthTypeInterface as AsyncAuthTypeInterface
 from .auth_type import AuthTypeInterface as AuthTypeInterface
 from .connection_driver import ConnectionDriverInterface as ConnectionDriverInterface
 from .connector import ConnectorInterface as ConnectorInterface

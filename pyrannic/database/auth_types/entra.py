@@ -2,7 +2,7 @@ from azure.identity import DefaultAzureCredential
 from azure.identity.aio import DefaultAzureCredential as AsyncDefaultAzureCredential
 
 from pyrannic.contracts import ConfigRepositoryInterface
-from pyrannic.contracts.database import AuthTypeInterface
+from pyrannic.contracts.database import AsyncAuthTypeInterface, AuthTypeInterface
 from pyrannic.ioc import Resolves
 
 
@@ -28,7 +28,7 @@ class EntraAuthType(AuthTypeInterface):
         self._credential.close()
 
 
-class AsyncEntraAuthType(AuthTypeInterface):
+class AsyncEntraAuthType(AsyncAuthTypeInterface):
     def __init__(self, config: Resolves[ConfigRepositoryInterface]):
         self._config = config
         self._credential = AsyncDefaultAzureCredential()
