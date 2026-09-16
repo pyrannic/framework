@@ -15,7 +15,7 @@ class ConnectionDriverInterface(ABC):
         """
 
     @abstractmethod
-    def disconnect(self) -> CoroutineType[Any, Any, None] | None:
+    async def disconnect(self) -> None:
         """
         Closes and disposes any connection resource.
         """

@@ -156,7 +156,7 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
         return self._session
 
     async def disconnect(self) -> None:
-        self._connection_driver.disconnect()
+        await self._connection_driver.disconnect()
         self.engine.dispose()
 
     @property
@@ -210,11 +210,7 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
         return self._session
 
     async def disconnect(self) -> None:
-        result = self._connection_driver.disconnect()
-
-        if result is not None:
-            await result
-
+        await self._connection_driver.disconnect()
         await self.engine.dispose()
 
     @property
