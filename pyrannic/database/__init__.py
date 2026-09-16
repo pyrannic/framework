@@ -1,3 +1,4 @@
+from .auth_types.password import PasswordAuthType as PasswordAuthType
 from .config.base_config import DatabaseConfig as DatabaseConfig
 from .config.connections_config import ConnectionsConfig as ConnectionsConfig
 from .config.postgresql_config import PostgresqlConfig as PostgresqlConfig
