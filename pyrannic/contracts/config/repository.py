@@ -58,11 +58,15 @@ class ConfigRepositoryInterface(ABC):
         """Get the specified configuration value as a list."""
 
     @abstractmethod
-    def string(self, name: str, default: str = "") -> str:
-        """Get the specified configuration value as a string."""
+    def optional_dict(
+        self,
+        name: str,
+        default: dict[Any, Any] | None = None,
+    ) -> dict[Any, Any] | None:
+        """Get the specified configuration value as a dictionary."""
 
     @abstractmethod
-    def str(self, name: str, default: str = "") -> str:
+    def string(self, name: str, default: str = "") -> str:
         """Get the specified configuration value as a string."""
 
     @abstractmethod
@@ -88,3 +92,11 @@ class ConfigRepositoryInterface(ABC):
     @abstractmethod
     def list(self, name: str, default: list[T] | None = None) -> list[T]:
         """Get the specified configuration value as a list."""
+
+    @abstractmethod
+    def dict(self, name: str, default: dict[Any, Any] | None = None) -> dict[Any, Any]:
+        """Get the specified configuration value as a dictionary."""
+
+    @abstractmethod
+    def str(self, name: str, default: str = "") -> str:
+        """Get the specified configuration value as a string."""
