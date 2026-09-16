@@ -21,7 +21,7 @@ class ConnectionDriver(AbstractConnectionDriver):
         self._auth_type.fetch_password()
         self._url = None
 
-    def disconnect(self) -> None:
+    async def disconnect(self) -> None:
         self._auth_type.close()
 
     @property

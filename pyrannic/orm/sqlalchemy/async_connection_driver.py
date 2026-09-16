@@ -8,7 +8,7 @@ from pyrannic.ioc import Resolves
 from pyrannic.orm.sqlalchemy.abstract_connection_driver import AbstractConnectionDriver
 
 
-class ConnectionDriver(AbstractConnectionDriver):
+class AsyncConnectionDriver(AbstractConnectionDriver):
     def __init__(
         self,
         auth_type: Resolves[AsyncAuthTypeInterface],
