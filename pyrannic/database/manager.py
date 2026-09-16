@@ -47,4 +47,4 @@ class DatabaseManager(ConnectorInterface):
         self,
         migrations: list[type[MigrationInterface]] | None = None,
     ) -> None:
-        await self._connector.rollback(self._get_migrations(migrations))
+        await self._connector.rollback(list(reversed(self._get_migrations(migrations))))
