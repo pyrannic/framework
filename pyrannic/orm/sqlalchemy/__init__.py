@@ -1,5 +1,6 @@
 from .async_query_builder import AsyncQueryBuilder as AsyncQueryBuilder
 from .async_repository import AsyncRepository as AsyncRepository
+from .config import SQLAlchemyConfig as SQLAlchemyConfig
 from .connector import AsyncConnector as AsyncConnector
 from .connector import Connector as Connector
 from .mixins.has_timestamps import HasTimestamp as HasTimestamp

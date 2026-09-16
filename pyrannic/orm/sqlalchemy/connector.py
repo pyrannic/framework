@@ -17,8 +17,10 @@ from sqlalchemy.orm import Session, sessionmaker
 from pyrannic.container.params import Resolves
 from pyrannic.contracts.application import ApplicationInterface
 from pyrannic.contracts.config.repository import ConfigRepositoryInterface
-from pyrannic.contracts.database.connector import ConnectorInterface
-from pyrannic.contracts.database.migration import MigrationInterface
+from pyrannic.contracts.database import (
+    ConnectorInterface,
+    MigrationInterface,
+)
 from pyrannic.orm.sqlalchemy.schema import Schema
 
 EngineType = TypeVar("EngineType", bound=Engine | AsyncEngine)
@@ -195,7 +197,8 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
         """
 
         if not self._engine:
-            kwargs = {
+            kwargs: dict[str, Any] = {
+                "poolclass": self._config.get("orm.drivers.sqlalchemy.poolclass"),
                 "pool_size": self._config.optional_integer(
                     "orm.drivers.sqlalchemy.pool_size"
                 ),
@@ -207,6 +210,9 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
             self._engine = create_engine(
                 self.url,
                 echo=self._config.boolean("orm.drivers.sqlalchemy.echo"),
+                pool_recycle=self._config.integer(
+                    "orm.drivers.sqlalchemy.pool_recycle"
+                ),
                 pool_pre_ping=self._config.boolean(
                     "orm.drivers.sqlalchemy.pool_pre_ping"
                 ),
@@ -243,7 +249,8 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
         """
 
         if not self._engine:
-            kwargs = {
+            kwargs: dict[str, Any] = {
+                "poolclass": self._config.get("orm.drivers.sqlalchemy.poolclass"),
                 "pool_size": self._config.optional_integer(
                     "orm.drivers.sqlalchemy.pool_size"
                 ),
@@ -255,6 +262,9 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
             self._engine = create_async_engine(
                 self.url,
                 echo=self._config.boolean("orm.drivers.sqlalchemy.echo"),
+                pool_recycle=self._config.integer(
+                    "orm.drivers.sqlalchemy.pool_recycle"
+                ),
                 pool_pre_ping=self._config.boolean(
                     "orm.drivers.sqlalchemy.pool_pre_ping"
                 ),
