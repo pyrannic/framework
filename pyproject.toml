@@ -47,6 +47,11 @@ dependencies = [
     "sqlalchemy>=2.0.49",
 ]
 
+[project.optional-dependencies]
+azure = [
+    "azure-identity>=1.25.3",
+]
+
 [dependency-groups]
 dev = [
     { include-group = "docs" },
