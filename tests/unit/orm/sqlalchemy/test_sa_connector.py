@@ -3,10 +3,13 @@ from unittest.mock import Mock
 
 import pytest
 from pytest import MonkeyPatch
-from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from pyrannic.contracts import ApplicationInterface, ConfigRepositoryInterface
+from pyrannic.contracts import (
+    ApplicationInterface,
+    ConfigRepositoryInterface,
+    ConnectionDriverInterface,
+)
 from pyrannic.orm.sqlalchemy import AsyncConnector, Connector
 
 
@@ -20,6 +23,7 @@ async def test_connector_disconnect(
         application,
         await container.resolve(Logger),
         await container.resolve("config"),
+        await container.resolve(ConnectionDriverInterface),
     )
 
     mock = Mock()
@@ -40,6 +44,7 @@ async def test_async_connector_disconnect(
         application,
         await container.resolve(Logger),
         await container.resolve("config"),
+        await container.resolve(ConnectionDriverInterface),
     )
 
     mock = Mock(spec=AsyncEngine)
@@ -62,31 +67,10 @@ async def test_connector_url_using_sqlite_database_file(
         application,
         await application.container.resolve(Logger),
         config,
+        await application.container.resolve(ConnectionDriverInterface),
     )
 
-    assert isinstance(connector.url, URL)
-    assert (
-        connector.url.render_as_string(hide_password=False)
-        == "sqlite:///database/database.sqlite"
-    )
-
-
-@pytest.mark.asyncio
-async def test_abstract_connector_url_is_an_url_object(
-    application: ApplicationInterface,
-) -> None:
-    container = application.container
-
-    config = container.instance(ConfigRepositoryInterface)
-    config.set("database.connections.sqlite.url", None)
-
-    connector = Connector(
-        application,
-        await container.resolve(Logger),
-        await container.resolve("config"),
-    )
-
-    assert isinstance(connector.url, URL)
+    assert connector.url == "sqlite:///database/database.sqlite"
 
 
 @pytest.mark.asyncio
@@ -104,8 +88,8 @@ async def test_abstract_connector_url_is_an_url_object_with_config(
         application,
         await container.resolve(Logger),
         config,
+        await container.resolve(ConnectionDriverInterface),
     )
 
-    assert isinstance(connector.url, str)
     assert connector.url == db_url
     config.set("database.connections.sqlite.url", orig)
