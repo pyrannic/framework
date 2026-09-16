@@ -1,7 +1,7 @@
 from typing import cast
 
 from pyrannic.contracts import (
-    AuthTypeInterface,
+    AsyncAuthTypeInterface,
     ConfigRepositoryInterface,
 )
 from pyrannic.ioc import Resolves
@@ -11,19 +11,19 @@ from pyrannic.orm.sqlalchemy.abstract_connection_driver import AbstractConnectio
 class ConnectionDriver(AbstractConnectionDriver):
     def __init__(
         self,
-        auth_type: Resolves[AuthTypeInterface],
+        auth_type: Resolves[AsyncAuthTypeInterface],
         config: Resolves[ConfigRepositoryInterface],
     ):
         self._auth_type = auth_type
         self._config = config
 
     async def __ioc_call__(self):
-        self._auth_type.fetch_password()
+        await self.auth_type.fetch_password()
         self._url = None
 
-    def disconnect(self) -> None:
-        self._auth_type.close()
+    async def disconnect(self) -> None:
+        await self.auth_type.close()
 
     @property
-    def auth_type(self) -> AuthTypeInterface:
-        return cast(AuthTypeInterface, self._auth_type)
+    def auth_type(self) -> AsyncAuthTypeInterface:
+        return cast(AsyncAuthTypeInterface, self._auth_type)

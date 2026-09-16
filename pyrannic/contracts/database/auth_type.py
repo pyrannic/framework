@@ -1,6 +1,4 @@
 from abc import ABC, abstractmethod
-from types import CoroutineType
-from typing import Any
 
 
 class AuthTypeInterface(ABC):
@@ -12,13 +10,34 @@ class AuthTypeInterface(ABC):
         """
 
     @abstractmethod
-    def fetch_password(self) -> CoroutineType[Any, Any, None] | None:
+    def fetch_password(self) -> None:
         """
         Fetches the password for the database connection.
         """
 
     @abstractmethod
-    def close(self) -> CoroutineType[Any, Any, None] | None:
+    def close(self) -> None:
+        """
+        Closes any resources associated with the authentication type.
+        """
+
+
+class AsyncAuthTypeInterface(ABC):
+    @property
+    @abstractmethod
+    def password(self) -> str | None:
+        """
+        Returns the password for the database connection.
+        """
+
+    @abstractmethod
+    async def fetch_password(self) -> None:
+        """
+        Fetches the password for the database connection.
+        """
+
+    @abstractmethod
+    async def close(self) -> None:
         """
         Closes any resources associated with the authentication type.
         """
