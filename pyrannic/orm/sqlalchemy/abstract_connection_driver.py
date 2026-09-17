@@ -1,5 +1,4 @@
-from collections.abc import Callable
-from types import CoroutineType
+from collections.abc import Callable, Coroutine
 from typing import Any
 
 from sqlalchemy import URL
@@ -59,7 +58,5 @@ class AbstractConnectionDriver(ConnectionDriverInterface):
     @property
     def factory(
         self,
-    ) -> (
-        Callable[..., DBAPIConnection | CoroutineType[Any, Any, DBAPIConnection]] | None
-    ):
+    ) -> Callable[..., DBAPIConnection | Coroutine[Any, Any, DBAPIConnection]] | None:
         return None
