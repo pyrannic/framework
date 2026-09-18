@@ -3,23 +3,25 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 from logging import Logger
 from os import path
-from typing import Annotated, Any, TypeVar
+from typing import Any, TypeVar
 
-from sqlalchemy import URL, Engine, create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
-    async_scoped_session,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
-from pyrannic.container.params import Resolves
-from pyrannic.contracts.application import ApplicationInterface
-from pyrannic.contracts.config.repository import ConfigRepositoryInterface
-from pyrannic.contracts.database.connector import ConnectorInterface
-from pyrannic.contracts.database.migration import MigrationInterface
+from pyrannic.contracts import (
+    ApplicationInterface,
+    ConfigRepositoryInterface,
+    ConnectionDriverInterface,
+    ConnectorInterface,
+    MigrationInterface,
+)
+from pyrannic.ioc import Resolves
 from pyrannic.orm.sqlalchemy.schema import Schema
 
 EngineType = TypeVar("EngineType", bound=Engine | AsyncEngine)
@@ -42,19 +44,19 @@ class AbstractConnector[
     _config: ConfigRepositoryInterface
     _engine: EngineType | None
     _session: SessionType | None
+    _connection_driver: ConnectionDriverInterface
 
     def __init__(
         self,
-        application: Annotated[ApplicationInterface, Resolves()],
-        logger: Annotated[Logger, Resolves()],
-        config: Annotated[ConfigRepositoryInterface, Resolves()],
+        application: Resolves[ApplicationInterface],
+        logger: Resolves[Logger],
+        config: Resolves[ConfigRepositoryInterface],
+        connection_driver: Resolves[ConnectionDriverInterface],
     ):
         self._application = application
         self._logger = logger
         self._config = config
-
-        if not hasattr(self, "_url"):
-            self._url = None
+        self._connection_driver = connection_driver
 
         if not hasattr(self, "_engine"):
             self._engine = None
@@ -91,39 +93,11 @@ class AbstractConnector[
             )
 
     @property
-    def url(self) -> URL | str:
+    def url(self) -> str:
         """
         Returns the database URL from the configuration.
         """
-        if not self._url:
-            connection = self._config.string("database.connection", default="sqlite")
-            url = self._config.optional_str(f"database.connections.{connection}.url")
-
-            if url:
-                self._url = url
-            else:
-                self._url = URL.create(
-                    drivername=self._config.string(
-                        f"database.connections.{connection}.driver"
-                    ),
-                    username=self._config.optional_str(
-                        f"database.connections.{connection}.username"
-                    ),
-                    password=self._config.optional_str(
-                        f"database.connections.{connection}.password"
-                    ),
-                    host=self._config.optional_str(
-                        f"database.connections.{connection}.host"
-                    ),
-                    port=self._config.optional_int(
-                        f"database.connections.{connection}.port"
-                    ),
-                    database=self._config.optional_str(
-                        f"database.connections.{connection}.database"
-                    ),
-                )
-
-        return self._url
+        return self._connection_driver.url
 
     @property
     def alembic_config(self):
@@ -134,13 +108,8 @@ class AbstractConnector[
             "script_location",
             path.join("%(here)s", self._application.base_path, "database/migrations"),
         )
-        alembic_cfg.set_main_option(
-            "sqlalchemy.url",
-            self.url
-            if isinstance(self.url, str)
-            else self.url.render_as_string(hide_password=False),
-        )
 
+        alembic_cfg.set_main_option("sqlalchemy.url", self.url)
         alembic_cfg.set_main_option(
             "pyrannic.asyncio",
             str(self._config.boolean("orm.drivers.sqlalchemy.asyncio")),
@@ -184,9 +153,10 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
                 expire_on_commit=False,
             )
 
-        return scoped_session(self._session)
+        return self._session
 
     async def disconnect(self) -> None:
+        await self._connection_driver.disconnect()
         self.engine.dispose()
 
     @property
@@ -195,16 +165,29 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
         Returns the SQLAlchemy engine instance.
         """
 
-        # TODO: Use config.orm.sqlalchemy settings for pool size, echo, max_overflow, etc.
-
         if not self._engine:
+            kwargs: dict[str, Any] = {
+                "poolclass": self._config.get("orm.drivers.sqlalchemy.poolclass"),
+                "pool_size": self._config.optional_integer(
+                    "orm.drivers.sqlalchemy.pool_size"
+                ),
+                "max_overflow": self._config.optional_integer(
+                    "orm.drivers.sqlalchemy.max_overflow"
+                ),
+                "creator": self._connection_driver.factory,
+            }
+
             self._engine = create_engine(
                 self.url,
-                echo=False,
-                # TODO pool_size=5,
-                # TODO max_overflow=5,
-                pool_pre_ping=True,
-                future=True,  # lazy connections
+                echo=self._config.boolean("orm.drivers.sqlalchemy.echo"),
+                pool_recycle=self._config.integer(
+                    "orm.drivers.sqlalchemy.pool_recycle"
+                ),
+                pool_pre_ping=self._config.boolean(
+                    "orm.drivers.sqlalchemy.pool_pre_ping"
+                ),
+                future=self._config.boolean("orm.drivers.sqlalchemy.future"),
+                **{k: v for k, v in kwargs.items() if v is not None},
             )
 
         return self._engine
@@ -224,9 +207,10 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
                 expire_on_commit=False,
             )
 
-        return async_scoped_session(self._session, scopefunc=asyncio.current_task)
+        return self._session
 
     async def disconnect(self) -> None:
+        await self._connection_driver.disconnect()
         await self.engine.dispose()
 
     @property
@@ -235,16 +219,29 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
         Returns the SQLAlchemy async engine instance.
         """
 
-        # TODO: Use config.orm.sqlalchemy settings for pool size, echo, etc.
-
         if not self._engine:
+            kwargs: dict[str, Any] = {
+                "poolclass": self._config.get("orm.drivers.sqlalchemy.poolclass"),
+                "pool_size": self._config.optional_integer(
+                    "orm.drivers.sqlalchemy.pool_size"
+                ),
+                "max_overflow": self._config.optional_integer(
+                    "orm.drivers.sqlalchemy.max_overflow"
+                ),
+            }
+
             self._engine = create_async_engine(
                 self.url,
-                echo=False,
-                # TODO pool_size=5,
-                # TODO max_overflow=5,
-                pool_pre_ping=True,
-                future=True,  # lazy connections
+                async_creator=self._connection_driver.factory,
+                echo=self._config.boolean("orm.drivers.sqlalchemy.echo"),
+                pool_recycle=self._config.integer(
+                    "orm.drivers.sqlalchemy.pool_recycle"
+                ),
+                pool_pre_ping=self._config.boolean(
+                    "orm.drivers.sqlalchemy.pool_pre_ping"
+                ),
+                future=self._config.boolean("orm.drivers.sqlalchemy.future"),
+                **{k: v for k, v in kwargs.items() if v is not None},
             )
 
         return self._engine

@@ -2,11 +2,21 @@ from typing import Annotated
 
 from pyrannic.bootstrap.service_provider import ServiceProvider
 from pyrannic.container.params import Resolves
-from pyrannic.contracts.database.connector import ConnectorInterface
-from pyrannic.contracts.database.manager import DatabaseManagerInterface
+from pyrannic.contracts import (
+    AsyncAuthTypeInterface,
+    AuthTypeInterface,
+    ConnectionDriverInterface,
+    ConnectorInterface,
+    DatabaseManagerInterface,
+)
+from pyrannic.database.auth_types.password import (
+    AsyncPasswordAuthType,
+    PasswordAuthType,
+)
 from pyrannic.database.manager import DatabaseManager
 from pyrannic.facades import Config
 
+from .connection_driver import ConnectionDriver
 from .connector import AsyncConnector, Connector
 
 
@@ -23,8 +33,11 @@ class DatabaseServiceProvider(ServiceProvider):
         return AsyncConnector if is_asyncio else Connector
 
     def register(self):
-        self.container.scoped(DatabaseManagerInterface, DatabaseManager)
-        self.container.scoped(ConnectorInterface, self.connector)
+        self.container.scoped_if(AuthTypeInterface, PasswordAuthType)
+        self.container.scoped_if(AsyncAuthTypeInterface, AsyncPasswordAuthType)
+        self.container.scoped_if(ConnectionDriverInterface, ConnectionDriver)
+        self.container.scoped_if(DatabaseManagerInterface, DatabaseManager)
+        self.container.scoped_if(ConnectorInterface, self.connector)
 
     async def boot(self, manager: Annotated[DatabaseManagerInterface, Resolves()]):
         await manager.migrate()

@@ -1,5 +1,5 @@
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 from pyrannic.pagination import PaginationMeta
 from tests.unit.asserts import assert_instance_repr

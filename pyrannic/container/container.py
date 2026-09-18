@@ -242,13 +242,20 @@ class Container(ContainerInterface):
         **kwargs: Any,
     ) -> T:
         binding_key = self.get_alias(abstract)
+        request_scoped_instances = self._get_request_scoped_instances(request)
         concrete = self._get_contextual_concrete(binding_key)
         needs_contextual_build = bool(concrete)
 
         self._build_stack.append(binding_key)
 
         try:
-            if not concrete and binding_key in self._instances:
+            if (
+                not concrete
+                and request_scoped_instances is not None
+                and binding_key in request_scoped_instances
+            ):
+                instance = request_scoped_instances[binding_key]
+            elif not concrete and binding_key in self._instances:
                 instance = self._instances[binding_key]
             else:
                 if not concrete:
@@ -260,7 +267,13 @@ class Container(ContainerInterface):
                     instance = await instance
 
                 if self.is_shared(abstract):
-                    self._instances[binding_key] = instance
+                    if (
+                        request_scoped_instances is not None
+                        and binding_key in self._scoped_instances
+                    ):
+                        request_scoped_instances[binding_key] = instance
+                    else:
+                        self._instances[binding_key] = instance
 
                 # If the instance has a __ioc_resolved__ method, execute it with the container
                 await self._resolve_instance_method(
@@ -509,14 +522,69 @@ class Container(ContainerInterface):
         request: Request,
         dependant: Dependant,
     ) -> SolvedDependency:
+        dependency_cache = self._get_request_dependency_cache(request)
+        async_exit_stack = self._get_request_async_exit_stack(request)
+
         return await solve_dependencies(
             request=request,
             dependant=dependant,
             embed_body_fields=False,
-            dependency_cache=self._dependency_cache,
-            # TODO: Remove async_exit_stack, no longer used.
-            async_exit_stack=cast(AsyncExitStack, None),
+            dependency_cache=dependency_cache,
+            async_exit_stack=async_exit_stack,
         )
+
+    def _get_request_scoped_instances(
+        self,
+        request: Request | None,
+    ) -> dict[str, Any] | None:
+        if request is None:
+            return None
+
+        scoped_instances = getattr(
+            request.state,
+            "_pyrannic_scoped_instances",
+            None,
+        )
+
+        if scoped_instances is None:
+            scoped_instances = {}
+            request.state._pyrannic_scoped_instances = scoped_instances
+
+        return cast(dict[str, Any], scoped_instances)
+
+    def _get_request_dependency_cache(
+        self,
+        request: Request,
+    ) -> dict[DependencyCacheKey, Any]:
+        dependency_cache = getattr(
+            request.state,
+            "_pyrannic_dependency_cache",
+            None,
+        )
+
+        if dependency_cache is None:
+            dependency_cache = {}
+            request.state._pyrannic_dependency_cache = dependency_cache
+
+        return cast(dict[DependencyCacheKey, Any], dependency_cache)
+
+    def _get_request_async_exit_stack(self, request: Request) -> AsyncExitStack:
+        request_scope = request.scope
+
+        for key in ("fastapi_inner_astack", "fastapi_function_astack"):
+            stack = request_scope.get(key)
+            if isinstance(stack, AsyncExitStack):
+                return cast(AsyncExitStack, stack)
+
+        stack = getattr(request.state, "_pyrannic_async_exit_stack", None)
+        if isinstance(stack, AsyncExitStack):
+            return cast(AsyncExitStack, stack)
+
+        # Fallback stack for non-standard request contexts where FastAPI did not attach one.
+        stack = AsyncExitStack()
+        request.state._pyrannic_async_exit_stack = stack
+
+        return stack
 
     async def _resolve_generic(
         self,
