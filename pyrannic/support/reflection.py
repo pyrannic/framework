@@ -177,7 +177,7 @@ def get_attr(
         module = str(module).replace("\\", "/").replace("/", ".").replace(".py", "")
 
         if (default is None or not isinstance(e, ModuleNotFoundError)) or (
-            module not in str(e)
+            e.name and (module not in e.name and e.name not in module)
         ):
             raise
 
