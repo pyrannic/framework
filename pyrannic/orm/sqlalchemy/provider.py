@@ -3,12 +3,16 @@ from typing import Annotated
 from pyrannic.bootstrap.service_provider import ServiceProvider
 from pyrannic.container.params import Resolves
 from pyrannic.contracts import (
+    AsyncAuthTypeInterface,
     AuthTypeInterface,
     ConnectionDriverInterface,
     ConnectorInterface,
     DatabaseManagerInterface,
 )
-from pyrannic.database.auth_types.password import PasswordAuthType
+from pyrannic.database.auth_types.password import (
+    AsyncPasswordAuthType,
+    PasswordAuthType,
+)
 from pyrannic.database.manager import DatabaseManager
 from pyrannic.facades import Config
 
@@ -30,6 +34,7 @@ class DatabaseServiceProvider(ServiceProvider):
 
     def register(self):
         self.container.scoped_if(AuthTypeInterface, PasswordAuthType)
+        self.container.scoped_if(AsyncAuthTypeInterface, AsyncPasswordAuthType)
         self.container.scoped_if(ConnectionDriverInterface, ConnectionDriver)
         self.container.scoped_if(DatabaseManagerInterface, DatabaseManager)
         self.container.scoped_if(ConnectorInterface, self.connector)
