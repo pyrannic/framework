@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from collections.abc import Sequence
 
-ItemType_co = TypeVar("ItemType_co", covariant=True)
-MetaType = TypeVar("MetaType")
+from pyrannic.contracts.pagination.meta import PaginationMetaInterface
 
 
-class PaginatorInterface[ItemType_co, MetaType](ABC):
+class PaginatorInterface[ItemType, MetaType: PaginationMetaInterface](ABC):
     """
     A generic class that describes a paginator. This exposes two public properties:
 
@@ -15,7 +14,7 @@ class PaginatorInterface[ItemType_co, MetaType](ABC):
 
     @property
     @abstractmethod
-    def items(self) -> list[ItemType_co]:
+    def items(self) -> Sequence[ItemType]:
         pass
 
     @abstractmethod

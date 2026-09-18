@@ -1,39 +1,39 @@
-import math
 from typing import Any
 
 from pyrannic.contracts.pagination.paginator import PaginatorInterface
-from pyrannic.pagination.meta import PaginationMeta
+from pyrannic.pagination.cursor.meta import PaginationMeta
 
 
 class Paginator[ItemType](PaginatorInterface[ItemType, PaginationMeta]):
     """
-    A generic class that describes a paginator. This exposes two public properties:
+    A generic class that describes a paginator based in cursor pagination.
+    This exposes two public properties:
 
     - items: Allow us to get a list with all the items available in this paginator.
     - meta: Give us a PaginationMeta instance with meta information about the paginator.
     """
 
     __items: list[ItemType]
-    __page: int = 1
     __total: int = 0
     __per_page: int
-    __last_page: int | None
+    __previous_page: str | None
+    __next_page: str | None
     __kwargs: dict[str, Any] | None
 
     def __init__(
         self,
         items: list[ItemType],
-        page: int = 1,
         per_page: int = 15,
         total: int = 0,
-        last_page: int = 1,
+        previous_page: str | None = None,
+        next_page: str | None = None,
         **kwargs: Any,
     ):
         self.__items = items
-        self.__page = page
+        self.__previous_page = previous_page
+        self.__next_page = next_page
         self.__per_page = per_page
         self.__total = total
-        self.__last_page = last_page
         self.__kwargs = kwargs
 
     @property
@@ -42,14 +42,10 @@ class Paginator[ItemType](PaginatorInterface[ItemType, PaginationMeta]):
 
     def meta(self, meta_class: type[PaginationMeta] = PaginationMeta) -> PaginationMeta:
         return meta_class(
-            current_page=self.__page,
-            last_page=self.__last_page or math.ceil(self.__total / self.__per_page),
+            previous_page=self.__previous_page,
+            next_page=self.__next_page,
             per_page=self.__per_page,
             total=self.__total,
-            from_index=0
-            if self.__total == 0
-            else (self.__page - 1) * self.__per_page + 1,
-            to_index=min(self.__page * self.__per_page, self.__total),
             **(self.__kwargs or {}),
         )
 

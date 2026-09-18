@@ -1,7 +1,9 @@
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
+from pyrannic.contracts.pagination.meta import PaginationMetaInterface
 
-class PaginationMeta(BaseModel):
+
+class PaginationMeta(BaseModel, PaginationMetaInterface):
     """
     Class to be used together with ResourceCollection class as its meta information.
     In this way, a collection response can have meta information such as total number of items, current page requested,
