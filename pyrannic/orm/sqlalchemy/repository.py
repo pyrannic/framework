@@ -1,5 +1,6 @@
 from typing import Any, cast
 
+from sqlalchemy import Update
 from sqlalchemy.sql.selectable import TypedReturnsRows
 
 from pyrannic.contracts.orm.query_builder import T
@@ -23,13 +24,30 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
 
     def save(self, model: T) -> T:
         try:
-            self.session.merge(model)
+            model = self.session.merge(model)
             self.session.commit()
             return model
         except Exception:
             self.session.rollback()
             self._logger.exception("Rolling Back. Error updating model.")
             raise
+
+    def with_values(self, values: Any) -> None:
+        self._before_query()
+
+        assert isinstance(self._query, Update)
+
+        self._query = self._query.values(**values)
+
+        try:
+            self.session.execute(self._query)
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            self._logger.exception("Rolling Back. Error performing the update.")
+            raise
+        finally:
+            self._reset_query()
 
     def destroy(self, model: T | None = None) -> None:
         self._prepare_destroy_model_if_needed(model)

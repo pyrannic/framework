@@ -17,6 +17,10 @@ class QueryBuilderInterface[T](ABC):
         """Initialize a select query for the model."""
 
     @abstractmethod
+    def update(self, model: type[T] | None = None) -> Self:
+        """Initialize an update query for the model."""
+
+    @abstractmethod
     def delete(self, model: type[T] | None = None) -> Self:
         """Initialize a delete query for the model."""
 

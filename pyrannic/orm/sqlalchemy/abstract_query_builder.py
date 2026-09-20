@@ -10,10 +10,12 @@ from sqlalchemy import (
     Delete,
     Select,
     UnaryExpression,
+    Update,
     column,
     delete,
     func,
     select,
+    update,
 )
 from sqlalchemy.orm import InstrumentedAttribute
 
@@ -30,7 +32,7 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
     __scopes__: list[ScopeInterface[T]]
 
     _scopes: list[ScopeInterface[T]]
-    _query: Select[Any] | Delete | CompoundSelect[Any] | None = None
+    _query: Select[Any] | Update | Delete | CompoundSelect[Any] | None = None
     _is_ordering: bool = False
     _soft_deleting_scope: SoftDeletingScope[T]
 
@@ -72,6 +74,10 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
 
     def select(self, model: type[T] | None = None) -> Self:
         self._query = select(model or self.model)
+        return self
+
+    def update(self, model: type[T] | None = None) -> Self:
+        self._query = update(model or self.model)
         return self
 
     def delete(self, model: type[T] | None = None) -> Self:
@@ -131,7 +137,7 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
     ) -> Self:
         self._prepare_query()
 
-        if isinstance(self._query, (Select, Delete)):
+        if isinstance(self._query, (Select, Update, Delete)):
             if where_clause:
                 self._query = self._query.where(*where_clause)
             elif kwargs:
@@ -166,7 +172,7 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
     def filter(self, *filters: ColumnExpressionArgument[Any], **kwargs: Any) -> Self:
         self._prepare_query()
 
-        if isinstance(self._query, (Select, Delete)):
+        if isinstance(self._query, (Select, Update, Delete)):
             if filters:
                 filters = tuple(v for v in filters if v is not None)
                 self._query = self._query.where(*filters)
@@ -199,11 +205,11 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
 
         return self
 
-    def join(self, model: type[Any]) -> Self:
+    def join(self, model: type[Any], on_clause: Any = None) -> Self:
         self._prepare_query()
 
         assert isinstance(self._query, Select)
-        self._query = self._query.join(model)
+        self._query = self._query.join(model, on_clause)
 
         return self
 
