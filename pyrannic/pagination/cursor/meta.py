@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+
 from pyrannic.contracts.pagination.meta import PaginationMetaInterface
 
 

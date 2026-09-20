@@ -100,7 +100,7 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
         page: int = 1,
         per_page: int | None = None,
         **kwargs: Any,
-    ) -> PaginatorInterface[T, Any]:
+    ) -> PaginatorInterface[T]:
         self._prepare_query()
         self._before_query()
 

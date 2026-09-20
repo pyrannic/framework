@@ -61,5 +61,5 @@ class RepositoryInterface[T](ABC):
         page: int = 1,
         per_page: int | None = None,
         **kwargs: Any,
-    ) -> PaginatorInterface[T, Any]:
+    ) -> PaginatorInterface[T]:
         """Paginate the results of the current query."""
