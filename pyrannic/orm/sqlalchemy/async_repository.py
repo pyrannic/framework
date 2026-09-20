@@ -32,7 +32,7 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
             self._logger.exception("Rolling Back. Error updating model.")
             raise
 
-    async def with_values(self, values: Any) -> None:
+    async def with_values(self, **values: Any) -> None:
         self._before_query()
 
         assert isinstance(self._query, Update)

@@ -32,7 +32,7 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
             self._logger.exception("Rolling Back. Error updating model.")
             raise
 
-    def with_values(self, values: Any) -> None:
+    def with_values(self, **values: Any) -> None:
         self._before_query()
 
         assert isinstance(self._query, Update)

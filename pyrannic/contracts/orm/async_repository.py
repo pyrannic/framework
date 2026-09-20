@@ -14,7 +14,7 @@ class AsyncRepositoryInterface[T](ABC):
         """Update an existing record in the database."""
 
     @abstractmethod
-    async def with_values(self, values: Any) -> None:
+    async def with_values(self, **values: Any) -> None:
         """Update the records matching the current query with the values provided."""
 
     @abstractmethod
