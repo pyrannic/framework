@@ -21,7 +21,7 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
             self._logger.exception("Rolling Back. Error inserting model.")
             raise
 
-    async def update(self, model: T) -> T:
+    async def save(self, model: T) -> T:
         try:
             await self.session.merge(model)
             await self.session.commit()
@@ -46,10 +46,10 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
             self._reset_query()
 
     async def remove(self, model: T) -> T:
-        return (await self.update(model)) if self._remove_model(model) else model
+        return (await self.save(model)) if self._remove_model(model) else model
 
     async def restore(self, model: T) -> T:
-        return (await self.update(model)) if self._restore_model(model) else model
+        return (await self.save(model)) if self._restore_model(model) else model
 
     async def count(self) -> int:
         self._prepare_query()

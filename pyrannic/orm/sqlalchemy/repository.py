@@ -21,7 +21,7 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
             self._logger.exception("Rolling Back. Error inserting model.")
             raise
 
-    def update(self, model: T) -> T:
+    def save(self, model: T) -> T:
         try:
             self.session.merge(model)
             self.session.commit()
@@ -46,10 +46,10 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
             self._reset_query()
 
     def remove(self, model: T) -> T:
-        return self.update(model) if self._remove_model(model) else model
+        return self.save(model) if self._remove_model(model) else model
 
     def restore(self, model: T) -> T:
-        return self.update(model) if self._restore_model(model) else model
+        return self.save(model) if self._restore_model(model) else model
 
     def count(self) -> int:
         self._prepare_query()
