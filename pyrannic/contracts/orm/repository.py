@@ -14,6 +14,10 @@ class RepositoryInterface[T](ABC):
         """Update an existing record in the database."""
 
     @abstractmethod
+    def with_values(self, **values: Any) -> None:
+        """Update the records matching the current query with the values provided."""
+
+    @abstractmethod
     def destroy(self, model: T | None = None) -> None:
         """Permanently delete the records matching the current query."""
 
