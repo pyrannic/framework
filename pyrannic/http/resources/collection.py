@@ -17,7 +17,7 @@ ResourceType_co = TypeVar("ResourceType_co", covariant=True, bound=ResourceInter
 type ItemsType[ResourceType_co: ResourceInterface] = (
     Sequence[ResourceType_co]
     | Sequence[SerializableInterface]
-    | PaginatorInterface[SerializableInterface, PaginationMeta]
+    | PaginatorInterface[SerializableInterface]
 )
 
 

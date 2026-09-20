@@ -1,11 +1,12 @@
 import math
 from typing import Any
 
+from pyrannic.contracts.pagination.meta import PaginationMetaInterface
 from pyrannic.contracts.pagination.paginator import PaginatorInterface
 from pyrannic.pagination.meta import PaginationMeta
 
 
-class Paginator[ItemType](PaginatorInterface[ItemType, PaginationMeta]):
+class Paginator[ItemType](PaginatorInterface[ItemType]):
     """
     A generic class that describes a paginator. This exposes two public properties:
 
@@ -40,7 +41,14 @@ class Paginator[ItemType](PaginatorInterface[ItemType, PaginationMeta]):
     def items(self) -> list[ItemType]:
         return self.__items
 
-    def meta(self, meta_class: type[PaginationMeta] = PaginationMeta) -> PaginationMeta:
+    def meta(
+        self,
+        meta_class: type[PaginationMetaInterface] = PaginationMeta,
+    ) -> PaginationMetaInterface:
+        assert issubclass(meta_class, PaginationMeta), (
+            "meta_class must be a subclass of PaginationMeta"
+        )
+
         return meta_class(
             current_page=self.__page,
             last_page=self.__last_page or math.ceil(self.__total / self.__per_page),

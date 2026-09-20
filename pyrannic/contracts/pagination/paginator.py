@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from pyrannic.contracts.pagination.meta import PaginationMetaInterface
 
 
-class PaginatorInterface[ItemType, MetaType: PaginationMetaInterface](ABC):
+class PaginatorInterface[ItemType](ABC):
     """
     A generic class that describes a paginator. This exposes two public properties:
 
@@ -18,5 +18,8 @@ class PaginatorInterface[ItemType, MetaType: PaginationMetaInterface](ABC):
         pass
 
     @abstractmethod
-    def meta(self, meta_class: type[MetaType]) -> MetaType:
+    def meta(
+        self,
+        meta_class: type[PaginationMetaInterface],
+    ) -> PaginationMetaInterface:
         pass

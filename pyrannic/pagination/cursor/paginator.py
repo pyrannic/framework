@@ -1,10 +1,11 @@
 from typing import Any
 
+from pyrannic.contracts.pagination.meta import PaginationMetaInterface
 from pyrannic.contracts.pagination.paginator import PaginatorInterface
 from pyrannic.pagination.cursor.meta import PaginationMeta
 
 
-class Paginator[ItemType](PaginatorInterface[ItemType, PaginationMeta]):
+class Paginator[ItemType](PaginatorInterface[ItemType]):
     """
     A generic class that describes a paginator based in cursor pagination.
     This exposes two public properties:
@@ -40,7 +41,14 @@ class Paginator[ItemType](PaginatorInterface[ItemType, PaginationMeta]):
     def items(self) -> list[ItemType]:
         return self.__items
 
-    def meta(self, meta_class: type[PaginationMeta] = PaginationMeta) -> PaginationMeta:
+    def meta(
+        self,
+        meta_class: type[PaginationMetaInterface] = PaginationMeta,
+    ) -> PaginationMetaInterface:
+        assert issubclass(meta_class, PaginationMeta), (
+            "meta_class must be a subclass of PaginationMeta"
+        )
+
         return meta_class(
             previous_page=self.__previous_page,
             next_page=self.__next_page,
