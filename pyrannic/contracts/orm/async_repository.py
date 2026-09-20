@@ -10,7 +10,7 @@ class AsyncRepositoryInterface[T](ABC):
         """Insert a new record into the database."""
 
     @abstractmethod
-    async def update(self, model: T) -> T:
+    async def save(self, model: T) -> T:
         """Update an existing record in the database."""
 
     @abstractmethod

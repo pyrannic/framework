@@ -10,7 +10,7 @@ class RepositoryInterface[T](ABC):
         """Insert a new record into the database."""
 
     @abstractmethod
-    def update(self, model: T) -> T:
+    def save(self, model: T) -> T:
         """Update an existing record in the database."""
 
     @abstractmethod

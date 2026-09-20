@@ -85,7 +85,7 @@ async def test_repository_create_raises_exception(
 
 
 @pytest.mark.asyncio
-async def test_repository_update(application: ApplicationInterface) -> None:
+async def test_repository_save(application: ApplicationInterface) -> None:
     repository = await application.container.make(FooRepository)
 
     model = repository.create(FooModel(name="Old Name"))
@@ -96,7 +96,7 @@ async def test_repository_update(application: ApplicationInterface) -> None:
     assert model.name == "Old Name"
 
     model.name = "New Name"
-    model = repository.update(model)
+    model = repository.save(model)
     assert model.name == "New Name"
 
     model = repository.find(model.id)
@@ -105,7 +105,7 @@ async def test_repository_update(application: ApplicationInterface) -> None:
 
 
 @pytest.mark.asyncio
-async def test_repository_update_raises_exception(
+async def test_repository_save_raises_exception(
     application: ApplicationInterface,
     monkeypatch: MonkeyPatch,
     caplog: LogCaptureFixture,
@@ -122,7 +122,7 @@ async def test_repository_update_raises_exception(
 
     with pytest.raises(ArgumentError):
         model.name = "New Name"
-        repository.update(model)
+        repository.save(model)
 
     assert "Rolling Back" in caplog.text
     assert "Error updating model" in caplog.text
