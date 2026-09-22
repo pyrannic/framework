@@ -7,6 +7,7 @@ from pyrannic.contracts.http.resources.collection import (
     ResourceCollectionInterface,
 )
 from pyrannic.contracts.http.resources.resource import ResourceInterface
+from pyrannic.contracts.pagination.meta import PaginationMetaInterface
 from pyrannic.contracts.pagination.paginator import PaginatorInterface
 from pyrannic.contracts.support.serializable import SerializableInterface
 from pyrannic.pagination.meta import PaginationMeta
@@ -24,7 +25,7 @@ type ItemsType[ResourceType_co: ResourceInterface] = (
 # NOTE: FastAPI seems that doesn't support type parameters to auto generate the API documentation, so generic class is used instead.
 class _ResourceCollection(ResourceCollectionInterface, Generic[ResourceType_co]):  # noqa: UP046
     __resource_cls__: type[ResourceType_co]
-    __meta_cls__: type[PaginationMeta] = PaginationMeta
+    __meta_cls__: type[PaginationMetaInterface] = PaginationMeta
 
     data: list[ResourceType_co]
 
