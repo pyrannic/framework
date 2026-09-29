@@ -50,7 +50,7 @@ class Configuration(ConfigurationInterface, BaseSettings):
         return f"{self.config_key.upper()}_"
 
     def to_dict(self) -> dict[str, Any]:
-        return self.model_dump()
+        return self.model_dump(by_alias=True)
 
     @classmethod
     def settings_customise_sources(
