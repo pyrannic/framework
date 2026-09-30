@@ -6,7 +6,7 @@ def test_properties():
 
 
 def test_columns():
-    assert BarModel.columns == ["id", "name", "parent_id"]
+    assert BarModel.columns() == ["id", "name", "parent_id"]
 
 
 def test_primary_keys_full():

@@ -23,9 +23,9 @@ class Inspectionable(DeclarativeBase):
     def properties(self) -> list[str]:
         return [item[0] for item in vars(self).items() if isinstance(item[1], property)]
 
-    @classproperty
-    def columns(self) -> list[str]:
-        return inspect(self).columns.keys()  # type: ignore
+    @classmethod
+    def columns(cls) -> list[str]:
+        return inspect(cls).columns.keys()  # type: ignore
 
     @classproperty
     def primary_keys_full(self) -> list[MapperProperty[Any]]:

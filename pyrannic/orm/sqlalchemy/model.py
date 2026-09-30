@@ -11,7 +11,7 @@ class BaseModel(DeclarativeBase):
     __abstract__ = True
 
 
-class Model(BaseModel, AbstractModel, Serializable):
+class Model(BaseModel, Serializable, AbstractModel):
     __abstract__ = True
 
     def __init__(self, **kwargs: Any):
