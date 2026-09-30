@@ -24,6 +24,10 @@ class Model(BaseModel, Serializable, AbstractModel):
         return self.tablename()
 
     @classmethod
+    def effective_column_name(cls, column_name: str) -> str:
+        return column_name
+
+    @classmethod
     def primary_key_column(cls) -> ColumnExpressionArgument[Any]:
         return next(iter(cls.__table__.primary_key.columns))  # type: ignore
 

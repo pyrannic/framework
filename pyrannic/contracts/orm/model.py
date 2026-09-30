@@ -28,3 +28,8 @@ class ModelInterface:
     @abstractmethod
     def columns(cls) -> list[str]:
         """Return the columns for the model."""
+
+    @classmethod
+    @abstractmethod
+    def effective_column_name(cls, column_name: str) -> str:
+        """Return the effective column name for the given column."""
