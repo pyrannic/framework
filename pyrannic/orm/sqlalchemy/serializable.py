@@ -25,7 +25,7 @@ class Serializable(Inspectionable, SerializableInterface):
         :return: dict
         """
         result = dict[str, Any]()
-        columns: list[str] = self.columns + self.properties
+        columns: list[str] = self.columns() + self.properties
 
         if exclude is None:
             view_cols = columns
