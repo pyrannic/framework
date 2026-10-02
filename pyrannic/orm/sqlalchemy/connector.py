@@ -159,6 +159,9 @@ class Connector(AbstractConnector[Engine, sessionmaker[Session]]):
         await self._connection_driver.disconnect()
         self.engine.dispose()
 
+    async def __ioc_close__(self) -> None:
+        await self.disconnect()
+
     @property
     def engine(self) -> Engine:
         """
@@ -212,6 +215,9 @@ class AsyncConnector(AbstractConnector[AsyncEngine, async_sessionmaker[AsyncSess
     async def disconnect(self) -> None:
         await self._connection_driver.disconnect()
         await self.engine.dispose()
+
+    async def __ioc_close__(self) -> None:
+        await self.disconnect()
 
     @property
     def engine(self) -> AsyncEngine:
