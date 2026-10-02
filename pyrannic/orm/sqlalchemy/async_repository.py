@@ -24,8 +24,9 @@ class AsyncRepository(AsyncQueryBuilder[T], AsyncRepositoryInterface[T]):
 
     async def save(self, model: T) -> T:
         try:
-            model = await self.session.merge(model)
+            await self.session.merge(model)
             await self.session.commit()
+            await self.session.refresh(model)
             return model
         except Exception:
             await self.session.rollback()

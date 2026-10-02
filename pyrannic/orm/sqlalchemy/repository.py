@@ -24,8 +24,9 @@ class Repository(QueryBuilder[T], RepositoryInterface[T]):
 
     def save(self, model: T) -> T:
         try:
-            model = self.session.merge(model)
+            self.session.merge(model)
             self.session.commit()
+            self.session.refresh(model)
             return model
         except Exception:
             self.session.rollback()
