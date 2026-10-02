@@ -25,6 +25,9 @@ class DatabaseManager(ConnectorInterface):
     async def disconnect(self) -> None:
         await self._connector.disconnect()
 
+    async def __ioc_close__(self) -> None:
+        await self.disconnect()
+
     def _get_migrations(
         self,
         migrations: list[type[MigrationInterface]] | None = None,

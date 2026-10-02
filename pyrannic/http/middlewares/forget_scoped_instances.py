@@ -11,16 +11,16 @@ from pyrannic.contracts.application import ApplicationInterface
 
 class ForgetScopedInstancesMiddleware(BaseHTTPMiddleware):
     async def _close_if_possible(self, value: Any) -> None:
-        close = getattr(value, "aclose", None)
-        if callable(close):
-            result = close()
-            if isawaitable(result):
-                await result
-            return
+        close_callbacks = ["aclose", "close", "__ioc_close__"]
+        close_method = None
 
-        close = getattr(value, "close", None)
-        if callable(close):
-            result = close()
+        for callback_name in close_callbacks:
+            close_method = getattr(value, callback_name, None)
+            if close_method is not None and callable(close_method):
+                break
+
+        if close_method is not None:
+            result = close_method()
             if isawaitable(result):
                 await result
 
