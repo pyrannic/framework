@@ -14,8 +14,12 @@ class HasTimestamp(BaseModel):
 
 
 class HasTimestamps(HasTimestamp):
-    updated_at: datetime = Field()
+    updated_at: datetime | None = Field(default=None)
 
     @field_serializer("updated_at", when_used="json")
-    def serialize_updated_at(self, updated_at: datetime):
-        return encode_datetime_to_iso_8601_with_z_suffix(updated_at)
+    def serialize_updated_at(self, updated_at: datetime | None):
+        return (
+            encode_datetime_to_iso_8601_with_z_suffix(updated_at)
+            if updated_at is not None
+            else None
+        )
