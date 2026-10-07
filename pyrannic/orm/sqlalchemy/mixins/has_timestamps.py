@@ -39,7 +39,7 @@ class HasTimestamps(HasTimestamp, HasTimestampsInterface):
         self.updated_at = updated_at
 
     @declared_attr
-    def updated_at(self) -> Mapped[datetime]:
+    def updated_at(self) -> Mapped[datetime | None]:
         return mapped_column(
             DateTime(timezone=True),
             server_default=func.now(),
