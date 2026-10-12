@@ -5,3 +5,5 @@ from .config.connections_config import ConnectionsConfig as ConnectionsConfig
 from .config.postgresql_config import PostgresqlConfig as PostgresqlConfig
 from .config.sqlite_config import SqliteConfig as SqliteConfig
 from .migration import Migration as Migration
+from .query.builder import QueryBuilder as QueryBuilder
+from .query.grammar import Grammar as Grammar
