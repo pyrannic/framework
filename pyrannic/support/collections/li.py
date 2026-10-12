@@ -9,3 +9,14 @@ def wrap(value: Any) -> list[Any]:
         return cast(list[Any], value)
     else:
         return [value]
+
+
+def flatten(value: list[Any]) -> list[Any]:
+    """Flatten a nested list into a single list."""
+    result: list[Any] = []
+    for item in value:
+        if isinstance(item, list):
+            result.extend(flatten(cast(list[Any], item)))
+        else:
+            result.append(item)
+    return result
