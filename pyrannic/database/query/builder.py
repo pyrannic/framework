@@ -36,6 +36,9 @@ class QueryBuilder(QueryBuilderInterface):
     _wheres: list[WhereClauseInterface]
     """List of WHERE conditions."""
 
+    _groups: list[str | ExpressionInterface]
+    """List of GROUP BY clauses."""
+
     _orders: list[OrderByClauseInterface]
     """List of ORDER BY clauses."""
 
@@ -107,6 +110,7 @@ class QueryBuilder(QueryBuilderInterface):
         self._from = ""
         self._joins = []
         self._wheres = []
+        self._groups = []
         self._orders = []
         self._limit = None
         self._offset = None
@@ -134,6 +138,10 @@ class QueryBuilder(QueryBuilderInterface):
     @property
     def wheres(self) -> list[WhereClauseInterface]:
         return self._wheres
+
+    @property
+    def groups(self) -> list[str | ExpressionInterface]:
+        return self._groups
 
     @property
     def orders(self) -> list[OrderByClauseInterface]:
@@ -403,6 +411,16 @@ class QueryBuilder(QueryBuilderInterface):
 
     def _query_for_nested_where(self) -> Self:
         return self._new_query().from_(self._from)
+
+    def group_by(self, *columns: "str | ExpressionInterface") -> Self:
+        self._groups.extend(columns)
+        return self
+
+    def group_by_raw(self, expression: str, *bindings: Any) -> Self:
+        self._groups.append(self.raw(expression))
+        self.add_binding(*bindings, type="group_by")
+
+        return self
 
     def order_by(
         self,
