@@ -457,10 +457,6 @@ class QueryBuilder(QueryBuilderInterface):
             self.get_bindings(),
         )
 
-    def get(self) -> list[Any]:
-        # TODO
-        raise NotImplementedError()
-
     def raw(self, value: str | float, /) -> ExpressionInterface:
         return Expression(value)
 
@@ -483,3 +479,19 @@ class QueryBuilder(QueryBuilderInterface):
         return isinstance(operator, str) and (
             operator in self.grammar.operators or operator in self._operators
         )
+
+    def get(self) -> list[Any]:
+        return self._process_select(self, self._run_select())
+
+    def _process_select(
+        self,
+        builder: QueryBuilderInterface,
+        results: list[Any],
+        /,
+    ) -> list[Any]:
+        # TODO
+        raise NotImplementedError()  # pragma: no cover
+
+    def _run_select(self) -> list[Any]:
+        # TODO
+        raise NotImplementedError()  # pragma: no cover

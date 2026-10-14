@@ -1,3 +1,5 @@
+import pytest
+
 from pyrannic.contracts.database import (
     JoinBuilderInterface,
     QueryBuilderInterface,
@@ -81,6 +83,19 @@ def test_select_raw():
         sql
         == 'SELECT INFORMATION_SCHEMA.COLUMNS.ordinal_position FROM "users" OFFSET 5'
     )
+
+
+def test_select_raw_with_bindings():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.select_raw(
+        "INFORMATION_SCHEMA.COLUMNS.ordinal_position = ?", "5"
+    ).from_("users")
+    sql = query_builder.to_sql()
+
+    assert sql == 'SELECT INFORMATION_SCHEMA.COLUMNS.ordinal_position = ? FROM "users"'
+    assert query_builder.get_bindings() == ["5"]
 
 
 def test_distinct():
@@ -370,6 +385,26 @@ def test_to_sql_with_nested_where():
     assert query_builder.get_bindings() == [1, "bar", "qux"]
 
 
+def test_to_sql_with_empty_where_nested():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.select("id").from_("users").where_nested(lambda qb: None)
+    sql = query_builder.to_sql()
+
+    assert sql == 'SELECT "id" FROM "users"'
+
+
+def test_to_sql_with_where_column():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.select("id").from_("users").where_column("id", "user_id")
+    sql = query_builder.to_sql()
+
+    assert sql == 'SELECT "id" FROM "users" WHERE "id" = "user_id"'
+
+
 def test_to_sql_with_simple_select_join():
     grammar = Grammar()
     query_builder = QueryBuilder(grammar)
@@ -514,3 +549,14 @@ def test_to_sql_with_offset():
     sql = query_builder.to_sql()
 
     assert sql == 'SELECT DISTINCT "id" FROM "users" OFFSET 5'
+
+
+def test_add_binding_raises_invalid_type():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    with pytest.raises(ValueError) as exc_info:
+        query_builder.add_binding(1, type="invalid")
+
+    error = str(exc_info.value)
+    assert "Invalid binding type: 'invalid'" in error
