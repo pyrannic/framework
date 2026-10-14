@@ -10,7 +10,10 @@ class Expression(ExpressionInterface):
         return self._value
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Expression):
+        if not isinstance(other, (Expression, str, int, float)):
             return False
 
-        return self._value == other._value
+        if isinstance(other, Expression):
+            return self._value == other._value
+
+        return self._value == other

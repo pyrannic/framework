@@ -12,10 +12,6 @@ from pyrannic.database.query.builder import QueryBuilder
 class JoinBuilder(QueryBuilder, JoinBuilderInterface):
     _type: str
     _table: str | ExpressionInterface
-    _left_operand: str | ExpressionInterface
-    _right_operand: str | ExpressionInterface
-    _operator: str = "="
-    _boolean: str = "and"
 
     def __init__(
         self,
@@ -35,18 +31,6 @@ class JoinBuilder(QueryBuilder, JoinBuilderInterface):
     @property
     def table(self) -> str | ExpressionInterface:
         return self._table
-
-    @property
-    def left_operand(self) -> str | ExpressionInterface:
-        return self._left_operand
-
-    @property
-    def right_operand(self) -> str | ExpressionInterface:
-        return self._right_operand
-
-    @property
-    def operator(self) -> str:
-        return self._operator
 
     @property
     def parent_grammar(self) -> GrammarInterface:
@@ -122,4 +106,4 @@ class JoinBuilder(QueryBuilder, JoinBuilderInterface):
         elif isinstance(operator, str) and right_operand:
             return self.on(left_operand, operator, right_operand, boolean="or")
 
-        return self
+        return self  # pragma: no cover

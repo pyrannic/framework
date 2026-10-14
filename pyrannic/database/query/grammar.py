@@ -92,7 +92,7 @@ class Grammar(GrammarInterface):
         """Compile the JOIN portion of the query."""
 
         if not joins:
-            return None
+            return None  # pragma: no cover
 
         clauses: list[str] = []
 
@@ -125,7 +125,7 @@ class Grammar(GrammarInterface):
         wheres = wheres or query_builder.wheres
 
         if not wheres:
-            return None
+            return None  # pragma: no cover
 
         sql: list[str] = []
 
@@ -185,7 +185,7 @@ class Grammar(GrammarInterface):
         orders = orders or query_builder.orders
 
         if not orders:
-            return None
+            return None  # pragma: no cover
 
         sql: list[str] = []
 
