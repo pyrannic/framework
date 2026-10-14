@@ -47,6 +47,11 @@ class QueryBuilderInterface(ABC):
 
     @property
     @abstractmethod
+    def groups(self) -> list["str | ExpressionInterface"]:
+        """Get the list of GROUP BY clauses for the query."""
+
+    @property
+    @abstractmethod
     def orders(self) -> list[OrderByClauseInterface]:
         """Get the list of ORDER BY clauses."""
 
@@ -278,6 +283,14 @@ class QueryBuilderInterface(ABC):
         boolean: str = "and",
     ) -> Self:
         """Add a nested WHERE condition to the query."""
+
+    @abstractmethod
+    def group_by(self, *columns: "str | ExpressionInterface") -> Self:
+        """Add a GROUP BY clause to the query based on the specified columns."""
+
+    @abstractmethod
+    def group_by_raw(self, expression: str, *bindings: Any) -> Self:
+        """Add a GROUP BY clause using a raw expression."""
 
     @abstractmethod
     def order_by(

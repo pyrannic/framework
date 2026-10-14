@@ -175,6 +175,20 @@ class Grammar(GrammarInterface):
 
         return f"({sql[offset:]})"
 
+    def _compile_groups(
+        self,
+        query_builder: QueryBuilderInterface,
+        groups: list[str | ExpressionInterface] | None = None,
+    ) -> str | None:
+        """Compile the GROUP BY portion of the query."""
+
+        groups = groups or query_builder.groups
+
+        if not groups:
+            return None  # pragma: no cover
+
+        return f"GROUP BY {self.columnize(*groups)}"
+
     def _compile_orders(
         self,
         query_builder: QueryBuilderInterface,

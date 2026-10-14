@@ -1,6 +1,7 @@
 import pytest
 
 from pyrannic.contracts.database import (
+    ExpressionInterface,
     JoinBuilderInterface,
     QueryBuilderInterface,
     SortDirection,
@@ -205,6 +206,28 @@ def test_or_where_simple_with_operator():
     assert where_clause.boolean == "or"
 
 
+def test_group_by():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.group_by("foo", "bar")
+    groups = query_builder.groups
+
+    assert "foo" in groups
+    assert "bar" in groups
+
+
+def test_group_by_raw():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.group_by_raw("foo, bar")
+    group = query_builder.groups[0]
+
+    assert isinstance(group, ExpressionInterface)
+    assert group.get_value(grammar) == "foo, bar"
+
+
 def test_order_by():
     grammar = Grammar()
     query_builder = QueryBuilder(grammar)
@@ -403,6 +426,26 @@ def test_to_sql_with_where_column():
     sql = query_builder.to_sql()
 
     assert sql == 'SELECT "id" FROM "users" WHERE "id" = "user_id"'
+
+
+def test_to_sql_with_group_by():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.select("id").from_("users").group_by("foo", "bar")
+    sql = query_builder.to_sql()
+
+    assert sql == 'SELECT "id" FROM "users" GROUP BY "foo", "bar"'
+
+
+def test_to_sql_with_group_by_raw():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.select("id").from_("users").group_by_raw("foo, bar")
+    sql = query_builder.to_sql()
+
+    assert sql == 'SELECT "id" FROM "users" GROUP BY foo, bar'
 
 
 def test_to_sql_with_simple_select_join():
