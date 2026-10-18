@@ -5,10 +5,12 @@ from pyrannic.contracts.database import (
     ExpressionInterface,
     GrammarInterface,
     JoinBuilderInterface,
+    JoinLateralBuilderInterface,
     OrderByClauseInterface,
     QueryBuilderInterface,
     WhereClauseInterface,
 )
+from pyrannic.database.query.clauses.aggregate import AggregateClause
 
 _IDENTIFIER_PATTERN: re.Pattern[str] = re.compile(
     r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)?$"
@@ -58,6 +60,23 @@ class Grammar(GrammarInterface):
 
         return sql
 
+    def _compile_aggregate(
+        self,
+        query_builder: QueryBuilderInterface,
+        aggregate: AggregateClause,
+    ) -> str | None:
+        """Compile the SELECT portion of the query when an aggregate is present."""
+
+        aggregate = aggregate or query_builder.aggregate
+
+        if not aggregate:
+            return None  # pragma: no cover
+
+        function = aggregate.function.upper()
+        columns = self.columnize(*aggregate.columns)
+
+        return f"SELECT {function}({columns}) as {self.wrap('aggregate')}"
+
     def _compile_columns(
         self,
         query_builder: QueryBuilderInterface,
@@ -65,9 +84,9 @@ class Grammar(GrammarInterface):
     ) -> str | None:
         """Compile the SELECT portion of the query."""
 
-        # TODO - Let to the aggregate compiler to handle the SELECT clause when an aggregate is present.
-        # if query_builder.aggregate:
-        #    return None
+        # Let to the aggregate compiler to handle the SELECT clause when an aggregate is present.
+        if query_builder.aggregate:
+            return None
 
         select = "SELECT"
 
@@ -109,9 +128,12 @@ class Grammar(GrammarInterface):
                 table if not join.joins else f"({table}{nested_joins})"
             )
 
-            clauses.append(
-                f"{join.type.upper()} JOIN {table_and_nested_joins} {self._compile_wheres(join)}"
-            )
+            if isinstance(join, JoinLateralBuilderInterface):
+                clauses.append(self.compile_join_lateral(join, table_and_nested_joins))
+            else:
+                clauses.append(
+                    f"{join.type.upper()} JOIN {table_and_nested_joins} {self._compile_wheres(join)}"
+                )
 
         return " ".join(clauses)
 
@@ -151,9 +173,23 @@ class Grammar(GrammarInterface):
     ) -> str | None:
         """Compile a basic WHERE clause."""
         value = self.parameter(where.value)
-        operator = where.operator.replace("?", "??")
+        return f"{self.wrap(where.column)} {where.operator} {value}"
 
-        return f"{self.wrap(where.column)} {operator} {value}"
+    def _compile_where_null(
+        self,
+        _: QueryBuilderInterface,
+        where: WhereClauseInterface,
+    ) -> str | None:
+        """Compile a NULL WHERE clause."""
+        return f"{self.wrap(where.column)} IS NULL"
+
+    def _compile_where_not_null(
+        self,
+        _: QueryBuilderInterface,
+        where: WhereClauseInterface,
+    ) -> str | None:
+        """Compile a NOT NULL WHERE clause."""
+        return f"{self.wrap(where.column)} IS NOT NULL"
 
     def _compile_where_column(
         self,
@@ -162,7 +198,7 @@ class Grammar(GrammarInterface):
     ) -> str | None:
         """Compile a column-based WHERE clause."""
         assert where.value is not None, "Column-based WHERE clause requires a value"
-        return f"{self.wrap(where.column)} {where.operator.replace('?', '??')} {self.wrap(where.value)}"
+        return f"{self.wrap(where.column)} {where.operator} {self.wrap(where.value)}"
 
     def _compile_where_nested(
         self,
@@ -220,7 +256,7 @@ class Grammar(GrammarInterface):
         return f"OFFSET {int(offset)}"
 
     def parameter(self, value: str | float | bool | ExpressionInterface | None) -> str:
-        return "?"
+        return "%s"
 
     def get_value(
         self,
@@ -322,6 +358,6 @@ class Grammar(GrammarInterface):
 
     def substitute_bindings_into_raw_sql(self, sql: str, bindings: list[Any]) -> str:
         for binding in bindings:
-            sql = sql.replace("?", self.escape(binding), 1)
+            sql = sql.replace("%s", self.escape(binding), 1)
 
         return sql

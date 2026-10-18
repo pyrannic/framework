@@ -380,7 +380,7 @@ def test_to_sql_with_simple_where():
     query_builder.select("id").from_("users").where("id", 1)
     sql = query_builder.to_sql()
 
-    assert sql == 'SELECT "id" FROM "users" WHERE "id" = ?'
+    assert sql == 'SELECT "id" FROM "users" WHERE "id" = %s'
     assert query_builder.get_bindings() == [1]
 
 
@@ -391,7 +391,7 @@ def test_to_sql_with_simple_or_where():
     query_builder.select("id").from_("users").where("id", 1).or_where("name", "john")
     sql = query_builder.to_sql()
 
-    assert sql == 'SELECT "id" FROM "users" WHERE "id" = ? OR "name" = ?'
+    assert sql == 'SELECT "id" FROM "users" WHERE "id" = %s OR "name" = %s'
     assert query_builder.get_bindings() == [1, "john"]
 
 
@@ -404,7 +404,9 @@ def test_to_sql_with_nested_where():
     )
     sql = query_builder.to_sql()
 
-    assert sql == 'SELECT "id" FROM "users" WHERE "id" = ? OR ("foo" = ? AND "baz" = ?)'
+    assert (
+        sql == 'SELECT "id" FROM "users" WHERE "id" = %s OR ("foo" = %s AND "baz" = %s)'
+    )
     assert query_builder.get_bindings() == [1, "bar", "qux"]
 
 
