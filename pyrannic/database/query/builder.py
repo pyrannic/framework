@@ -2,6 +2,7 @@ from collections.abc import Callable
 from typing import Any, Self, overload
 
 from pyrannic.contracts.database import (
+    AggregateClauseInterface,
     GrammarInterface,
     OrderByClauseInterface,
     QueryBuilderInterface,
@@ -11,6 +12,7 @@ from pyrannic.contracts.database import (
 from pyrannic.contracts.database.query.expression import ExpressionInterface
 from pyrannic.contracts.database.query.join_builder import JoinBuilderInterface
 from pyrannic.database.query.clauses import OrderByClause, WhereClause
+from pyrannic.database.query.clauses.aggregate import AggregateClause
 from pyrannic.database.query.expression import Expression
 from pyrannic.ioc import Resolves
 from pyrannic.support.collections import li
@@ -18,11 +20,14 @@ from pyrannic.support.collections.dict import flatten
 
 
 class QueryBuilder(QueryBuilderInterface):
+    _aggregate: AggregateClauseInterface | None
+    """Aggregate functions to be applied."""
+
     _columns: list[str | ExpressionInterface]
     """List of columns to be selected."""
 
-    _distinct = False
-    """Indicates whether the query should select distinct results."""
+    _distinct: list[str | ExpressionInterface]
+    """List of columns for which the query should select distinct results."""
 
     _grammar: GrammarInterface
     """Grammar interface for building SQL queries."""
@@ -105,7 +110,8 @@ class QueryBuilder(QueryBuilderInterface):
             "union": [],
             "unionOrder": [],
         }
-        self._distinct = False
+        self._distinct = []
+        self._aggregate = None
         self._columns = []
         self._from = ""
         self._joins = []
@@ -120,11 +126,19 @@ class QueryBuilder(QueryBuilderInterface):
         return self._grammar
 
     @property
+    def aggregate(self) -> AggregateClauseInterface | None:
+        return self._aggregate
+
+    @property
     def columns(self) -> list[str | ExpressionInterface]:
         return self._columns
 
     @property
     def is_distinct(self) -> bool:
+        return len(self._distinct) > 0
+
+    @property
+    def distinct_columns(self) -> list[str | ExpressionInterface]:
         return self._distinct
 
     @property
@@ -174,8 +188,17 @@ class QueryBuilder(QueryBuilderInterface):
 
         return self
 
-    def distinct(self) -> Self:
-        self._distinct = True
+    def distinct(self, *columns: str | ExpressionInterface) -> Self:
+        self._distinct = list(columns) if columns else ["*"]
+        return self
+
+    def set_aggregate(self, function: str, *columns: str | ExpressionInterface) -> Self:
+        self._aggregate = AggregateClause(function, list(columns))
+
+        if not self._groups:
+            self._orders = []
+            self._bindings["order_by"] = []
+
         return self
 
     def from_(self, table: str, as_: str | None = None) -> Self:
@@ -186,7 +209,7 @@ class QueryBuilder(QueryBuilderInterface):
     def join(
         self,
         expression: "ExpressionInterface",
-        callback: Callable[["JoinBuilderInterface"], None],
+        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
         /,
         *,
         type: str | None = None,
@@ -198,7 +221,7 @@ class QueryBuilder(QueryBuilderInterface):
     def join(
         self,
         table: str,
-        callback: Callable[["JoinBuilderInterface"], None],
+        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
         /,
         *,
         type: str | None = None,
@@ -236,7 +259,9 @@ class QueryBuilder(QueryBuilderInterface):
     def join(
         self,
         table_or_expression: str | ExpressionInterface,
-        left_operand: str | Callable[[JoinBuilderInterface], None] | None = None,
+        left_operand: str
+        | Callable[[JoinBuilderInterface], "QueryBuilderInterface | None"]
+        | None = None,
         operator: str | None = None,
         right_operand: str | None = None,
         /,
@@ -258,6 +283,129 @@ class QueryBuilder(QueryBuilderInterface):
         self.add_binding(*join_builder.get_bindings(), type="join")
 
         return self
+
+    @overload
+    def join_lateral(self, query: QueryBuilderInterface, /, as_: str) -> Self:
+        """Add a LATERAL JOIN clause to the query."""
+
+    @overload
+    def join_lateral(
+        self,
+        query: Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        /,
+        as_: str,
+    ) -> Self:
+        """Add a LATERAL JOIN clause to the query."""
+
+    def join_lateral(
+        self,
+        query: QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        /,
+        as_: str,
+        type: str | None = None,
+    ) -> Self:
+        from pyrannic.database.query.join_lateral_builder import JoinLateralBuilder
+
+        join_query, bindings = self._create_subquery(query)
+
+        self._joins.append(
+            JoinLateralBuilder(
+                self,
+                type or "inner",
+                self.raw(f"({join_query}) as {self._grammar.wrap_table(as_)}"),
+            )
+        )
+        self.add_binding(*bindings, type="join")
+
+        return self
+
+    @overload
+    def left_join_lateral(self, query: QueryBuilderInterface, /, as_: str) -> Self:
+        """Add a LEFT LATERAL JOIN clause to the query."""
+
+    @overload
+    def left_join_lateral(
+        self,
+        query: Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        /,
+        as_: str,
+    ) -> Self:
+        """Add a LEFT LATERAL JOIN clause to the query."""
+
+    def left_join_lateral(
+        self,
+        query: QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        /,
+        as_: str,
+    ) -> Self:
+        return self.join_lateral(query, as_, type="left")  # type: ignore
+
+    @overload
+    def left_join(
+        self,
+        expression: "ExpressionInterface",
+        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
+        /,
+    ) -> Self:
+        """Add a LEFT JOIN clause to the query using a callback for the join condition."""
+
+    @overload
+    def left_join(
+        self,
+        table: str,
+        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
+        /,
+    ) -> Self:
+        """Add a LEFT JOIN clause to the query using a callback for the join condition."""
+
+    @overload
+    def left_join(
+        self,
+        table: str,
+        left_operand: str,
+        right_operand: str,
+        /,
+    ) -> Self:
+        """Add a LEFT JOIN clause to the query."""
+
+    @overload
+    def left_join(
+        self,
+        table: str,
+        left_operand: str,
+        operator: str | None = None,
+        right_operand: str | None = None,
+        /,
+    ) -> Self:
+        """Add a LEFT JOIN clause to the query."""
+
+    def left_join(
+        self,
+        table_or_expression: "str | ExpressionInterface",
+        left_operand: str
+        | Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"]
+        | None = None,
+        operator: str | None = None,
+        right_operand: str | None = None,
+        /,
+    ) -> Self:
+        if callable(left_operand):
+            return self.join(table_or_expression, left_operand, type="left")
+
+        assert isinstance(table_or_expression, str), (
+            "Table name must be provided for a LEFT JOIN"
+        )
+        assert left_operand is not None, "Left operand must be provided for a LEFT JOIN"
+
+        return self.join(
+            table_or_expression,
+            left_operand,
+            operator,
+            right_operand,
+            type="left",
+        )
 
     @overload
     def where(
@@ -384,6 +532,26 @@ class QueryBuilder(QueryBuilderInterface):
 
         return self
 
+    def where_null(
+        self,
+        *columns: "str | ExpressionInterface",
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        self._wheres.extend(
+            WhereClause(col, boolean=boolean, type="not_null" if not_ else "null")
+            for col in columns
+        )
+
+        return self
+
+    def where_not_null(
+        self,
+        *column: "str | ExpressionInterface",
+        boolean: str = "and",
+    ) -> Self:
+        return self.where_null(*column, boolean=boolean, not_=True)
+
     def where_nested(
         self,
         callback: Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
@@ -498,18 +666,79 @@ class QueryBuilder(QueryBuilderInterface):
             operator in self.grammar.operators or operator in self._operators
         )
 
-    def get(self) -> list[Any]:
-        return self._process_select(self, self._run_select())
+    def clone(self) -> Self:
+        cloned = type(self)(self._grammar)
+        cloned._columns = self._columns.copy()
+        cloned._distinct = self._distinct
+        cloned._from = self._from
+        cloned._joins = self._joins.copy()
+        cloned._wheres = self._wheres.copy()
+        cloned._groups = self._groups.copy()
+        cloned._orders = self._orders.copy()
+        cloned._limit = self._limit
+        cloned._offset = self._offset
+        cloned._bindings = {k: v.copy() for k, v in self._bindings.items()}
+        cloned._operators = self._operators.copy()
 
-    def _process_select(
+        return cloned
+
+    @overload
+    def clone_without(self, *attributes: str) -> Self:
+        """Clone the query builder without the specified attributes."""
+
+    @overload
+    def clone_without(
         self,
-        builder: QueryBuilderInterface,
-        results: list[Any],
-        /,
-    ) -> list[Any]:
-        # TODO
-        raise NotImplementedError()  # pragma: no cover
+        *,
+        attributes: list[str],
+        bindings: list[str],
+    ) -> Self:
+        """Clone the query builder without the specified attributes and bindings."""
 
-    def _run_select(self) -> list[Any]:
-        # TODO
-        raise NotImplementedError()  # pragma: no cover
+    def clone_without(
+        self,
+        *args: str,
+        attributes: list[str] | None = None,
+        bindings: list[str] | None = None,
+    ) -> Self:
+        cloned = self.clone()
+        attributes = list(args) if not attributes else attributes
+
+        for attr in attributes:
+            if attr == "from":
+                cloned._from = ""
+            elif isinstance(getattr(cloned, f"_{attr}", None), list):
+                setattr(cloned, f"_{attr}", [])
+            elif hasattr(cloned, f"_{attr}"):
+                setattr(cloned, f"_{attr}", None)
+
+        for binding in bindings or []:
+            if binding in cloned._bindings:
+                cloned._bindings[binding] = []
+
+        return cloned
+
+    def __copy__(self) -> Self:
+        return self.clone()
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> Self:
+        return self.clone()
+
+    def _create_subquery(
+        self,
+        query: QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+    ) -> tuple[str, list[Any]]:
+        if callable(query):
+            subquery = type(self)(self._grammar)
+            query(subquery)
+        else:
+            subquery = query
+
+        return self._parse_subquery(subquery)
+
+    def _parse_subquery(
+        self,
+        query: QueryBuilderInterface,
+    ) -> tuple[str, list[Any]]:
+        return query.to_sql(), query.get_bindings()

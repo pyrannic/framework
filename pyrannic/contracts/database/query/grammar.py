@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
 from pyrannic.contracts.database.query.builder import QueryBuilderInterface
+from pyrannic.contracts.database.query.join_lateral_builder import (
+    JoinLateralBuilderInterface,
+)
 
 if TYPE_CHECKING:
     from pyrannic.contracts.database.query.expression import ExpressionInterface
@@ -20,6 +23,18 @@ class GrammarInterface(ABC):
         """
         Compile a SELECT query into its SQL representation.
         """
+
+    def compile_join_lateral(
+        self,
+        join: JoinLateralBuilderInterface,
+        expression: str,
+    ) -> str:
+        """
+        Compile a lateral join clause.
+        """
+        raise NotImplementedError(
+            "This database engine does not support lateral joins."
+        )
 
     @abstractmethod
     def get_value(
