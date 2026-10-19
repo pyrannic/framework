@@ -321,6 +321,60 @@ class QueryBuilder(QueryBuilderInterface):
         return self
 
     @overload
+    def join_sub(
+        self,
+        query: "QueryBuilderInterface",
+        as_: str,
+        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
+        /,
+        *,
+        type: str | None = None,
+        where: bool = False,
+    ) -> Self:
+        """Add a JOIN subquery to the query."""
+
+    @overload
+    def join_sub(
+        self,
+        query: "QueryBuilderInterface",
+        as_: str,
+        first_column: "str | ExpressionInterface",
+        operator: str | None = None,
+        second_column: "str | ExpressionInterface | None" = None,
+        /,
+        *,
+        type: str | None = None,
+        where: bool = False,
+    ) -> Self:
+        """Add a JOIN subquery to the query."""
+
+    def join_sub(
+        self,
+        query: "QueryBuilderInterface",
+        as_: str,
+        first_column: 'str | ExpressionInterface | Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"]',
+        operator: str | None = None,
+        second_column: "str | ExpressionInterface | None" = None,
+        /,
+        *,
+        type: str | None = None,
+        where: bool = False,
+    ) -> Self:
+        join_query, bindings = self._create_subquery(query)
+
+        self.add_binding(*bindings, type="join")
+        expression = f"({join_query}) as {self._grammar.wrap_table(as_)}"
+
+        return self.join(
+            Expression(expression),
+            first_column,
+            operator,
+            second_column,
+            type=type,
+            where=where,
+        )
+
+    @overload
     def left_join_lateral(self, query: QueryBuilderInterface, /, as_: str) -> Self:
         """Add a LEFT LATERAL JOIN clause to the query."""
 
@@ -404,6 +458,46 @@ class QueryBuilder(QueryBuilderInterface):
             left_operand,
             operator,
             right_operand,
+            type="left",
+        )
+
+    @overload
+    def left_join_sub(
+        self,
+        query: "QueryBuilderInterface",
+        as_: str,
+        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
+        /,
+    ) -> Self:
+        """Add a LEFT JOIN subquery to the query."""
+
+    @overload
+    def left_join_sub(
+        self,
+        query: "QueryBuilderInterface",
+        as_: str,
+        first_column: "str | ExpressionInterface",
+        operator: str | None = None,
+        second_column: "str | ExpressionInterface | None" = None,
+        /,
+    ) -> Self:
+        """Add a LEFT JOIN subquery to the query."""
+
+    def left_join_sub(
+        self,
+        query: "QueryBuilderInterface",
+        as_: str,
+        first_column: 'str | ExpressionInterface | Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"]',
+        operator: str | None = None,
+        second_column: "str | ExpressionInterface | None" = None,
+        /,
+    ) -> Self:
+        return self.join_sub(
+            query,
+            as_,
+            first_column,  # pyright: ignore[reportArgumentType]
+            operator,
+            second_column,
             type="left",
         )
 
