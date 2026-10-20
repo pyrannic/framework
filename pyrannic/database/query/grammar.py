@@ -311,6 +311,9 @@ class Grammar(GrammarInterface):
         if isinstance(value, ExpressionInterface):
             return str(self.get_value(value))
 
+        if isinstance(value, str) and " as " in value.lower():
+            return self._wrap_aliased_value(value)
+
         return self._wrap_segments(str(value).split("."))
 
     def wrap_table(
@@ -322,6 +325,10 @@ class Grammar(GrammarInterface):
             return str(self.get_value(value))
 
         return self._wrap_value(f"{prefix or ''}{value}")
+
+    def _wrap_aliased_value(self, value: str) -> str:
+        table, alias = re.split(r"\s+as\s+", value, maxsplit=1, flags=re.IGNORECASE)
+        return f"{self.wrap(table)} AS {self._wrap_value(alias)}"
 
     def _wrap_segments(self, values: list[str]) -> str:
         count = len(values)
