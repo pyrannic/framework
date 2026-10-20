@@ -657,6 +657,8 @@ class QueryBuilder(QueryBuilderInterface):
     ) -> Self:
         where_type = "not_in" if not_ else "in"
         self._wheres.append(WhereClause(column, "in", values, boolean, where_type))
+        self.add_binding(*values, type="where")
+
         return self
 
     def or_where_in(
