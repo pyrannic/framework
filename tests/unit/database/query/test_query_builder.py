@@ -395,6 +395,19 @@ def test_to_sql_with_simple_or_where():
     assert query_builder.get_bindings() == [1, "john"]
 
 
+def test_to_sql_with_or_where_not_in():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.select("id").from_("users").where("id", 1).or_where_not_in(
+        "id", [1, 2, 3]
+    )
+    sql = query_builder.to_sql()
+
+    assert sql == 'SELECT "id" FROM "users" WHERE "id" = %s OR "id" NOT IN (%s, %s, %s)'
+    assert query_builder.get_bindings() == [1, 1, 2, 3]
+
+
 def test_to_sql_with_nested_where():
     grammar = Grammar()
     query_builder = QueryBuilder(grammar)

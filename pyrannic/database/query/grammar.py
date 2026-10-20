@@ -172,8 +172,36 @@ class Grammar(GrammarInterface):
         where: WhereClauseInterface,
     ) -> str | None:
         """Compile a basic WHERE clause."""
+        assert not isinstance(where.value, list), (
+            "Basic WHERE clause does not support list values. Use the WHERE IN clause instead."
+        )
+
         value = self.parameter(where.value)
         return f"{self.wrap(where.column)} {where.operator} {value}"
+
+    def _compile_where_in(
+        self,
+        _: QueryBuilderInterface,
+        where: WhereClauseInterface,
+    ) -> str | None:
+        """Compile an IN WHERE clause."""
+        assert isinstance(where.value, list) and where.value, (
+            "IN WHERE clause requires a non-empty list of values"
+        )
+
+        return f"{self.wrap(where.column)} IN ({self.parameterize(where.value)})"
+
+    def _compile_where_not_in(
+        self,
+        _: QueryBuilderInterface,
+        where: WhereClauseInterface,
+    ) -> str | None:
+        """Compile a NOT IN WHERE clause."""
+        assert isinstance(where.value, list) and where.value, (
+            "NOT IN WHERE clause requires a non-empty list of values"
+        )
+
+        return f"{self.wrap(where.column)} NOT IN ({self.parameterize(where.value)})"
 
     def _compile_where_null(
         self,
@@ -255,8 +283,20 @@ class Grammar(GrammarInterface):
         """Compile the OFFSET portion of the query."""
         return f"OFFSET {int(offset)}"
 
+    def parameterize(
+        self, values: list[str | float | bool | ExpressionInterface | None]
+    ) -> str:
+        return ", ".join([self.parameter(value) for value in values])
+
     def parameter(self, value: str | float | bool | ExpressionInterface | None) -> str:
-        return "%s"
+        return (
+            "%s"
+            if value is None or not self.is_expression(value)
+            else str(self.get_value(value))
+        )
+
+    def is_expression(self, value: Any) -> bool:
+        return isinstance(value, ExpressionInterface)
 
     def get_value(
         self,

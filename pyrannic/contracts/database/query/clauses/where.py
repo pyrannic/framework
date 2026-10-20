@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from pyrannic.contracts.database.query.builder import QueryBuilderInterface
@@ -24,7 +24,7 @@ class WhereClauseInterface(ABC):
 
     @property
     @abstractmethod
-    def value(self) -> "str | int | float | ExpressionInterface | None":
+    def value(self) -> "str | int | float | ExpressionInterface | list[Any] | None":
         """Get the value for the WHERE clause."""
 
     @property
