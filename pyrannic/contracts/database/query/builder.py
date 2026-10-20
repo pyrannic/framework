@@ -501,6 +501,47 @@ class QueryBuilderInterface(ABC):
         """Add a WHERE NOT NULL condition to the query."""
 
     @abstractmethod
+    def where_in(
+        self,
+        column: "str | ExpressionInterface",
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        """Add an WHERE IN condition to the query."""
+
+    @abstractmethod
+    def or_where_in(
+        self,
+        column: "str | ExpressionInterface",
+        values: list[Any],
+        /,
+    ) -> Self:
+        """Add an OR WHERE IN condition to the query."""
+
+    @abstractmethod
+    def where_not_in(
+        self,
+        column: "str | ExpressionInterface",
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a WHERE NOT IN condition to the query."""
+
+    @abstractmethod
+    def or_where_not_in(
+        self,
+        column: "str | ExpressionInterface",
+        values: list[Any],
+        /,
+    ) -> Self:
+        """Add an OR WHERE NOT IN condition to the query."""
+
+    @abstractmethod
     def where_nested(
         self,
         callback: "Callable[[QueryBuilderInterface], QueryBuilderInterface | None]",

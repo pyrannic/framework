@@ -641,10 +641,49 @@ class QueryBuilder(QueryBuilderInterface):
 
     def where_not_null(
         self,
-        *column: "str | ExpressionInterface",
+        *column: str | ExpressionInterface,
         boolean: str = "and",
     ) -> Self:
         return self.where_null(*column, boolean=boolean, not_=True)
+
+    def where_in(
+        self,
+        column: str | ExpressionInterface,
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        where_type = "not_in" if not_ else "in"
+        self._wheres.append(WhereClause(column, "in", values, boolean, where_type))
+        return self
+
+    def or_where_in(
+        self,
+        column: str | ExpressionInterface,
+        values: list[Any],
+        /,
+    ) -> Self:
+        return self.where_in(column, values, boolean="or")
+
+    def where_not_in(
+        self,
+        column: "str | ExpressionInterface",
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        return self.where_in(column, values, boolean=boolean, not_=True)
+
+    def or_where_not_in(
+        self,
+        column: "str | ExpressionInterface",
+        values: list[Any],
+        /,
+    ) -> Self:
+        return self.where_not_in(column, values, boolean="or")
 
     def where_nested(
         self,
