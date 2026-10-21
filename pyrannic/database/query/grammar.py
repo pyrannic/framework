@@ -39,6 +39,10 @@ class Grammar(GrammarInterface):
         return []
 
     def compile_select(self, query_builder: QueryBuilderInterface) -> str:
+        # The user is not specifying any columns, so we default to selecting all columns.
+        if not query_builder.columns and query_builder.from_clause:
+            query_builder.select()
+
         sql = self._concatenate(*self._compile_components(query_builder)).strip()
         return sql
 
