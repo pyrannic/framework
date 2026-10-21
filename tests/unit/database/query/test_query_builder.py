@@ -363,6 +363,16 @@ def test_to_sql_with_simple_select():
     assert sql == 'SELECT "id" FROM "users"'
 
 
+def test_to_sql_with_no_select():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.from_("users")
+    sql = query_builder.to_sql()
+
+    assert sql == 'SELECT * FROM "users"'
+
+
 def test_to_sql_with_simple_select_and_distinct():
     grammar = Grammar()
     query_builder = QueryBuilder(grammar)
