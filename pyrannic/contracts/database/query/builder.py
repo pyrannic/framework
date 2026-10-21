@@ -625,6 +625,10 @@ class QueryBuilderInterface(ABC):
         """Add a binding value for the query of the specified type."""
 
     @abstractmethod
+    def clean_bindings(self, bindings: list[Any]) -> list[Any]:
+        """Remove any expression bindings from the list of bindings."""
+
+    @abstractmethod
     def clone(self) -> Self:
         """Create a clone of the current query builder instance."""
 

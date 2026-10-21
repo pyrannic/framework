@@ -796,6 +796,9 @@ class QueryBuilder(QueryBuilderInterface):
 
         self._bindings[type].extend(value)
 
+    def clean_bindings(self, bindings: list[Any]) -> list[Any]:
+        return [b for b in bindings if not self._grammar.is_expression(b)]
+
     def _is_valid_operator(self, operator: str | None, /) -> bool:
         return isinstance(operator, str) and (
             operator in self.grammar.operators or operator in self._operators
