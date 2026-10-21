@@ -24,6 +24,32 @@ class GrammarInterface(ABC):
         Compile a SELECT query into its SQL representation.
         """
 
+    @abstractmethod
+    def compile_exists(self, query_builder: QueryBuilderInterface) -> str:
+        """
+        Compile an EXISTS query into its SQL representation.
+        """
+
+    @abstractmethod
+    def compile_insert(
+        self,
+        query_builder: QueryBuilderInterface,
+        values: list[dict[str, Any]],
+    ) -> str:
+        """
+        Compile an INSERT query into its SQL representation.
+        """
+
+    @abstractmethod
+    def compile_update(
+        self,
+        query_builder: QueryBuilderInterface,
+        values: dict[str, Any],
+    ) -> str:
+        """
+        Compile an UPDATE query into its SQL representation.
+        """
+
     def compile_join_lateral(
         self,
         join: JoinLateralBuilderInterface,
@@ -35,6 +61,12 @@ class GrammarInterface(ABC):
         raise NotImplementedError(
             "This database engine does not support lateral joins."
         )
+
+    @abstractmethod
+    def is_expression(self, value: Any) -> bool:
+        """
+        Determine if the given value is an expression.
+        """
 
     @abstractmethod
     def get_value(
@@ -83,4 +115,14 @@ class GrammarInterface(ABC):
     def substitute_bindings_into_raw_sql(self, sql: str, bindings: list[Any]) -> str:
         """
         Substitute the given bindings into the raw SQL string.
+        """
+
+    @abstractmethod
+    def prepare_bindings_for_update(
+        self,
+        bindings: dict[str, list[Any]],
+        values: dict[str, Any],
+    ) -> list[Any]:
+        """
+        Prepare the bindings for an update query.
         """
