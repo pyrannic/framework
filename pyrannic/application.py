@@ -41,6 +41,7 @@ class Application(ApplicationInterface):
             title=Config.string("app.name", title or "Pyrannic Application"),
             debug=Config.boolean("app.debug", debug),
             version=Config.string("app.version", version),
+            openapi_url=Config.optional_str("app.openapi_path"),
             **kwargs,
         )
 
