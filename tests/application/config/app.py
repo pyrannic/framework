@@ -17,6 +17,12 @@ class AppConfig(Configuration):
     stack traces will be shown on every error that occurs within your
     application. If disabled, a simple generic error page is shown."""
 
+    openapi_path: str | None = Field(default="/openapi.json")
+    """
+    This value determines the URL path where the OpenAPI schema will be available.
+    Set this to 'None' to disable the OpenAPI schema.
+    """
+
     timezone: str = Field(default="UTC")
     """
     You may set the application's default timezone here, which Python's date and date-time functions will then utilize.
