@@ -31,16 +31,18 @@ class Application(ApplicationInterface):
         self._base_path = base_path
         bootstrap_manager = BootstrapManager()
 
-        super().__init__(lifespan=bootstrap_manager.lifespan, **kwargs)
-
         bootstrap_manager.start_critical_services(
             self,
             self._critical_service_providers,
         )
 
-        self.title = Config.string("app.name", title or "Pyrannic Application")
-        self.debug = Config.boolean("app.debug", debug)
-        self.version = Config.string("app.version", version)
+        super().__init__(
+            lifespan=bootstrap_manager.lifespan,
+            title=Config.string("app.name", title or "Pyrannic Application"),
+            debug=Config.boolean("app.debug", debug),
+            version=Config.string("app.version", version),
+            **kwargs,
+        )
 
         bootstrap_manager.run(self)
         self.add_middleware(ForgetScopedInstancesMiddleware)
