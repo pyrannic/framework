@@ -11,6 +11,9 @@ from pyrannic.contracts.database import (
     WhereClauseInterface,
 )
 from pyrannic.database.query.clauses.aggregate import AggregateClause
+from pyrannic.support.collections import li
+from pyrannic.support.collections.dict import flatten
+from pyrannic.support.values import resolve_value
 
 _IDENTIFIER_PATTERN: re.Pattern[str] = re.compile(
     r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)?$"
@@ -45,6 +48,47 @@ class Grammar(GrammarInterface):
 
         sql = self._concatenate(*self._compile_components(query_builder)).strip()
         return sql
+
+    def compile_exists(self, query_builder: QueryBuilderInterface) -> str:
+        select = self.compile_select(query_builder)
+        return f"SELECT exists({select}) AS {self.wrap('exists')}"
+
+    def compile_insert(
+        self,
+        query_builder: QueryBuilderInterface,
+        values: list[dict[str, Any]],
+    ) -> str:
+        table = self.wrap_table(query_builder.from_clause)
+        columns = self.columnize(*values[0].keys())
+        parameters = ", ".join(
+            f"({self.parameterize(list(record.values()))})" for record in values
+        )
+
+        sql = f"INSERT INTO {table} ({columns}) VALUES {parameters}"
+
+        return sql.strip()
+
+    def compile_update(
+        self,
+        query_builder: QueryBuilderInterface,
+        values: dict[str, Any],
+    ) -> str:
+        table = self.wrap_table(query_builder.from_clause)
+        columns = self._compile_update_columns(values)
+        where = self._compile_wheres(query_builder)
+        joins = self._compile_joins(query_builder)
+
+        if joins:
+            sql = f"UPDATE {table} {joins} SET {columns} {where}"
+        else:
+            sql = f"UPDATE {table} SET {columns} {where}"
+
+        return f"{sql}".strip()
+
+    def _compile_update_columns(self, values: dict[str, Any]) -> str:
+        return ", ".join(
+            f"{self.wrap(k)} = {self.parameter(v)}" for k, v in values.items()
+        )
 
     def _compile_components(
         self, query_builder: QueryBuilderInterface
@@ -110,9 +154,11 @@ class Grammar(GrammarInterface):
     def _compile_joins(
         self,
         query_builder: QueryBuilderInterface,
-        joins: list[JoinBuilderInterface] | None,
+        joins: list[JoinBuilderInterface] | None = None,
     ) -> str | None:
         """Compile the JOIN portion of the query."""
+
+        joins = joins or query_builder.joins
 
         if not joins:
             return None  # pragma: no cover
@@ -414,3 +460,13 @@ class Grammar(GrammarInterface):
             sql = sql.replace("%s", self.escape(binding), 1)
 
         return sql
+
+    def prepare_bindings_for_update(
+        self,
+        bindings: dict[str, list[Any]],
+        values: dict[str, Any],
+    ) -> list[Any]:
+        clean_bindings = {k: v for k, v in bindings.items() if k != "select"}
+        val = li.flatten([resolve_value(v) for v in values.values()])
+
+        return val + flatten(clean_bindings)
