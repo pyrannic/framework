@@ -7,6 +7,7 @@ from pydantic_settings import (
     DotEnvSettingsSource,
     EnvSettingsSource,
     PydanticBaseSettingsSource,
+    SettingsConfigDict,
 )
 
 from pyrannic.contracts.config.configuration import ConfigurationInterface
@@ -34,6 +35,8 @@ class CustomDotEnvSettingsSource(DotEnvSettingsSource, CustomEnvSettingsSource):
 
 
 class Configuration(ConfigurationInterface, BaseSettings):
+    model_config = SettingsConfigDict(env_parse_none_str="None")
+
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(
             _case_sensitive=False,
