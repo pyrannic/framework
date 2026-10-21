@@ -225,7 +225,9 @@ class Grammar(GrammarInterface):
         where: WhereClauseInterface,
     ) -> str | None:
         """Compile a column-based WHERE clause."""
-        assert where.value is not None, "Column-based WHERE clause requires a value"
+        assert where.value is not None and not isinstance(where.value, list), (
+            "Column-based WHERE clause requires a value that is not a list or None"
+        )
         return f"{self.wrap(where.column)} {where.operator} {self.wrap(where.value)}"
 
     def _compile_where_nested(
