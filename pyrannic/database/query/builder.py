@@ -173,6 +173,29 @@ class QueryBuilder(QueryBuilderInterface):
         self._columns = list(columns or ["*"])
         return self
 
+    @overload
+    def select_subquery(self, query: QueryBuilderInterface, as_: str, /) -> Self:
+        """Add a new select column as a subquery to the query."""
+
+    @overload
+    def select_subquery(
+        self,
+        callback: Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        as_: str,
+        /,
+    ) -> Self:
+        """Add a new select column as a subquery to the query."""
+
+    def select_subquery(
+        self,
+        query: QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        as_: str,
+        /,
+    ) -> Self:
+        subquery, bindings = self._create_subquery(query)
+        return self.select_raw(f"({subquery}) AS {self._grammar.wrap(as_)}", *bindings)
+
     def select_raw(self, expression: str, *bindings: Any) -> Self:
         self.add_select(self.raw(expression))
 
