@@ -10,8 +10,7 @@ def test_get_facade_accessor():
     assert Gate.facade_accessor == GateInterface  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
 
 
-@pytest.mark.asyncio
-async def test_get_facade_root(gate: GateInterface):
+def test_get_facade_root(gate: GateInterface):
     assert Gate._get_facade_root() == gate  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
 
 

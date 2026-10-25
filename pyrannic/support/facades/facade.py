@@ -52,8 +52,8 @@ def facade[T](accessor_or_cls: type[T] | str) -> T:
                 type[T],
                 type(
                     cls.__name__,
-                    # Put the base class as the first one to ensure that overridden Facade methods are used.
-                    cls.__mro__[0:1] + (Facade,) + cls.__mro__[1:],
+                    # Keep overrides on cls without adding its ancestors as direct bases.
+                    cls.__mro__[:1] + (Facade,),
                     {},
                 ),
             )

@@ -23,9 +23,14 @@ class AuthServiceProvider(ServiceProvider):
 
         self.register_security_model()
 
-    async def boot(self, gate: Resolves[GateInterface]) -> None:
-        # Register the Gate instance to be used in the Facade.
+    async def boot(
+        self,
+        gate: Resolves[GateInterface],
+        guard: Resolves[GuardInterface[AuthenticatableInterface]],
+    ) -> None:
+        # Register the Gate & Guard instances to be used in their Facades.
         self.container.instance(GateInterface, gate)
+        self.container.instance(GuardInterface[AuthenticatableInterface], guard)
 
     def register_security_model(self) -> None:
         model = self.config.get(f"auth.guards.{self.guard_driver}.security_model")
