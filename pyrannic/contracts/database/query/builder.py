@@ -82,6 +82,30 @@ class QueryBuilderInterface(ABC):
     def select(self, *columns: "str | ExpressionInterface") -> Self:
         """Select columns for the query."""
 
+    @overload
+    @abstractmethod
+    def select_subquery(self, query: "QueryBuilderInterface", as_: str, /) -> Self:
+        """Add a new select column as a subquery to the query."""
+
+    @overload
+    @abstractmethod
+    def select_subquery(
+        self,
+        callback: Callable[["QueryBuilderInterface"], "QueryBuilderInterface | None"],
+        as_: str,
+        /,
+    ) -> Self:
+        """Add a new select column as a subquery to the query."""
+
+    @abstractmethod
+    def select_subquery(
+        self,
+        query: "QueryBuilderInterface | Callable[['QueryBuilderInterface'], 'QueryBuilderInterface | None']",
+        as_: str,
+        /,
+    ) -> Self:
+        """Add a new select column as a subquery to the query."""
+
     @abstractmethod
     def select_raw(self, expression: str, *bindings: Any) -> Self:
         """Select raw columns for the query."""

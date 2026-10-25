@@ -383,6 +383,30 @@ def test_to_sql_with_simple_select_and_distinct():
     assert sql == 'SELECT DISTINCT "id" FROM "users"'
 
 
+def test_to_sql_with_simple_select_with_subquery_as_builder():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    subquery = QueryBuilder(grammar).select("id").from_("users")
+    query_builder.select_subquery(subquery, "sub_id").from_("users")
+    sql = query_builder.to_sql()
+
+    assert sql == 'SELECT (SELECT "id" FROM "users") AS "sub_id" FROM "users"'
+
+
+def test_to_sql_with_simple_select_with_subquery_as_callback():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.select_subquery(
+        lambda qb: qb.select("id").from_("users"),
+        "sub_id",
+    ).from_("users")
+    sql = query_builder.to_sql()
+
+    assert sql == 'SELECT (SELECT "id" FROM "users") AS "sub_id" FROM "users"'
+
+
 def test_to_sql_with_simple_where():
     grammar = Grammar()
     query_builder = QueryBuilder(grammar)
