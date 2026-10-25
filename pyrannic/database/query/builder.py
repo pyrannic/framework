@@ -23,6 +23,9 @@ class QueryBuilder(QueryBuilderInterface):
     _aggregate: AggregateClauseInterface | None
     """Aggregate functions to be applied."""
 
+    _ctes: list[str]
+    """List of CTEs (Common Table Expressions) to be specified in the query."""
+
     _columns: list[str | ExpressionInterface]
     """List of columns to be selected."""
 
@@ -100,6 +103,7 @@ class QueryBuilder(QueryBuilderInterface):
             "!~~*",
         ]
         self._bindings = {
+            "with": [],
             "select": [],
             "from": [],
             "join": [],
@@ -110,6 +114,7 @@ class QueryBuilder(QueryBuilderInterface):
             "union": [],
             "unionOrder": [],
         }
+        self._ctes = []
         self._distinct = []
         self._aggregate = None
         self._columns = []
@@ -128,6 +133,10 @@ class QueryBuilder(QueryBuilderInterface):
     @property
     def aggregate(self) -> AggregateClauseInterface | None:
         return self._aggregate
+
+    @property
+    def ctes(self) -> list[str]:
+        return self._ctes
 
     @property
     def columns(self) -> list[str | ExpressionInterface]:
@@ -229,10 +238,38 @@ class QueryBuilder(QueryBuilderInterface):
         return self
 
     @overload
+    def with_query(self, name: str, query: QueryBuilderInterface, /) -> Self:
+        """Add a CTE (Common Table Expression) to the query."""
+
+    @overload
+    def with_query(
+        self,
+        name: str,
+        callback: Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        /,
+    ) -> Self:
+        """Add a CTE (Common Table Expression) to the query."""
+
+    def with_query(
+        self,
+        name: str,
+        query: QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        /,
+    ) -> Self:
+        cte_query, bindings = self._create_subquery(query)
+        self._ctes.append(f'"{name}" AS ({cte_query})')
+
+        if bindings:
+            self.add_binding(*bindings, type="with")
+
+        return self
+
+    @overload
     def join(
         self,
-        expression: "ExpressionInterface",
-        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
+        expression: ExpressionInterface,
+        callback: Callable[[JoinBuilderInterface], QueryBuilderInterface | None],
         /,
         *,
         type: str | None = None,
@@ -244,7 +281,7 @@ class QueryBuilder(QueryBuilderInterface):
     def join(
         self,
         table: str,
-        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
+        callback: Callable[[JoinBuilderInterface], QueryBuilderInterface | None],
         /,
         *,
         type: str | None = None,
@@ -373,11 +410,13 @@ class QueryBuilder(QueryBuilderInterface):
 
     def join_sub(
         self,
-        query: "QueryBuilderInterface",
+        query: QueryBuilderInterface,
         as_: str,
-        first_column: 'str | ExpressionInterface | Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"]',
+        first_column: str
+        | ExpressionInterface
+        | Callable[[JoinBuilderInterface], QueryBuilderInterface | None],
         operator: str | None = None,
-        second_column: "str | ExpressionInterface | None" = None,
+        second_column: str | ExpressionInterface | None = None,
         /,
         *,
         type: str | None = None,

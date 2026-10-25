@@ -30,6 +30,11 @@ class QueryBuilderInterface(ABC):
 
     @property
     @abstractmethod
+    def ctes(self) -> list[str]:
+        """Get the list of CTEs (Common Table Expressions) for the query."""
+
+    @property
+    @abstractmethod
     def columns(self) -> list["str | ExpressionInterface"]:
         """Get the list of columns selected for the query."""
 
@@ -108,7 +113,7 @@ class QueryBuilderInterface(ABC):
 
     @abstractmethod
     def select_raw(self, expression: str, *bindings: Any) -> Self:
-        """Select raw columns for the query."""
+        """Add a new select column as a raw expression to the query."""
 
     @abstractmethod
     def add_select(self, *column: "str | ExpressionInterface") -> Self:
@@ -129,6 +134,30 @@ class QueryBuilderInterface(ABC):
     @abstractmethod
     def from_(self, table: str, as_: str | None = None) -> Self:
         """Specify the table for the query."""
+
+    @overload
+    @abstractmethod
+    def with_query(self, name: str, query: "QueryBuilderInterface", /) -> Self:
+        """Add a CTE (Common Table Expression) to the query."""
+
+    @overload
+    @abstractmethod
+    def with_query(
+        self,
+        name: str,
+        callback: Callable[["QueryBuilderInterface"], "QueryBuilderInterface | None"],
+        /,
+    ) -> Self:
+        """Add a CTE (Common Table Expression) to the query."""
+
+    @abstractmethod
+    def with_query(
+        self,
+        name: str,
+        query: "QueryBuilderInterface | Callable[['QueryBuilderInterface'], 'QueryBuilderInterface | None']",
+        /,
+    ) -> Self:
+        """Add a CTE (Common Table Expression) to the query."""
 
     @overload
     @abstractmethod

@@ -22,6 +22,7 @@ _IDENTIFIER_PATTERN: re.Pattern[str] = re.compile(
 
 class Grammar(GrammarInterface):
     _select_components: ClassVar[dict[str, str]] = {
+        "ctes": "ctes",
         "aggregate": "aggregate",
         "columns": "columns",
         "from_clause": "from_",
@@ -107,6 +108,20 @@ class Grammar(GrammarInterface):
                 sql.append(method(query_builder, value))
 
         return sql
+
+    def _compile_ctes(
+        self,
+        query_builder: QueryBuilderInterface,
+        ctes: list[str] | None = None,
+    ) -> str | None:
+        """Compile the CTE (Common Table Expressions) portion of the query."""
+
+        ctes = ctes or query_builder.ctes
+
+        if not ctes:
+            return None  # pragma: no cover
+
+        return f"WITH {', '.join(ctes)}"
 
     def _compile_aggregate(
         self,
