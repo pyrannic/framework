@@ -138,7 +138,7 @@ class Grammar(GrammarInterface):
         function = aggregate.function.upper()
         columns = self.columnize(*aggregate.columns)
 
-        return f"SELECT {function}({columns}) as {self.wrap('aggregate')}"
+        return f"SELECT {function}({columns}) AS {self.wrap('aggregate')}"
 
     def _compile_columns(
         self,
@@ -242,7 +242,7 @@ class Grammar(GrammarInterface):
         )
 
         value = self.parameter(where.value)
-        return f"{self.wrap(where.column)} {where.operator} {value}"
+        return f"{self.wrap(where.column)} {where.operator.upper()} {value}"
 
     def _compile_where_in(
         self,
