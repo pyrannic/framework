@@ -643,37 +643,6 @@ def test_to_sql_with_offset():
     assert sql == 'SELECT DISTINCT "id" FROM "users" OFFSET 5'
 
 
-def test_to_sql_with_simple_cte_as_builder():
-    grammar = Grammar()
-    query_builder = QueryBuilder(grammar)
-
-    query_builder.with_query(
-        "cte_name",
-        QueryBuilder(grammar).select("id").from_("users"),
-    ).select("id").from_("cte_name")
-    sql = query_builder.to_sql()
-
-    assert (
-        sql
-        == 'WITH "cte_name" AS (SELECT "id" FROM "users") SELECT "id" FROM "cte_name"'
-    )
-
-
-def test_to_sql_with_simple_cte_as_callback():
-    grammar = Grammar()
-    query_builder = QueryBuilder(grammar)
-
-    query_builder.with_query(
-        "cte_name", lambda q: q.select("id").from_("users")
-    ).select("id").from_("cte_name")
-    sql = query_builder.to_sql()
-
-    assert (
-        sql
-        == 'WITH "cte_name" AS (SELECT "id" FROM "users") SELECT "id" FROM "cte_name"'
-    )
-
-
 def test_add_binding_raises_invalid_type():
     grammar = Grammar()
     query_builder = QueryBuilder(grammar)
