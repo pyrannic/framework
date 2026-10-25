@@ -1,4 +1,4 @@
-__version__ = "0.5.16"
+__version__ = "0.5.17"
 
 from .application import Application as Application
 from .auth.access.gate import Gate as Gate
