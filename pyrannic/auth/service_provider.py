@@ -17,9 +17,6 @@ class AuthServiceProvider(ServiceProvider):
         self.config = self.container.instance(ConfigRepositoryInterface)
 
         self.container.bind_if(GuardInterface, self.guard_concrete_type)
-        self.container.bind_if(
-            GuardInterface[AuthenticatableInterface], self.guard_concrete_type
-        )
         self.container.bind_if(GateInterface, Gate)
 
         self.register_security_model()
@@ -32,7 +29,6 @@ class AuthServiceProvider(ServiceProvider):
         # Register the Gate & Guard instances to be used in their Facades.
         self.container.instance(GateInterface, gate)
         self.container.instance(GuardInterface, guard)
-        self.container.instance(GuardInterface[AuthenticatableInterface], guard)
 
     def register_security_model(self) -> None:
         model = self.config.get(f"auth.guards.{self.guard_driver}.security_model")

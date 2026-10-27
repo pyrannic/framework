@@ -8,4 +8,4 @@ class Guard(GuardInterface[AuthenticatableInterface]):
 
     @property
     def facade_accessor(self) -> str | type:
-        return GuardInterface[AuthenticatableInterface]
+        return GuardInterface
