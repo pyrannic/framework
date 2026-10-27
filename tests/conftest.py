@@ -203,6 +203,7 @@ async def setup_auth(
 
     application.container.instance(GateInterface, gate)
     application.container.instance(GuardInterface[User], guard)
+    application.container.instance("guard", guard)
     application.container.set_alias(
         GuardInterface[User], GuardInterface[AuthenticatableInterface]
     )
