@@ -114,6 +114,10 @@ class QueryBuilder(QueryBuilderInterface):
             "union": [],
             "unionOrder": [],
         }
+        self._bindings_for_attr = {
+            "wheres": "where",
+            # TODO - Fill this table.
+        }
         self._ctes = []
         self._distinct = []
         self._aggregate = None
@@ -428,10 +432,10 @@ class QueryBuilder(QueryBuilderInterface):
         expression = f"({join_query}) as {self._grammar.wrap_table(as_)}"
 
         return self.join(
-            Expression(expression),
-            first_column,
+            Expression(expression),  # pyright: ignore[reportArgumentType]
+            first_column,  # pyright: ignore[reportArgumentType]
             operator,
-            second_column,
+            second_column,  # pyright: ignore[reportArgumentType]
             type=type,
             where=where,
         )
@@ -911,6 +915,12 @@ class QueryBuilder(QueryBuilderInterface):
                 setattr(cloned, f"_{attr}", [])
             elif hasattr(cloned, f"_{attr}"):
                 setattr(cloned, f"_{attr}", None)
+
+            if (
+                attr in self._bindings_for_attr
+                and self._bindings_for_attr[attr] in cloned._bindings
+            ):
+                cloned._bindings[self._bindings_for_attr[attr]] = []
 
         for binding in bindings or []:
             if binding in cloned._bindings:
