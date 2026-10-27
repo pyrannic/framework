@@ -12,11 +12,12 @@ from pyrannic.contracts import (
 from pyrannic.ioc import Resolves
 
 
-class AuthServiceProvider(ServiceProvider):
+class AuthServiceProvider[T: AuthenticatableInterface](ServiceProvider):
     def register(self) -> None:
         self.config = self.container.instance(ConfigRepositoryInterface)
 
         self.container.bind_if(GuardInterface, self.guard_concrete_type)
+        self.container.set_alias(GuardInterface[T], GuardInterface)
         self.container.bind_if(GateInterface, Gate)
 
         self.register_security_model()
@@ -28,7 +29,7 @@ class AuthServiceProvider(ServiceProvider):
     ) -> None:
         # Register the Gate & Guard instances to be used in their Facades.
         self.container.instance(GateInterface, gate)
-        self.container.instance(GuardInterface, guard)
+        self.container.instance("guard", guard)
 
     def register_security_model(self) -> None:
         model = self.config.get(f"auth.guards.{self.guard_driver}.security_model")
