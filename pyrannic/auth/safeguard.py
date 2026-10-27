@@ -65,5 +65,8 @@ class Safeguard(SecurityBase):
         # Resolve the user from the guard and set it in the gate.
         gate.set_user(cast(AuthorizableInterface | None, user))
 
+        # Register the Guard instance to be used in its Facade.
+        request.app.container.instance("guard", guard)
+
         callable = cast(Callable[..., Any], self._security_model)
         return await callable(request) if self._security_model else None
