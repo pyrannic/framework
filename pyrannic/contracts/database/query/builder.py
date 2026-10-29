@@ -553,6 +553,57 @@ class QueryBuilderInterface(ABC):
     ) -> Self:
         """Add a WHERE NOT NULL condition to the query."""
 
+    @overload
+    @abstractmethod
+    def where_between(
+        self,
+        column: "QueryBuilderInterface",
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        """Add a WHERE BETWEEN condition to the query."""
+
+    @overload
+    @abstractmethod
+    def where_between(
+        self,
+        column: Callable[["QueryBuilderInterface"], "QueryBuilderInterface | None"],
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        """Add a WHERE BETWEEN condition to the query."""
+
+    @overload
+    @abstractmethod
+    def where_between(
+        self,
+        column: "str | ExpressionInterface",
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        """Add a WHERE BETWEEN condition to the query."""
+
+    @abstractmethod
+    def where_between(
+        self,
+        column: 'str | ExpressionInterface | "QueryBuilderInterface" | Callable[["QueryBuilderInterface"], "QueryBuilderInterface | None"]',
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        """Add a WHERE BETWEEN condition to the query."""
+
     @abstractmethod
     def where_in(
         self,
