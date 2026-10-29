@@ -708,3 +708,13 @@ class QueryBuilderInterface(ABC):
         bindings: list[str] | None = None,
     ) -> Self:
         """Clone the query builder without the specified attributes and bindings."""
+
+    @abstractmethod
+    def before_query(
+        self, callback: Callable[["QueryBuilderInterface"], None], /
+    ) -> Self:
+        """Register a callback to be executed before the query is run."""
+
+    @abstractmethod
+    def apply_before_query_callbacks(self) -> None:
+        """Apply all registered before query callbacks."""
