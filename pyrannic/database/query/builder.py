@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Any, Self, overload
+from typing import Any, Self, cast, overload
 
 from pyrannic.contracts.database import (
     AggregateClauseInterface,
@@ -187,6 +187,7 @@ class QueryBuilder(QueryBuilderInterface):
         return self._offset
 
     def select(self, *columns: str | ExpressionInterface) -> Self:
+        self._bindings["select"] = []
         self._columns = list(columns or ["*"])
         return self
 
@@ -698,7 +699,7 @@ class QueryBuilder(QueryBuilderInterface):
 
     def where_null(
         self,
-        *columns: "str | ExpressionInterface",
+        *columns: str | ExpressionInterface,
         boolean: str = "and",
         not_: bool = False,
     ) -> Self:
@@ -741,7 +742,7 @@ class QueryBuilder(QueryBuilderInterface):
 
     def where_not_in(
         self,
-        column: "str | ExpressionInterface",
+        column: str | ExpressionInterface,
         values: list[Any],
         /,
         *,
@@ -751,11 +752,90 @@ class QueryBuilder(QueryBuilderInterface):
 
     def or_where_not_in(
         self,
-        column: "str | ExpressionInterface",
+        column: str | ExpressionInterface,
         values: list[Any],
         /,
     ) -> Self:
         return self.where_not_in(column, values, boolean="or")
+
+    @overload
+    def where_between(
+        self,
+        column: QueryBuilderInterface,
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        """Add a WHERE BETWEEN condition to the query."""
+
+    @overload
+    def where_between(
+        self,
+        column: Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        """Add a WHERE BETWEEN condition to the query."""
+
+    @overload
+    def where_between(
+        self,
+        column: str | ExpressionInterface,
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        """Add a WHERE BETWEEN condition to the query."""
+
+    def where_between(
+        self,
+        column: str
+        | ExpressionInterface
+        | QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        values: list[Any],
+        /,
+        *,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        if self._is_queryable(column):
+            query, bindings = self._create_subquery(
+                cast(
+                    QueryBuilderInterface
+                    | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+                    column,
+                )
+            )
+
+            return self.add_binding(*bindings, type="where").where_between(
+                self.raw(f"({query})"),
+                values,
+                boolean=boolean,
+                not_=not_,
+            )
+        else:
+            vals = self.clean_bindings(values)
+            self.add_binding(*[vals[0], vals[-1]], type="where")
+
+            self._wheres.append(
+                WhereClause(
+                    cast(str | ExpressionInterface, column),
+                    "not between" if not_ else "between",
+                    values,
+                    boolean,
+                    "between",
+                )
+            )
+
+        return self
 
     def where_nested(
         self,
@@ -874,6 +954,9 @@ class QueryBuilder(QueryBuilderInterface):
         return isinstance(operator, str) and (
             operator in self.grammar.operators or operator in self._operators
         )
+
+    def _is_queryable(self, value: Any, /) -> bool:
+        return isinstance(value, QueryBuilderInterface) or callable(value)
 
     def clone(self) -> Self:
         cloned = type(self)(self._grammar)

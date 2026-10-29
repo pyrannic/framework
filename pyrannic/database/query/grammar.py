@@ -306,6 +306,20 @@ class Grammar(GrammarInterface):
 
         return f"({sql[offset:]})"
 
+    def _compile_where_between(
+        self,
+        _: QueryBuilderInterface,
+        where: WhereClauseInterface,
+    ) -> str | None:
+        assert isinstance(where.value, list) and where.value, (
+            "BETWEEN WHERE clause requires a non-empty list of values"
+        )
+
+        min_value = self.parameter(where.value[0])
+        max_value = self.parameter(where.value[-1])
+
+        return f"{self.wrap(where.column)} {where.operator.upper()} {min_value} AND {max_value}"
+
     def _compile_groups(
         self,
         query_builder: QueryBuilderInterface,
