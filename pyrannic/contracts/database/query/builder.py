@@ -674,7 +674,7 @@ class QueryBuilderInterface(ABC):
         """Get the list of all bindings for the query."""
 
     @abstractmethod
-    def add_binding(self, *value: Any, type: str = "where") -> None:
+    def add_binding(self, *value: Any, type: str = "where") -> Self:
         """Add a binding value for the query of the specified type."""
 
     @abstractmethod

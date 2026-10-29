@@ -853,14 +853,14 @@ class QueryBuilder(QueryBuilderInterface):
     def get_raw_bindings(self) -> dict[str, list[Any]]:
         return self._bindings
 
-    def add_binding(self, *value: Any, type: str = "where") -> None:
+    def add_binding(self, *value: Any, type: str = "where") -> Self:
         if type not in self._bindings:
             raise ValueError(f"Invalid binding type: '{type}'")
 
-        if not value:
-            return
+        if value:
+            self._bindings[type].extend(value)
 
-        self._bindings[type].extend(value)
+        return self
 
     def clean_bindings(self, bindings: list[Any]) -> list[Any]:
         return [b for b in bindings if not self._grammar.is_expression(b)]
