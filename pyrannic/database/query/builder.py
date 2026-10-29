@@ -20,6 +20,9 @@ from pyrannic.support.collections.dict import flatten
 
 
 class QueryBuilder(QueryBuilderInterface):
+    _before_callbacks: list[Callable[[QueryBuilderInterface], None]]
+    """List of callbacks to be executed before the query is run."""
+
     _aggregate: AggregateClauseInterface | None
     """Aggregate functions to be applied."""
 
@@ -129,6 +132,7 @@ class QueryBuilder(QueryBuilderInterface):
         self._orders = []
         self._limit = None
         self._offset = None
+        self._before_callbacks = []
 
     @property
     def grammar(self) -> GrammarInterface:
@@ -836,6 +840,7 @@ class QueryBuilder(QueryBuilderInterface):
         return self
 
     def to_sql(self) -> str:
+        self.apply_before_query_callbacks()
         return self.grammar.compile_select(self)
 
     def to_raw_sql(self) -> str:
@@ -952,3 +957,15 @@ class QueryBuilder(QueryBuilderInterface):
         query: QueryBuilderInterface,
     ) -> tuple[str, list[Any]]:
         return query.to_sql(), query.get_bindings()
+
+    def before_query(
+        self, callback: Callable[["QueryBuilderInterface"], None], /
+    ) -> Self:
+        self._before_callbacks.append(callback)
+        return self
+
+    def apply_before_query_callbacks(self) -> None:
+        for callback in self._before_callbacks:
+            callback(self)
+
+        self._before_callbacks = []
