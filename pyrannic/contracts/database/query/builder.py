@@ -84,6 +84,10 @@ class QueryBuilderInterface(ABC):
         """Get the number of records to skip in the query."""
 
     @abstractmethod
+    def reset(self) -> Self:
+        """Reset the query builder to its initial state."""
+
+    @abstractmethod
     def select(self, *columns: "str | ExpressionInterface") -> Self:
         """Select columns for the query."""
 
@@ -723,6 +727,10 @@ class QueryBuilderInterface(ABC):
     @abstractmethod
     def get_bindings(self) -> list[Any]:
         """Get the list of all bindings for the query."""
+
+    @abstractmethod
+    def get_raw_bindings(self) -> dict[str, list[Any]]:
+        """Get the list of raw bindings for the query."""
 
     @abstractmethod
     def add_binding(self, *value: Any, type: str = "where") -> Self:

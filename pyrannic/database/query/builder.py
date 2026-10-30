@@ -67,9 +67,9 @@ class QueryBuilder(QueryBuilderInterface):
 
     def __init__(self, grammar: Resolves[GrammarInterface]) -> None:
         self._grammar = grammar
-        self._reset()
+        self.reset()
 
-    def _reset(self) -> None:
+    def reset(self) -> Self:
         self._operators = [
             "=",
             "<",
@@ -133,6 +133,8 @@ class QueryBuilder(QueryBuilderInterface):
         self._limit = None
         self._offset = None
         self._before_callbacks = []
+
+        return self
 
     @property
     def grammar(self) -> GrammarInterface:
