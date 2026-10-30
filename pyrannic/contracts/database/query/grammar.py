@@ -50,6 +50,12 @@ class GrammarInterface(ABC):
         Compile an UPDATE query into its SQL representation.
         """
 
+    @abstractmethod
+    def compile_delete(self, query_builder: QueryBuilderInterface) -> str:
+        """
+        Compile a DELETE query into its SQL representation.
+        """
+
     def compile_join_lateral(
         self,
         join: JoinLateralBuilderInterface,
@@ -125,4 +131,10 @@ class GrammarInterface(ABC):
     ) -> list[Any]:
         """
         Prepare the bindings for an update query.
+        """
+
+    @abstractmethod
+    def prepare_bindings_for_delete(self, bindings: dict[str, list[Any]]) -> list[Any]:
+        """
+        Prepare the bindings for a delete query.
         """

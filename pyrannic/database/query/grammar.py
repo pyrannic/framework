@@ -84,7 +84,23 @@ class Grammar(GrammarInterface):
         else:
             sql = f"UPDATE {table} SET {columns} {where}"
 
-        return f"{sql}".strip()
+        return sql.strip()
+
+    def compile_delete(
+        self,
+        query_builder: QueryBuilderInterface,
+    ) -> str:
+        table = self.wrap_table(query_builder.from_clause)
+        where = self._compile_wheres(query_builder)
+
+        if query_builder.joins:
+            _, alias = re.split(r"\s+as\s+", table, maxsplit=1, flags=re.IGNORECASE)
+            joins = self._compile_joins(query_builder)
+            sql = f"DELETE {alias} FROM {table} {joins} {where}"
+        else:
+            sql = f"DELETE FROM {table} {where}"
+
+        return sql.strip()
 
     def _compile_update_columns(self, values: dict[str, Any]) -> str:
         return ", ".join(
@@ -499,3 +515,6 @@ class Grammar(GrammarInterface):
         val = li.flatten([resolve_value(v) for v in values.values()])
 
         return val + flatten(clean_bindings)
+
+    def prepare_bindings_for_delete(self, bindings: dict[str, list[Any]]) -> list[Any]:
+        return flatten({k: v for k, v in bindings.items() if k != "select"})
