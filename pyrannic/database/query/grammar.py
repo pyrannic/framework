@@ -94,9 +94,13 @@ class Grammar(GrammarInterface):
         where = self._compile_wheres(query_builder)
 
         if query_builder.joins:
-            _, alias = re.split(r"\s+as\s+", table, maxsplit=1, flags=re.IGNORECASE)
             joins = self._compile_joins(query_builder)
-            sql = f"DELETE {alias} FROM {table} {joins} {where}"
+
+            if " as " in table.lower():
+                _, alias = re.split(r"\s+as\s+", table, maxsplit=1, flags=re.IGNORECASE)
+                sql = f"DELETE {alias} FROM {table} {joins} {where}"
+            else:
+                sql = f"DELETE FROM {table} {joins} {where}"
         else:
             sql = f"DELETE FROM {table} {where}"
 
