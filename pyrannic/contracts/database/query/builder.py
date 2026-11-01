@@ -50,7 +50,7 @@ class QueryBuilderInterface(ABC):
 
     @property
     @abstractmethod
-    def from_clause(self) -> str:
+    def from_clause(self) -> "str | ExpressionInterface":
         """Get the table specified for the query."""
 
     @property
@@ -135,8 +135,36 @@ class QueryBuilderInterface(ABC):
     ) -> Self:
         """Set the aggregate function for the query."""
 
+    @overload
+    @abstractmethod
+    def from_(self, table: "str | ExpressionInterface") -> Self:
+        """Specify the table for the query."""
+
+    @overload
     @abstractmethod
     def from_(self, table: str, as_: str | None = None) -> Self:
+        """Specify the table for the query."""
+
+    @overload
+    @abstractmethod
+    def from_(self, table: "QueryBuilderInterface", as_: str) -> Self:
+        """Specify the table for the query."""
+
+    @overload
+    @abstractmethod
+    def from_(
+        self,
+        table: Callable[["QueryBuilderInterface"], "QueryBuilderInterface | None"],
+        as_: str,
+    ) -> Self:
+        """Specify the table for the query."""
+
+    @abstractmethod
+    def from_(
+        self,
+        table: 'str | ExpressionInterface |QueryBuilderInterface | Callable[["QueryBuilderInterface"], "QueryBuilderInterface | None"]',
+        as_: str | None = None,
+    ) -> Self:
         """Specify the table for the query."""
 
     @overload

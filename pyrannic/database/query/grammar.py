@@ -425,6 +425,9 @@ class Grammar(GrammarInterface):
         if isinstance(value, ExpressionInterface):
             return str(self.get_value(value))
 
+        if " as " in value.lower():
+            return self._wrap_aliased_value(value)
+
         return self._wrap_value(f"{prefix or ''}{value}")
 
     def _wrap_aliased_value(self, value: str) -> str:

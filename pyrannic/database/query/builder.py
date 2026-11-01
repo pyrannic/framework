@@ -38,7 +38,7 @@ class QueryBuilder(QueryBuilderInterface):
     _grammar: GrammarInterface
     """Grammar interface for building SQL queries."""
 
-    _from: str
+    _from: str | ExpressionInterface
     """Table specified for the query."""
 
     _joins: list[JoinBuilderInterface]
@@ -161,7 +161,7 @@ class QueryBuilder(QueryBuilderInterface):
         return self._distinct
 
     @property
-    def from_clause(self) -> str:
+    def from_clause(self) -> str | ExpressionInterface:
         return self._from
 
     @property
@@ -244,9 +244,60 @@ class QueryBuilder(QueryBuilderInterface):
 
         return self
 
+    @overload
+    def from_(self, table: str | ExpressionInterface) -> Self:
+        """Specify the table for the query."""
+
+    @overload
     def from_(self, table: str, as_: str | None = None) -> Self:
-        self._from = f"{table} as {as_}" if as_ else table
+        """Specify the table for the query."""
+
+    @overload
+    def from_(self, table: QueryBuilderInterface, as_: str) -> Self:
+        """Specify the table for the query."""
+
+    @overload
+    def from_(
+        self,
+        table: Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        as_: str,
+    ) -> Self:
+        """Specify the table for the query."""
+
+    def from_(
+        self,
+        table: str
+        | ExpressionInterface
+        | QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        as_: str | None = None,
+    ) -> Self:
+        if self.grammar.is_expression(table):
+            self._from = table  # pyright: ignore[reportAttributeAccessIssue]
+        elif self._is_queryable(table):
+            assert as_ is not None, "Alias must be provided for subquery"
+            return self._from_subquery(table, as_)  # pyright: ignore[reportArgumentType]
+        else:
+            self._from = f"{table} as {as_}" if as_ else table  # pyright: ignore[reportAttributeAccessIssue]
+
         return self
+
+    def from_raw(self, expression: str, *bindings: Any) -> Self:
+        self._from = self.raw(expression)
+
+        if bindings:
+            self.add_binding(*bindings, type="from")
+
+        return self
+
+    def _from_subquery(
+        self,
+        query: QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        as_: str,
+    ) -> Self:
+        sql, bindings = self._create_subquery(query)
+        return self.from_raw(f"({sql}) AS {self.grammar.wrap_table(as_)}", *bindings)
 
     @overload
     def with_query(self, name: str, query: QueryBuilderInterface, /) -> Self:
@@ -518,17 +569,9 @@ class QueryBuilder(QueryBuilderInterface):
         right_operand: str | None = None,
         /,
     ) -> Self:
-        if callable(left_operand):
-            return self.join(table_or_expression, left_operand, type="left")
-
-        assert isinstance(table_or_expression, str), (
-            "Table name must be provided for a LEFT JOIN"
-        )
-        assert left_operand is not None, "Left operand must be provided for a LEFT JOIN"
-
         return self.join(
-            table_or_expression,
-            left_operand,
+            table_or_expression,  # pyright: ignore[reportArgumentType]
+            left_operand,  # pyright: ignore[reportArgumentType]
             operator,
             right_operand,
             type="left",
@@ -1037,10 +1080,7 @@ class QueryBuilder(QueryBuilderInterface):
 
         return self._parse_subquery(subquery)
 
-    def _parse_subquery(
-        self,
-        query: QueryBuilderInterface,
-    ) -> tuple[str, list[Any]]:
+    def _parse_subquery(self, query: QueryBuilderInterface) -> tuple[str, list[Any]]:
         return query.to_sql(), query.get_bindings()
 
     def before_query(
