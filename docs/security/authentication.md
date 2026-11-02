@@ -77,6 +77,32 @@ which allow you to fetch the identifier of the user or `None` in the case that t
 --8<-- "docs_src/security/authentication/fetching_auth_user_example_03.py"
 ```
 
+### Using the Guard Facade
+
+The `Guard` facade exposes the guard already resolved for the current HTTP request:
+
+```python
+from pyrannic.facades import Guard
+
+user = Guard.maybe_user
+```
+
+Use `Authenticate` or inject `Resolves[GuardInterface[YourUser]]` before accessing
+the facade. The facade does not create a guard or perform asynchronous dependency
+resolution. Request guards remain isolated between concurrent requests.
+
+Access raises `RuntimeError` if no guard has been resolved, or if multiple distinct
+guards have been resolved. With multiple guards, inject the required interface
+explicitly instead.
+
+Outside an HTTP request, the facade requires an explicitly registered instance
+under `GuardInterface`. To reuse a typed registration, add an alias:
+
+```python
+container.instance(GuardInterface[YourUser], guard)
+container.set_alias(GuardInterface[YourUser], GuardInterface)
+```
+
 ## Guards
 
 For every incoming request, the guard defines the comprehensive process used to inspect, verify, and validate incoming user credentials and request tokens. This validation mechanism ensures that access is strictly limited to authorized users and clients while maintaining the overall integrity and safety of backend resources.

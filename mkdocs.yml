@@ -52,9 +52,11 @@ nav:
     - Security:
         - Authentication: security/authentication.md
         - Authorization: security/authorization.md
-    - Database & ORM:
+    - Database:
         - Getting Started: database/getting-started.md
+        - Query Builder: database/query-builder.md
         - Migrations: database/migrations.md
+    - ORM:
         - Models: orm/models.md
         - Repositories: orm/repositories.md
     - REST:
