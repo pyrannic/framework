@@ -49,6 +49,10 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
 
         self._scopes.append(self._soft_deleting_scope)
         self._scopes.extend(self.__scopes__)
+        self.__post_init__()
+
+    def __post_init__(self) -> None:
+        """Hook for additional initialization in subclasses."""
 
     def _initialize_model(self) -> None:
         if not hasattr(self, "__model__"):
@@ -62,6 +66,9 @@ class AbstractQueryBuilder(QueryBuilderInterface[T]):
                 )
 
             self.__model__ = model
+
+    def add_scope(self, scope: ScopeInterface[T]) -> None:
+        self._scopes.append(scope)
 
     @property
     @abstractmethod
