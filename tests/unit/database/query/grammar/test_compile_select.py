@@ -5,6 +5,16 @@ def test_compile_select_with_alias():
     grammar = Grammar()
     query_builder = QueryBuilder(grammar)
 
+    query_builder.select("id", "title", "created_at as published_at").from_("posts")
+    sql = grammar.compile_select(query_builder)
+
+    assert sql == 'SELECT "id", "title", "created_at" AS "published_at" FROM "posts"'
+
+
+def test_compile_select_with_alias_in_from():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
     query_builder.from_("users", "u").where("id", "=", 1)
     sql = grammar.compile_select(query_builder)
 

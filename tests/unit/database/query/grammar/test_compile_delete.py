@@ -1,7 +1,7 @@
 from pyrannic.database import Grammar, QueryBuilder
 
 
-def test_compile_delete():
+def test_compile_delete_with_where():
     grammar = Grammar()
     query_builder = QueryBuilder(grammar)
 
@@ -10,6 +10,16 @@ def test_compile_delete():
 
     assert sql == 'DELETE FROM "users" WHERE "id" = %s'
     assert query_builder.get_bindings() == [1]
+
+
+def test_compile_delete_without_where():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.from_("users")
+    sql = grammar.compile_delete(query_builder)
+
+    assert sql == 'DELETE FROM "users"'
 
 
 def test_compile_delete_with_join():
