@@ -320,7 +320,7 @@ class QueryBuilder(QueryBuilderInterface):
         /,
     ) -> Self:
         cte_query, bindings = self._create_subquery(query)
-        self._ctes.append(f'"{name}" AS ({cte_query})')
+        self._ctes.append(f"{self.grammar.wrap_table(name)} AS ({cte_query})")
 
         if bindings:
             self.add_binding(*bindings, type="with")
@@ -1016,6 +1016,7 @@ class QueryBuilder(QueryBuilderInterface):
         cloned._offset = self._offset
         cloned._bindings = {k: v.copy() for k, v in self._bindings.items()}
         cloned._operators = self._operators.copy()
+        cloned._before_callbacks = self._before_callbacks.copy()
 
         return cloned
 
