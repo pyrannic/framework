@@ -79,12 +79,7 @@ class Grammar(GrammarInterface):
         where = self._compile_wheres(query_builder)
         joins = self._compile_joins(query_builder)
 
-        if joins:
-            sql = f"UPDATE {table} {joins} SET {columns} {where}"
-        else:
-            sql = f"UPDATE {table} SET {columns} {where}"
-
-        return sql.strip()
+        return self._concatenate("UPDATE", table, joins, "SET", columns, where).strip()
 
     def compile_delete(
         self,
@@ -92,19 +87,16 @@ class Grammar(GrammarInterface):
     ) -> str:
         table = self.wrap_table(query_builder.from_clause)
         where = self._compile_wheres(query_builder)
+        joins = None
+        alias = None
 
         if query_builder.joins:
             joins = self._compile_joins(query_builder)
 
             if " as " in table.lower():
                 _, alias = re.split(r"\s+as\s+", table, maxsplit=1, flags=re.IGNORECASE)
-                sql = f"DELETE {alias} FROM {table} {joins} {where}"
-            else:
-                sql = f"DELETE FROM {table} {joins} {where}"
-        else:
-            sql = f"DELETE FROM {table} {where}"
 
-        return sql.strip()
+        return self._concatenate("DELETE", alias, "FROM", table, joins, where).strip()
 
     def _compile_update_columns(self, values: dict[str, Any]) -> str:
         return ", ".join(
@@ -112,7 +104,8 @@ class Grammar(GrammarInterface):
         )
 
     def _compile_components(
-        self, query_builder: QueryBuilderInterface
+        self,
+        query_builder: QueryBuilderInterface,
     ) -> list[str | None]:
         """Compile the components necessary for a select clause."""
 
@@ -196,7 +189,7 @@ class Grammar(GrammarInterface):
         joins = joins or query_builder.joins
 
         if not joins:
-            return None  # pragma: no cover
+            return None
 
         clauses: list[str] = []
 
@@ -232,7 +225,7 @@ class Grammar(GrammarInterface):
         wheres = wheres or query_builder.wheres
 
         if not wheres:
-            return None  # pragma: no cover
+            return None
 
         sql: list[str] = []
 

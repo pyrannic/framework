@@ -18,13 +18,27 @@ def test_compile_update_multiple_values():
 
     query_builder.from_("users").where("status", "active")
     sql = grammar.compile_update(
-        query_builder, {"status": "inactive", "updated_at": "2024-06-10"}
+        query_builder,
+        {"status": "inactive", "updated_at": "2024-06-10"},
     )
 
     assert (
         sql == 'UPDATE "users" SET "status" = %s, "updated_at" = %s WHERE "status" = %s'
     )
     assert query_builder.get_bindings() == ["active"]
+
+
+def test_update_all_records():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.from_("users")
+    sql = grammar.compile_update(
+        query_builder,
+        {"status": "inactive"},
+    )
+
+    assert sql == 'UPDATE "users" SET "status" = %s'
 
 
 def test_update_with_join():
