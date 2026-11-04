@@ -1016,6 +1016,7 @@ class QueryBuilder(QueryBuilderInterface):
         cloned._offset = self._offset
         cloned._bindings = {k: v.copy() for k, v in self._bindings.items()}
         cloned._operators = self._operators.copy()
+        cloned._before_callbacks = self._before_callbacks.copy()
 
         return cloned
 

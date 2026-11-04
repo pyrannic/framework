@@ -1,3 +1,4 @@
+from pyrannic.contracts.database import QueryBuilderInterface
 from pyrannic.database import Grammar, QueryBuilder
 
 
@@ -21,6 +22,22 @@ def test_clone_independence():
 
     assert query_builder.to_sql() != cloned_query_builder.to_sql()
     assert query_builder.get_bindings() != cloned_query_builder.get_bindings()
+
+
+def test_clone_with_callbacks():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    def callback(qb: QueryBuilderInterface):
+        qb.where("id", 1)
+
+    query_builder.select("id").from_("users").before_query(callback)
+
+    cloned_query_builder = query_builder.clone()
+    cloned_sql = cloned_query_builder.to_sql()
+
+    assert cloned_sql == 'SELECT "id" FROM "users" WHERE "id" = %s'
+    assert cloned_sql == query_builder.to_sql()
 
 
 def test_clone_with_bindings():
