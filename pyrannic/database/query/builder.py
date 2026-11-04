@@ -320,7 +320,7 @@ class QueryBuilder(QueryBuilderInterface):
         /,
     ) -> Self:
         cte_query, bindings = self._create_subquery(query)
-        self._ctes.append(f'"{name}" AS ({cte_query})')
+        self._ctes.append(f"{self.grammar.wrap_table(name)} AS ({cte_query})")
 
         if bindings:
             self.add_binding(*bindings, type="with")
