@@ -15,6 +15,17 @@ def test_compile_select_with_alias_in_from():
     grammar = Grammar()
     query_builder = QueryBuilder(grammar)
 
+    query_builder.from_("users as u").where("id", "=", 1)
+    sql = grammar.compile_select(query_builder)
+
+    assert sql == 'SELECT * FROM "users" AS "u" WHERE "id" = %s'
+    assert query_builder.get_bindings() == [1]
+
+
+def test_compile_select_with_alias_in_from_as_param():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
     query_builder.from_("users", "u").where("id", "=", 1)
     sql = grammar.compile_select(query_builder)
 

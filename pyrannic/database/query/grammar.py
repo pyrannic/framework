@@ -4,13 +4,14 @@ from typing import Any, ClassVar
 from pyrannic.contracts.database import (
     ExpressionInterface,
     GrammarInterface,
+    HavingClauseInterface,
     JoinBuilderInterface,
     JoinLateralBuilderInterface,
     OrderByClauseInterface,
     QueryBuilderInterface,
     WhereClauseInterface,
 )
-from pyrannic.database.query.clauses.aggregate import AggregateClause
+from pyrannic.database.query.clauses import AggregateClause
 from pyrannic.support.collections import li
 from pyrannic.support.collections.dict import flatten
 from pyrannic.support.values import resolve_value
@@ -346,6 +347,58 @@ class Grammar(GrammarInterface):
             return None  # pragma: no cover
 
         return f"GROUP BY {self.columnize(*groups)}"
+
+    def _compile_havings(
+        self,
+        query_builder: QueryBuilderInterface,
+        havings: list[HavingClauseInterface] | None = None,
+    ) -> str | None:
+        """Compile the HAVING portion of the query."""
+        havings = havings or query_builder.havings
+
+        if not havings:
+            return None
+
+        sql: list[str] = []
+
+        for having in havings:
+            method = getattr(self, f"_compile_having_{having.type}", None)
+
+            if method:
+                value = method(query_builder, having)
+                if value:
+                    sql.append(f"{having.boolean.upper()} {value}")
+
+        return f"HAVING {self._remove_leading_boolean(' '.join(sql))}"
+
+    def _compile_having_basic(
+        self,
+        _: QueryBuilderInterface,
+        having: HavingClauseInterface,
+    ) -> str | None:
+        assert not isinstance(having.value, list), (
+            "Basic HAVING clause does not support list values."
+        )
+
+        value = self.parameter(having.value)
+        return f"{self.wrap(having.column)} {having.operator.upper()} {value}"
+
+    def _compile_having_null(
+        self,
+        _: QueryBuilderInterface,
+        having: HavingClauseInterface,
+    ) -> str | None:
+        return f"{self.wrap(having.column)} {having.operator.upper()} NULL"
+
+    def _compile_having_raw(
+        self,
+        _: QueryBuilderInterface,
+        having: HavingClauseInterface,
+    ) -> str | None:
+        assert isinstance(having.column, str), (
+            "Raw HAVING clause requires a string raw SQL."
+        )
+        return having.column
 
     def _compile_orders(
         self,

@@ -1,9 +1,11 @@
 from collections.abc import Callable
+from datetime import datetime
 from typing import Any, Self, cast, overload
 
 from pyrannic.contracts.database import (
     AggregateClauseInterface,
     GrammarInterface,
+    HavingClauseInterface,
     OrderByClauseInterface,
     QueryBuilderInterface,
     SortDirection,
@@ -11,8 +13,12 @@ from pyrannic.contracts.database import (
 )
 from pyrannic.contracts.database.query.expression import ExpressionInterface
 from pyrannic.contracts.database.query.join_builder import JoinBuilderInterface
-from pyrannic.database.query.clauses import OrderByClause, WhereClause
-from pyrannic.database.query.clauses.aggregate import AggregateClause
+from pyrannic.database.query.clauses import (
+    AggregateClause,
+    HavingClause,
+    OrderByClause,
+    WhereClause,
+)
 from pyrannic.database.query.expression import Expression
 from pyrannic.ioc import Resolves
 from pyrannic.support.collections import li
@@ -49,6 +55,9 @@ class QueryBuilder(QueryBuilderInterface):
 
     _groups: list[str | ExpressionInterface]
     """List of GROUP BY clauses."""
+
+    _havings: list[HavingClauseInterface]
+    """List of HAVING clauses."""
 
     _orders: list[OrderByClauseInterface]
     """List of ORDER BY clauses."""
@@ -119,6 +128,7 @@ class QueryBuilder(QueryBuilderInterface):
         }
         self._bindings_for_attr = {
             "wheres": "where",
+            "havings": "having",
             # TODO - Fill this table.
         }
         self._ctes = []
@@ -129,6 +139,7 @@ class QueryBuilder(QueryBuilderInterface):
         self._joins = []
         self._wheres = []
         self._groups = []
+        self._havings = []
         self._orders = []
         self._limit = None
         self._offset = None
@@ -175,6 +186,10 @@ class QueryBuilder(QueryBuilderInterface):
     @property
     def groups(self) -> list[str | ExpressionInterface]:
         return self._groups
+
+    @property
+    def havings(self) -> list[HavingClauseInterface]:
+        return self._havings
 
     @property
     def orders(self) -> list[OrderByClauseInterface]:
@@ -664,8 +679,6 @@ class QueryBuilder(QueryBuilderInterface):
         if callable(column):
             return self.where_nested(column, boolean=boolean)
 
-        where_type = "basic"
-
         if operator is None and value is None:
             value = None
             operator = "="
@@ -675,7 +688,7 @@ class QueryBuilder(QueryBuilderInterface):
         else:
             operator = operator or "="
 
-        self._wheres.append(WhereClause(column, operator, value, boolean, where_type))
+        self._wheres.append(WhereClause(column, operator, value, boolean))
         self.add_binding(li.flatten([value]), type="where")
 
         return self
@@ -920,6 +933,134 @@ class QueryBuilder(QueryBuilderInterface):
 
         return self
 
+    @overload
+    def having(
+        self,
+        condition: ExpressionInterface,
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a HAVING clause to the query."""
+
+    @overload
+    def having(
+        self,
+        condition: Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a HAVING clause to the query."""
+
+    @overload
+    def having(
+        self,
+        column: str,
+        value: datetime | float | str | ExpressionInterface | None = None,
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a HAVING clause to the query."""
+
+    @overload
+    def having(
+        self,
+        column: str,
+        operator: str,
+        value: datetime | float | str | ExpressionInterface,
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a HAVING clause to the query."""
+
+    def having(
+        self,
+        column: str
+        | ExpressionInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        operator: datetime | float | str | ExpressionInterface | None = None,
+        value: datetime | float | str | ExpressionInterface | None = None,
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        if isinstance(column, ExpressionInterface):
+            self._havings.append(HavingClause.expression(column, boolean))
+            return self
+
+        if callable(column):
+            # TODO - Add having_nested method
+            # return self.having_nested(column, boolean=boolean)
+            return self
+
+        having_type = "basic"
+
+        if operator is None and value is None:
+            value = None
+            operator = "is"
+            having_type = "null"
+        elif value is None:
+            value = operator
+            operator = "="
+        else:
+            operator = operator or "="
+
+        self._havings.append(
+            HavingClause(column, cast(str, operator), value, boolean, having_type)
+        )
+
+        if value is not None:
+            self.add_binding(li.flatten([value]), type="having")
+
+        return self
+
+    def having_null(
+        self,
+        *columns: str,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        having_type = "null"
+        operator = "is not" if not_ else "is"
+
+        for column in columns:
+            self._havings.append(
+                HavingClause(
+                    column,
+                    operator,
+                    None,
+                    boolean,
+                    having_type,
+                )
+            )
+
+        return self
+
+    def or_having_null(self, *columns: str) -> Self:
+        return self.having_null(*columns, boolean="or")
+
+    def having_not_null(self, *columns: str, boolean: str = "and") -> Self:
+        return self.having_null(*columns, boolean=boolean, not_=True)
+
+    def or_having_not_null(self, *columns: str) -> Self:
+        return self.having_not_null(*columns, boolean="or")
+
+    def having_raw(
+        self,
+        sql: str,
+        bindings: list[Any] | None = None,
+        boolean: str = "and",
+    ) -> Self:
+        self._havings.append(HavingClause.raw(sql, boolean=boolean))
+        self.add_binding(bindings, type="having")
+        return self
+
+    def or_having_raw(self, sql: str, bindings: list[Any] | None = None) -> Self:
+        return self.having_raw(sql, bindings=bindings, boolean="or")
+
     def order_by(
         self,
         column: str | ExpressionInterface,
@@ -995,6 +1136,17 @@ class QueryBuilder(QueryBuilderInterface):
     def clean_bindings(self, bindings: list[Any]) -> list[Any]:
         return [b for b in bindings if not self._grammar.is_expression(b)]
 
+    def _invalid_operator_and_value(self, operator: str | None, value: Any, /) -> bool:
+        """
+        Determine if the combination of operator and value is considered invalid.
+        Prevents using None/Null values with operators that require a value.
+        """
+        return (
+            value is None
+            and (operator in self.grammar.operators or operator in self._operators)
+            and operator not in ("=", "<=>", "<>", "!=")
+        )
+
     def _is_valid_operator(self, operator: str | None, /) -> bool:
         return isinstance(operator, str) and (
             operator in self.grammar.operators or operator in self._operators
@@ -1011,6 +1163,7 @@ class QueryBuilder(QueryBuilderInterface):
         cloned._joins = self._joins.copy()
         cloned._wheres = self._wheres.copy()
         cloned._groups = self._groups.copy()
+        cloned._havings = self._havings.copy()
         cloned._orders = self._orders.copy()
         cloned._limit = self._limit
         cloned._offset = self._offset

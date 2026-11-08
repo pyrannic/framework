@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, Self, overload
 
 from pyrannic.contracts.database.query.clauses.order_by import (
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
     from pyrannic.contracts.database.query.clauses.aggregate import (
         AggregateClauseInterface,
     )
+    from pyrannic.contracts.database.query.clauses.having import HavingClauseInterface
     from pyrannic.contracts.database.query.expression import ExpressionInterface
     from pyrannic.contracts.database.query.grammar import GrammarInterface
     from pyrannic.contracts.database.query.join_builder import JoinBuilderInterface
@@ -67,6 +69,11 @@ class QueryBuilderInterface(ABC):
     @abstractmethod
     def groups(self) -> list["str | ExpressionInterface"]:
         """Get the list of GROUP BY clauses for the query."""
+
+    @property
+    @abstractmethod
+    def havings(self) -> list["HavingClauseInterface"]:
+        """Get the list of HAVING clauses for the query."""
 
     @property
     @abstractmethod
@@ -694,6 +701,99 @@ class QueryBuilderInterface(ABC):
     @abstractmethod
     def group_by_raw(self, expression: str, *bindings: Any) -> Self:
         """Add a GROUP BY clause using a raw expression."""
+
+    @overload
+    @abstractmethod
+    def having(
+        self,
+        condition: "ExpressionInterface",
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a HAVING clause to the query."""
+
+    @overload
+    @abstractmethod
+    def having(
+        self,
+        condition: Callable[["QueryBuilderInterface"], "QueryBuilderInterface | None"],
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a HAVING clause to the query."""
+
+    @overload
+    @abstractmethod
+    def having(
+        self,
+        column: str,
+        value: "datetime | float | str | ExpressionInterface | None" = None,
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a HAVING clause to the query."""
+
+    @overload
+    @abstractmethod
+    def having(
+        self,
+        column: str,
+        operator: str,
+        value: "datetime | float | str | ExpressionInterface",
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a HAVING clause to the query."""
+
+    @abstractmethod
+    def having(
+        self,
+        column: "str | ExpressionInterface | Callable[['QueryBuilderInterface'], 'QueryBuilderInterface | None']",
+        operator: "datetime | float | str | ExpressionInterface | None" = None,
+        value: "datetime | float | str | ExpressionInterface | None" = None,
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a HAVING clause to the query."""
+
+    @abstractmethod
+    def having_null(
+        self,
+        *columns: str,
+        boolean: str = "and",
+        not_: bool = False,
+    ) -> Self:
+        """Add a HAVING NULL or NOT NULL clause to the query."""
+
+    @abstractmethod
+    def or_having_null(self, *columns: str) -> Self:
+        """Add a OR HAVING NULL or NOT NULL clause to the query."""
+
+    @abstractmethod
+    def having_not_null(self, *columns: str, boolean: str = "and") -> Self:
+        """Add a HAVING NOT NULL clause to the query."""
+
+    @abstractmethod
+    def or_having_not_null(self, *columns: str) -> Self:
+        """Add an OR HAVING NOT NULL clause to the query."""
+
+    @abstractmethod
+    def having_raw(
+        self,
+        sql: str,
+        bindings: list[Any] | None = None,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a raw HAVING clause to the query."""
+
+    @abstractmethod
+    def or_having_raw(self, sql: str, bindings: list[Any] | None = None) -> Self:
+        """Add a raw OR HAVING clause to the query."""
 
     @abstractmethod
     def order_by(
