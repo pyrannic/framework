@@ -102,10 +102,58 @@ This creates a Cartesian product by combining the initial table with the joined 
 ## Wheres
 
 ## Ordering
+
+### The `order_by` Method
+
+You can sort query results by a specified column using the `order_by` method.
+This method accepts two arguments:
+
+- The target column to sort by as first argument.
+- The sort direction, which can be either `SortDirection.ASC` or `SortDirection.DESC`, as second argument.
+
+```python
+--8<-- "docs_src/database/query-builder/basic_order_by_example.py"
+```
+
+### The `latest` and `oldest` Methods
+
+You can easily order results by date using the `latest` and `oldest` methods.
+Results are sorted by the table's `created_at` column by default, though you can also specify a column name to sort by:
+
+```python
+--8<-- "docs_src/database/query-builder/basic_latest_example.py"
+```
+
 ## Grouping
+
+### The `group_by` and `having` Methods
+
+The `group_by` and `having` methods allow you to group query results.
+Additionally, the `having` method shares a similar signature to the where method:
+
+!!! danger "Work in Progress"
+    This is currently under development and will be accessible very soon.
+
 ## Limit & Offset
 
+To control your query results, you can use the following methods:
+
+- `limit`: Restricts the total number of returned results.
+- `offset`: Skips a specified number of initial results.
+
+```python
+--8<-- "docs_src/database/query-builder/basic_limit_offset_example.py"
+```
+
 ## Common Tables Expressions (CTEs)
+
+### The `with_query` Method
+
+Use the `with_query` method to define Common Table Expressions (CTEs) and keep complex queries modular and readable.
+
+```python
+--8<-- "docs_src/database/query-builder/basic_cte_example.py"
+```
 
 ## Inserts
 
