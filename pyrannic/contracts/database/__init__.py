@@ -8,6 +8,7 @@ from .query.builder import QueryBuilderInterface as QueryBuilderInterface
 from .query.clauses.aggregate import (
     AggregateClauseInterface as AggregateClauseInterface,
 )
+from .query.clauses.having import HavingClauseInterface as HavingClauseInterface
 from .query.clauses.order_by import OrderByClauseInterface as OrderByClauseInterface
 from .query.clauses.order_by import SortDirection as SortDirection
 from .query.clauses.where import WhereClauseInterface as WhereClauseInterface

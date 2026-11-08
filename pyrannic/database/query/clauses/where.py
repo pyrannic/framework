@@ -31,11 +31,31 @@ class WhereClause(WhereClauseInterface):
         self._query = query
 
     @classmethod
+    def expression(
+        cls,
+        column: str | ExpressionInterface,
+        boolean: str = "and",
+    ) -> Self:
+        return cls(
+            column=column,
+            boolean=boolean,
+            type="expression",
+        )
+
+    @classmethod
     def nested(cls, query: QueryBuilderInterface, boolean: str = "and") -> Self:
         return cls(
             query=query,
             boolean=boolean,
             type="nested",
+        )
+
+    @classmethod
+    def raw(cls, sql: str, boolean: str = "and") -> Self:
+        return cls(
+            column=sql,
+            boolean=boolean,
+            type="raw",
         )
 
     @property
