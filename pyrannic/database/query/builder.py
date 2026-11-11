@@ -648,7 +648,8 @@ class QueryBuilder(QueryBuilderInterface):
     def where(
         self,
         column: str,
-        query: QueryBuilderInterface,
+        query: QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
         /,
         *,
         boolean: str = "and",
@@ -660,7 +661,8 @@ class QueryBuilder(QueryBuilderInterface):
         self,
         column: str,
         operator: str,
-        query: QueryBuilderInterface,
+        query: QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
         /,
         *,
         boolean: str = "and",
@@ -695,7 +697,10 @@ class QueryBuilder(QueryBuilderInterface):
         column: str
         | ExpressionInterface
         | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
-        operator: str | QueryBuilderInterface | None = None,
+        operator: str
+        | QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None]
+        | None = None,
         value: Any = None,
         /,
         *,

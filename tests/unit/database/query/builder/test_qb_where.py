@@ -35,3 +35,25 @@ def test_where_comparing_column_to_subquery():
         == 'SELECT "action_id" FROM "actions" WHERE "action_id" IS NOT NULL AND "version_date_time" = (SELECT "version_date_time" FROM "versions" WHERE "version_rank" = %s)'
     )
     assert query_builder.get_bindings() == [2]
+
+
+def test_where_comparing_column_to_subquery_with_callale():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.select("action_id").from_("actions").where_not_null(
+        "action_id"
+    ).where(
+        "version_date_time",
+        "=",
+        lambda qb: (
+            qb.select("version_date_time").from_("versions").where("version_rank", 2)
+        ),
+    )
+    sql = query_builder.to_sql()
+
+    assert (
+        sql
+        == 'SELECT "action_id" FROM "actions" WHERE "action_id" IS NOT NULL AND "version_date_time" = (SELECT "version_date_time" FROM "versions" WHERE "version_rank" = %s)'
+    )
+    assert query_builder.get_bindings() == [2]
