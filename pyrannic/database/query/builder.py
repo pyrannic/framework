@@ -538,8 +538,8 @@ class QueryBuilder(QueryBuilderInterface):
     @overload
     def left_join(
         self,
-        expression: "ExpressionInterface",
-        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
+        expression: ExpressionInterface,
+        callback: Callable[[JoinBuilderInterface], QueryBuilderInterface | None],
         /,
     ) -> Self:
         """Add a LEFT JOIN clause to the query using a callback for the join condition."""
@@ -548,7 +548,7 @@ class QueryBuilder(QueryBuilderInterface):
     def left_join(
         self,
         table: str,
-        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
+        callback: Callable[[JoinBuilderInterface], QueryBuilderInterface | None],
         /,
     ) -> Self:
         """Add a LEFT JOIN clause to the query using a callback for the join condition."""
@@ -595,9 +595,9 @@ class QueryBuilder(QueryBuilderInterface):
     @overload
     def left_join_sub(
         self,
-        query: "QueryBuilderInterface",
+        query: QueryBuilderInterface,
         as_: str,
-        callback: Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"],
+        callback: Callable[[JoinBuilderInterface], QueryBuilderInterface | None],
         /,
     ) -> Self:
         """Add a LEFT JOIN subquery to the query."""
@@ -605,22 +605,24 @@ class QueryBuilder(QueryBuilderInterface):
     @overload
     def left_join_sub(
         self,
-        query: "QueryBuilderInterface",
+        query: QueryBuilderInterface,
         as_: str,
-        first_column: "str | ExpressionInterface",
+        first_column: str | ExpressionInterface,
         operator: str | None = None,
-        second_column: "str | ExpressionInterface | None" = None,
+        second_column: str | ExpressionInterface | None = None,
         /,
     ) -> Self:
         """Add a LEFT JOIN subquery to the query."""
 
     def left_join_sub(
         self,
-        query: "QueryBuilderInterface",
+        query: QueryBuilderInterface,
         as_: str,
-        first_column: 'str | ExpressionInterface | Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"]',
+        first_column: str
+        | ExpressionInterface
+        | Callable[[JoinBuilderInterface], QueryBuilderInterface | None],
         operator: str | None = None,
-        second_column: "str | ExpressionInterface | None" = None,
+        second_column: str | ExpressionInterface | None = None,
         /,
     ) -> Self:
         return self.join_sub(
@@ -646,7 +648,7 @@ class QueryBuilder(QueryBuilderInterface):
     def where(
         self,
         column: str,
-        query: "QueryBuilderInterface",
+        query: QueryBuilderInterface,
         /,
         *,
         boolean: str = "and",
@@ -658,7 +660,7 @@ class QueryBuilder(QueryBuilderInterface):
         self,
         column: str,
         operator: str,
-        query: "QueryBuilderInterface",
+        query: QueryBuilderInterface,
         /,
         *,
         boolean: str = "and",
