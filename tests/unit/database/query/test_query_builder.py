@@ -161,7 +161,7 @@ def test_where_compare_with_none():
 
     assert where_clause.column == "foo"
     assert where_clause.value is None
-    assert where_clause.operator == "="
+    assert where_clause.operator == "IS"
     assert where_clause.boolean == "and"
 
 
