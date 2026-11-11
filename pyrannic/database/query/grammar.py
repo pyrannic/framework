@@ -525,7 +525,7 @@ class Grammar(GrammarInterface):
 
     def escape(self, value: str | float | bool | None, binary: bool = False) -> str:
         if value is None:
-            return "null"
+            return "NULL"
         elif binary:
             assert isinstance(value, str)
             return self._escape_binary(value)
