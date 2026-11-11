@@ -470,6 +470,31 @@ class QueryBuilderInterface(ABC):
     @abstractmethod
     def where(
         self,
+        column: str,
+        query: "QueryBuilderInterface",
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """A simple WHERE condition with a column and a subquery."""
+
+    @overload
+    @abstractmethod
+    def where(
+        self,
+        column: str,
+        operator: str,
+        query: "QueryBuilderInterface",
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """A simple WHERE condition with a column and a subquery."""
+
+    @overload
+    @abstractmethod
+    def where(
+        self,
         column: "str | ExpressionInterface",
         value: Any,
         /,
@@ -495,7 +520,7 @@ class QueryBuilderInterface(ABC):
     def where(
         self,
         column: 'str | ExpressionInterface | Callable[["QueryBuilderInterface"], "QueryBuilderInterface | None"]',
-        operator: str | None = None,
+        operator: "str | QueryBuilderInterface | None" = None,
         value: Any = None,
         /,
         *,
