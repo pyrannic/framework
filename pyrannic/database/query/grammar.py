@@ -368,7 +368,7 @@ class Grammar(GrammarInterface):
         havings = havings or query_builder.havings
 
         if not havings:
-            return None
+            return None  # pragma: no cover
 
         sql: list[str] = []
 
