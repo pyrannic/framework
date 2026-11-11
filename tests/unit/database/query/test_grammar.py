@@ -97,7 +97,7 @@ def test_quote_string_rejects_invalid_identifier():
 def test_escape_none():
     grammar = Grammar()
 
-    assert grammar.escape(None) == "null"
+    assert grammar.escape(None) == "NULL"
 
 
 def test_escape_bool_values():
