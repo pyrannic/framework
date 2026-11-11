@@ -58,6 +58,22 @@ class WhereClause(WhereClauseInterface):
             type="raw",
         )
 
+    @classmethod
+    def subquery(
+        cls,
+        column: str | ExpressionInterface,
+        operator: str,
+        query: QueryBuilderInterface,
+        boolean: str = "and",
+    ) -> Self:
+        return cls(
+            column=column,
+            operator=operator,
+            query=query,
+            boolean=boolean,
+            type="subquery",
+        )
+
     @property
     def type(self) -> str:
         return self._type

@@ -334,6 +334,17 @@ class Grammar(GrammarInterface):
 
         return f"{self.wrap(where.column)} {where.operator.upper()} {min_value} AND {max_value}"
 
+    def _compile_where_subquery(
+        self,
+        _: QueryBuilderInterface,
+        where: WhereClauseInterface,
+    ) -> str | None:
+        assert where.query is not None, "Subquery WHERE clause requires a query."
+
+        sql = self.compile_select(where.query)
+
+        return f"{self.wrap(where.column)} {where.operator.upper()} ({sql})"
+
     def _compile_groups(
         self,
         query_builder: QueryBuilderInterface,

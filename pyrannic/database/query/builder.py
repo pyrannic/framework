@@ -645,6 +645,29 @@ class QueryBuilder(QueryBuilderInterface):
     @overload
     def where(
         self,
+        column: str,
+        query: "QueryBuilderInterface",
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """A simple WHERE condition with a column and a subquery."""
+
+    @overload
+    def where(
+        self,
+        column: str,
+        operator: str,
+        query: "QueryBuilderInterface",
+        /,
+        *,
+        boolean: str = "and",
+    ) -> Self:
+        """A simple WHERE condition with a column and a subquery."""
+
+    @overload
+    def where(
+        self,
         column: str | ExpressionInterface,
         value: Any,
         /,
@@ -670,23 +693,29 @@ class QueryBuilder(QueryBuilderInterface):
         column: str
         | ExpressionInterface
         | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
-        operator: str | None = None,
+        operator: str | QueryBuilderInterface | None = None,
         value: Any = None,
         /,
         *,
         boolean: str = "and",
     ) -> Self:
-        if callable(column):
+        if callable(column) and operator is None:
             return self.where_nested(column, boolean=boolean)
 
         if operator is None and value is None:
             value = None
-            operator = "="
+            operator = "IS"
         elif value is None:
             value = operator
             operator = "="
         else:
             operator = operator or "="
+
+        assert isinstance(column, (str, ExpressionInterface)), "Invalid column type"
+        assert isinstance(operator, str), "Invalid operator type"
+
+        if self._is_queryable(value):
+            return self._where_subquery(column, operator, value, boolean=boolean)
 
         self._wheres.append(WhereClause(column, operator, value, boolean))
         self.add_binding(li.flatten([value]), type="where")
@@ -907,12 +936,32 @@ class QueryBuilder(QueryBuilderInterface):
 
         return self._add_nested_where(query, boolean)
 
+    def _where_subquery(
+        self,
+        column: str | ExpressionInterface,
+        operator: str,
+        value: "QueryBuilderInterface | Callable[[QueryBuilderInterface], QueryBuilderInterface | None]",
+        /,
+        boolean: str = "and",
+    ) -> Self:
+        """Add a subselect to the query."""
+
+        if callable(value):
+            query = self._new_query()
+            value(query)
+        else:
+            query = value
+
+        self._wheres.append(WhereClause.subquery(column, operator, query, boolean))
+        self.add_binding(query.get_bindings(), type="where")
+
+        return self
+
     def _add_nested_where(self, query: Self, boolean: str) -> Self:
         if not query.wheres:
             return self
 
         self._wheres.append(WhereClause.nested(query, boolean))
-
         self.add_binding(*query.get_raw_bindings()["where"], type="where")
 
         return self
