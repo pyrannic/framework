@@ -461,6 +461,16 @@ class QueryBuilderInterface(ABC):
     ) -> Self:
         """Add a LEFT JOIN subquery to the query."""
 
+    @abstractmethod
+    def cross_join(
+        self,
+        table: "str | ExpressionInterface",
+        first_column: 'str | ExpressionInterface | Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"] | None' = None,
+        operator: str | None = None,
+        second_column: "str | ExpressionInterface | None" = None,
+    ) -> Self:
+        """Add a CROSS JOIN clause to the query."""
+
     @overload
     @abstractmethod
     def where(

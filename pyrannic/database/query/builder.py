@@ -645,6 +645,23 @@ class QueryBuilder(QueryBuilderInterface):
             type="left",
         )
 
+    def cross_join(
+        self,
+        table: "str | ExpressionInterface",
+        first_column: 'str | ExpressionInterface | Callable[["JoinBuilderInterface"], "QueryBuilderInterface | None"] | None' = None,
+        operator: str | None = None,
+        second_column: "str | ExpressionInterface | None" = None,
+    ) -> Self:
+        if first_column:
+            return self.join(table, first_column, operator, second_column, type="cross")  # type: ignore
+
+        from pyrannic.database.query.join_builder import JoinBuilder
+
+        join_builder = JoinBuilder(self, "cross", table)
+        self._joins.append(join_builder)
+
+        return self
+
     @overload
     def where(
         self,

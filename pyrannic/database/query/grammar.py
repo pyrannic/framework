@@ -45,9 +45,8 @@ class Grammar(GrammarInterface):
         return []
 
     def compile_select(self, query_builder: QueryBuilderInterface) -> str:
-        if query_builder.aggregate and (query_builder.sets or query_builder.havings):
-            # TODO: Handle set operations or having clauses if present.
-            pass
+        # if query_builder.aggregate and (query_builder.sets or query_builder.havings):
+        # TODO: Handle set operations or having clauses if present.
 
         # The user is not specifying any columns, so we default to selecting all columns.
         if not query_builder.columns and query_builder.from_clause:
@@ -220,7 +219,12 @@ class Grammar(GrammarInterface):
                 clauses.append(self.compile_join_lateral(join, table_and_nested_joins))
             else:
                 clauses.append(
-                    f"{join.type.upper()} JOIN {table_and_nested_joins} {self._compile_wheres(join)}"
+                    self._concatenate(
+                        join.type.upper(),
+                        "JOIN",
+                        table_and_nested_joins,
+                        self._compile_wheres(join),
+                    )
                 )
 
         return " ".join(clauses)

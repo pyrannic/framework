@@ -14,3 +14,18 @@ def test_except():
         sql
         == '(SELECT "action_id" FROM "latest_actions") EXCEPT (SELECT "action_id" FROM "previous_actions")'
     )
+
+
+def test_except_with_callable():
+    grammar = Grammar()
+    query_builder = QueryBuilder(grammar)
+
+    query_builder.select("action_id").from_("latest_actions").except_(
+        lambda q: q.select("action_id").from_("previous_actions")
+    )
+    sql = query_builder.to_sql()
+
+    assert (
+        sql
+        == '(SELECT "action_id" FROM "latest_actions") EXCEPT (SELECT "action_id" FROM "previous_actions")'
+    )
