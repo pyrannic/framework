@@ -9,6 +9,7 @@ from pyrannic.contracts.database import (
     JoinLateralBuilderInterface,
     OrderByClauseInterface,
     QueryBuilderInterface,
+    SetClauseInterface,
     WhereClauseInterface,
 )
 from pyrannic.database.query.clauses import AggregateClause
@@ -44,11 +45,19 @@ class Grammar(GrammarInterface):
         return []
 
     def compile_select(self, query_builder: QueryBuilderInterface) -> str:
+        if query_builder.aggregate and (query_builder.sets or query_builder.havings):
+            # TODO: Handle set operations or having clauses if present.
+            pass
+
         # The user is not specifying any columns, so we default to selecting all columns.
         if not query_builder.columns and query_builder.from_clause:
             query_builder.select()
 
         sql = self._concatenate(*self._compile_components(query_builder)).strip()
+
+        if query_builder.sets:
+            sql = f"{self._wrap_set(sql)} {self._compile_sets(query_builder)}"
+
         return sql
 
     def compile_exists(self, query_builder: QueryBuilderInterface) -> str:
@@ -441,6 +450,27 @@ class Grammar(GrammarInterface):
         """Compile the OFFSET portion of the query."""
         return f"OFFSET {int(offset)}"
 
+    def _compile_sets(
+        self,
+        query_builder: QueryBuilderInterface,
+        sets: list[SetClauseInterface] | None = None,
+    ) -> str | None:
+        sets = sets or query_builder.sets
+
+        if not sets:
+            return None  # pragma: no cover
+
+        sql: list[str] = []
+
+        for set_clause in sets:
+            sql.append(self._compile_set(set_clause))
+
+        return " ".join(sql)
+
+    def _compile_set(self, set_clause: SetClauseInterface) -> str:
+        conjunction = set_clause.type
+        return f"{conjunction.upper()} {self._wrap_set(set_clause.query.to_sql())}"
+
     def parameterize(
         self, values: list[str | float | bool | ExpressionInterface | None]
     ) -> str:
@@ -512,6 +542,9 @@ class Grammar(GrammarInterface):
             raise ValueError(f"Invalid or insecure SQL identifier: '{value}'")
 
         return f'"{value}"'
+
+    def _wrap_set(self, sql: str) -> str:
+        return f"({sql})"
 
     def _normalize_identifier_token(self, value: str) -> str:
         if '"' not in value:

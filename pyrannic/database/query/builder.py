@@ -8,6 +8,7 @@ from pyrannic.contracts.database import (
     HavingClauseInterface,
     OrderByClauseInterface,
     QueryBuilderInterface,
+    SetClauseInterface,
     SortDirection,
     WhereClauseInterface,
 )
@@ -17,6 +18,7 @@ from pyrannic.database.query.clauses import (
     AggregateClause,
     HavingClause,
     OrderByClause,
+    SetClause,
     WhereClause,
 )
 from pyrannic.database.query.expression import Expression
@@ -61,6 +63,9 @@ class QueryBuilder(QueryBuilderInterface):
 
     _orders: list[OrderByClauseInterface]
     """List of ORDER BY clauses."""
+
+    _sets: list[SetClauseInterface]
+    """List of set operation clauses. E.g., UNION, INTERSECT, EXCEPT."""
 
     _limit: int | None
     """Limit for the number of records to retrieve."""
@@ -123,12 +128,12 @@ class QueryBuilder(QueryBuilderInterface):
             "group_by": [],
             "having": [],
             "order_by": [],
-            "union": [],
-            "unionOrder": [],
+            "set": [],
         }
         self._bindings_for_attr = {
             "wheres": "where",
             "havings": "having",
+            "sets": "set",
             # TODO - Fill this table.
         }
         self._ctes = []
@@ -141,6 +146,7 @@ class QueryBuilder(QueryBuilderInterface):
         self._groups = []
         self._havings = []
         self._orders = []
+        self._sets = []
         self._limit = None
         self._offset = None
         self._before_callbacks = []
@@ -203,6 +209,10 @@ class QueryBuilder(QueryBuilderInterface):
     def offset_count(self) -> int | None:
         return self._offset
 
+    @property
+    def sets(self) -> list[SetClauseInterface]:
+        return self._sets
+
     def select(self, *columns: str | ExpressionInterface) -> Self:
         self._bindings["select"] = []
         self._columns = list(columns or ["*"])
@@ -251,7 +261,8 @@ class QueryBuilder(QueryBuilderInterface):
         return self
 
     def set_aggregate(self, function: str, *columns: str | ExpressionInterface) -> Self:
-        self._aggregate = AggregateClause(function, list(columns))
+        cols = list(columns) or ["*"]
+        self._aggregate = AggregateClause(function, cols)
 
         if not self._groups:
             self._orders = []
@@ -960,7 +971,7 @@ class QueryBuilder(QueryBuilderInterface):
             query = value
 
         self._wheres.append(WhereClause.subquery(column, operator, query, boolean))
-        self.add_binding(query.get_bindings(), type="where")
+        self.add_binding(*query.get_bindings(), type="where")
 
         return self
 
@@ -1161,6 +1172,22 @@ class QueryBuilder(QueryBuilderInterface):
         self._limit = amount
         return self
 
+    def except_(
+        self,
+        query: QueryBuilderInterface
+        | Callable[[QueryBuilderInterface], QueryBuilderInterface | None],
+        /,
+    ) -> Self:
+        if callable(query):
+            q = self._new_query()
+            query(q)
+            query = q
+
+        self._sets.append(SetClause.except_(query))
+        self.add_binding(*query.get_bindings(), type="set")
+
+        return self
+
     def to_sql(self) -> str:
         self.apply_before_query_callbacks()
         return self.grammar.compile_select(self)
@@ -1223,6 +1250,7 @@ class QueryBuilder(QueryBuilderInterface):
         cloned._orders = self._orders.copy()
         cloned._limit = self._limit
         cloned._offset = self._offset
+        cloned._sets = self._sets.copy()
         cloned._bindings = {k: v.copy() for k, v in self._bindings.items()}
         cloned._operators = self._operators.copy()
         cloned._before_callbacks = self._before_callbacks.copy()

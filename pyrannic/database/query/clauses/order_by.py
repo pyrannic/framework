@@ -14,7 +14,6 @@ class OrderByClause(OrderByClauseInterface):
         column: str | ExpressionInterface,
         direction: SortDirection = SortDirection.ASC,
     ) -> None:
-        super().__init__()
         self._column = column
         self._direction = direction
 
