@@ -13,7 +13,6 @@ class AggregateClause(AggregateClauseInterface):
         function: str,
         columns: list[str | ExpressionInterface],
     ) -> None:
-        super().__init__()
         self._function = function
         self._columns = columns
 

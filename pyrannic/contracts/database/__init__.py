@@ -11,6 +11,7 @@ from .query.clauses.aggregate import (
 from .query.clauses.having import HavingClauseInterface as HavingClauseInterface
 from .query.clauses.order_by import OrderByClauseInterface as OrderByClauseInterface
 from .query.clauses.order_by import SortDirection as SortDirection
+from .query.clauses.set import SetClauseInterface as SetClauseInterface
 from .query.clauses.where import WhereClauseInterface as WhereClauseInterface
 from .query.expression import ExpressionInterface as ExpressionInterface
 from .query.grammar import GrammarInterface as GrammarInterface

@@ -22,7 +22,6 @@ class WhereClause(WhereClauseInterface):
         type: str = "basic",
         query: QueryBuilderInterface | None = None,
     ) -> None:
-        super().__init__()
         self._type = type
         self._column = column
         self._value = value

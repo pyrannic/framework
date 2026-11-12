@@ -10,8 +10,9 @@ from pyrannic.contracts.database.query.clauses.order_by import (
 from pyrannic.contracts.database.query.clauses.where import WhereClauseInterface
 
 if TYPE_CHECKING:
-    from pyrannic.contracts.database.query.clauses.aggregate import (
+    from pyrannic.contracts.database import (
         AggregateClauseInterface,
+        SetClauseInterface,
     )
     from pyrannic.contracts.database.query.clauses.having import HavingClauseInterface
     from pyrannic.contracts.database.query.expression import ExpressionInterface
@@ -89,6 +90,11 @@ class QueryBuilderInterface(ABC):
     @abstractmethod
     def offset_count(self) -> int | None:
         """Get the number of records to skip in the query."""
+
+    @property
+    @abstractmethod
+    def sets(self) -> list["SetClauseInterface"]:
+        """Get the list of set operation clauses. E.g., UNION, INTERSECT, EXCEPT."""
 
     @abstractmethod
     def reset(self) -> Self:
@@ -864,6 +870,14 @@ class QueryBuilderInterface(ABC):
     @abstractmethod
     def limit(self, amount: int, /) -> Self:
         """Limit the query to a specified number of records."""
+
+    @abstractmethod
+    def except_(
+        self,
+        query: "QueryBuilderInterface | Callable[[QueryBuilderInterface], QueryBuilderInterface | None]",
+        /,
+    ) -> Self:
+        """Exclude the specified columns from the query."""
 
     @abstractmethod
     def to_sql(self) -> str:
