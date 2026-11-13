@@ -1,3 +1,5 @@
+<p align="center"><a href="https://laravel.com" target="_blank"><img width="400" alt="logo-stacked-reversed-550w" src="https://github.com/user-attachments/assets/f4a63999-f021-4f5a-8deb-a9cd7032e349" /></a></p>
+
 <div align="center">
 
 [![Tests](https://github.com/pyrannic/framework/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/pyrannic/framework/actions/workflows/tests.yml)
