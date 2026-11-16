@@ -40,11 +40,16 @@ class Resolves(Depends, _Injector):
         dependency: str | type | Callable[..., Any] | None = None,
         use_cache: bool = True,
         scope: Literal["function", "request"] | None = None,
+        *,
+        max_concurrency: int | None = None,
+        _concurrency: Any | None = None,
     ):
         super().__init__(
             dependency=self.wrap_dependency_if_needed(dependency),
             use_cache=use_cache,
             scope=scope,
+            max_concurrency=max_concurrency,
+            _concurrency=_concurrency,
         )
 
 
