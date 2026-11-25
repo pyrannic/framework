@@ -1,10 +1,10 @@
 import os
 
-from dotenv import load_dotenv
 import pytest
+from dotenv import load_dotenv
 
 from tests.unit.config.configuration.foo import Foo
-from tests.unit.config.configuration.foo_config import FooConfig
+from tests.unit.config.configuration.foo_config import FooBarConfig, FooConfig
 
 
 @pytest.fixture(scope="module")
@@ -15,6 +15,11 @@ def foo(env_path: str) -> Foo:
 @pytest.fixture(scope="module")
 def foo_config() -> FooConfig:
     return FooConfig()
+
+
+@pytest.fixture(scope="module")
+def foo_bar_config() -> FooBarConfig:
+    return FooBarConfig()
 
 
 @pytest.fixture(scope="module")

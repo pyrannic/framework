@@ -11,6 +11,7 @@ from pydantic_settings import (
 )
 
 from pyrannic.contracts.config.configuration import ConfigurationInterface
+from pyrannic.support.string import to_snake_case
 
 
 class CustomEnvSettingsSource(EnvSettingsSource):
@@ -46,7 +47,7 @@ class Configuration(ConfigurationInterface, BaseSettings):
 
     @property
     def config_key(self) -> str:
-        return self.__class__.__name__.replace("Config", "").lower()
+        return to_snake_case(self.__class__.__name__).replace("_config", "")
 
     @property
     def env_prefix(self) -> str:

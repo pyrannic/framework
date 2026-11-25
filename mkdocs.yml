@@ -18,17 +18,23 @@ markdown_extensions:
     - pymdownx.snippets
     - pymdownx.superfences
 
+extra_css:
+  - theme/styles.css
+
 theme:
     name: material
+    logo: theme/assets/images/logo.svg
+    custom_dir: docs/theme
     palette:
         # Palette toggle for light mode
-        - scheme: default
+        - scheme: pyrannic
           toggle:
                 icon: material/brightness-7 
                 name: Switch to dark mode
 
         # Palette toggle for dark mode
         - scheme: slate
+          primary: pyrannic
           toggle:
                 icon: material/brightness-5
                 name: Switch to light mode

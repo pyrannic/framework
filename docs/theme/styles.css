@@ -1,0 +1,66 @@
+:root {
+	--white-color: #ffffff;
+	--graphite-color: #1E2230;
+	--midnight-color: #101723;
+	--off-white-color: #F9FAFC;
+	--muted-color: #8F9BAD;
+	--coral-color: #FF594B;
+	--coral-dark-color: #EE4D42;
+
+	.md-header__button.md-logo .tile {
+		fill: var(--graphite-color);
+	}
+
+	.md-header--shadow {
+    box-shadow:
+			rgba(0, 0, 0, 0.05) 0px 0px 0.2rem,
+			rgba(0, 0, 0, 0.1) 0px 0.1rem 0.3rem;
+	}
+
+	.md-search__form {
+		background-color: rgba(0, 0, 0, 0.05);
+	}
+
+	.md-search__form:hover {
+		background-color: rgba(0, 0, 0, 0.12);
+	}
+
+	.md-search__form input::placeholder {
+		color: rgb(from var(--midnight-color) r g b / 0.65);
+	}
+}
+
+[data-md-color-scheme="pyrannic"] {
+  --md-primary-fg-color:        var(--white-color);
+  --md-primary-fg-color--light: var(--white-color);
+  --md-primary-fg-color--dark:  var(--white-color);
+  --md-primary-bg-color:        var(--graphite-color);
+  --md-primary-bg-color--light: var(--off-white-color);
+
+  --md-accent-fg-color: hsl(from var(--coral-color) calc(h - 20) calc(s - 20) calc(l - 20));
+	--md-typeset-a-color: var(--coral-color);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: var(--graphite-color);
+  --md-hue: 220; 
+
+  --md-accent-fg-color: hsl(from var(--coral-color) calc(h - 20) calc(s - 20) calc(l - 20));
+	--md-typeset-a-color: var(--coral-color);
+
+	.md-header__button.md-logo .tile {
+		fill: #fff;
+	}
+
+	.md-search__form {
+		background-color: rgba(0, 0, 0, 0.15);
+	}
+
+	.md-search__form:hover {
+		background-color: rgba(0, 0, 0, 0.25);
+	}
+
+	.md-search__form input::placeholder {
+		color: rgb(from #fff r g b / 0.65);
+	}
+}
